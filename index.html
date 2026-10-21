@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1f2a44">
+<title>Chispa</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#f5f6f8; --surface:#fff; --surface2:#eceff3; --text:#2b3240; --muted:#6b7280; --border:#e0e4ea;
+  --accent:#3d5a80; --spark:#e9b949; --danger:#b5544f; --trazo:#2b3240;
+}
+body.noche{
+  --bg:#000; --surface:#0a0a0a; --surface2:#111; --text:#6d6d6d; --muted:#4a4a4a; --border:#1a1a1a;
+  --accent:#3a3a3a; --spark:#5a4a1e; --danger:#5a2a28; --trazo:#5c5c5c;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overscroll-behavior:none}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);
+  display:flex;flex-direction:column;height:100dvh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);user-select:none}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px}
+header .nom{font-weight:600;font-size:18px}
+header .term{font-size:12px;color:var(--muted)}
+header .esp{flex:1}
+.ib{background:var(--surface2);color:var(--text);border:0;border-radius:12px;padding:8px 12px;font:inherit;font-size:15px}
+.ib.envio{background:var(--spark);color:#2b2410;font-weight:600}
+body.noche .ib.envio{color:#000}
+.seg{display:flex;margin:0 14px 8px;background:var(--surface2);border-radius:12px;padding:3px}
+.seg button{flex:1;border:0;background:none;color:var(--muted);padding:7px;border-radius:9px;font:inherit;font-size:14px}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+textarea{margin:0 14px 8px;border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--text);
+  font:inherit;font-size:17px;padding:10px 12px;min-height:90px;resize:none;user-select:text}
+.lienzo{flex:1;margin:0 14px;position:relative;min-height:120px}
+canvas{position:absolute;inset:0;width:100%;height:100%;background:var(--surface);border:1px dashed var(--border);border-radius:18px;touch-action:none}
+.pista{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);
+  font-size:15px;pointer-events:none;padding:20px;line-height:1.5}
+.borrar{position:absolute;top:8px;right:8px;z-index:2}
+.extras{display:flex;gap:8px;align-items:center;margin:8px 14px 0;min-height:0;flex-wrap:wrap}
+.extras img{width:48px;height:48px;object-fit:cover;border-radius:8px}
+.chip{background:var(--surface2);border-radius:20px;padding:5px 10px;font-size:13px}
+.barra{display:flex;align-items:center;justify-content:space-around;padding:12px 10px 14px}
+.barra button{border:0;background:var(--surface2);color:var(--text);width:54px;height:54px;border-radius:50%;font-size:22px}
+.barra .mic{width:76px;height:76px;font-size:32px;background:var(--accent);color:#fff}
+body.noche .barra .mic{color:#888}
+.barra .ok{background:var(--spark);color:#2b2410}
+body.noche .barra .ok{color:#000}
+.grabando{background:var(--danger)!important;animation:lat 1.2s infinite}
+@keyframes lat{50%{opacity:.6}}
+.toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:14px;
+  font-size:15px;opacity:0;transition:.25s;pointer-events:none;z-index:30;max-width:90vw;text-align:center}
+.toast.ver{opacity:1}
+.panel{position:fixed;inset:0;background:var(--bg);z-index:20;display:none;flex-direction:column;overflow:auto;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}
+.panel.abierto{display:flex}
+.panel h2{font-size:19px;margin:6px 0 14px;display:flex;align-items:center;gap:10px}
+.panel h2 .esp{flex:1}
+.panel label{font-size:13px;color:var(--muted);display:block;margin:12px 0 4px}
+.panel input,.panel select{width:100%;font:inherit;font-size:16px;padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text)}
+.panel .fila{display:flex;gap:10px}.panel .fila>*{flex:1}
+.panel p{font-size:14px;color:var(--muted);line-height:1.5}
+.btn{border:0;border-radius:14px;padding:14px;font:inherit;font-size:16px;background:var(--accent);color:#fff;width:100%;margin-top:14px}
+.btn.sec{background:var(--surface2);color:var(--text)}
+.item{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px 12px;margin-bottom:8px;font-size:14px}
+.item small{color:var(--muted)}
+.oculto{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <img src="icon-192.png" width="34" height="34" style="border-radius:9px" alt="">
+  <div><div class="nom">Chispa</div><div class="term" id="term"></div></div>
+  <div class="esp"></div>
+  <button class="ib envio oculto" id="bEnviar">📤 <span id="nPend">0</span></button>
+  <button class="ib" id="bAjustes" aria-label="Ajustes">⚙</button>
+</header>
+
+<div class="seg" id="ambito"><button data-a="trabajo">Trabajo</button><button data-a="personal">Personal</button></div>
+<textarea id="texto" class="oculto" placeholder="Escribe aquí…"></textarea>
+
+<div class="lienzo">
+  <canvas id="lienzo"></canvas>
+  <div class="pista" id="pista">Escribe aquí con el dedo<br><small>o usa los botones de abajo</small></div>
+  <button class="ib borrar oculto" id="bBorrarTrazo">Borrar</button>
+</div>
+<div class="extras" id="extras"></div>
+
+<div class="barra">
+  <button id="bAncla" aria-label="Ancla">⚓</button>
+  <button id="bFoto" aria-label="Foto">📷</button>
+  <button class="mic" id="bMic" aria-label="Grabar voz">🎤</button>
+  <button id="bTeclado" aria-label="Teclado">⌨</button>
+  <button class="ok" id="bGuardar" aria-label="Guardar">✓</button>
+</div>
+<input type="file" id="inFoto" accept="image/*" capture="environment" class="oculto">
+
+<!-- Envío -->
+<div class="panel" id="pEnvio">
+  <h2>📤 Enviar a Chispa <span class="esp"></span><button class="ib" data-cerrar>✕</button></h2>
+  <p>Al pulsar <b>Enviar</b> se abre el menú de compartir de Android. Elige <b>OneDrive</b> y la carpeta <b>Chispa › Entrada</b>. Al abrir Chispa en el PC, las notas se colocarán solas.</p>
+  <div id="listaPend"></div>
+  <button class="btn" id="bCompartir">Enviar</button>
+  <button class="btn sec oculto" id="bConfirmar">✓ Ya están en OneDrive, quitarlas del móvil</button>
+  <button class="btn sec oculto" id="bDescargar">Descargar los ficheros en su lugar</button>
+</div>
+
+<!-- Ajustes -->
+<div class="panel" id="pAjustes">
+  <h2>⚙ Ajustes <span class="esp"></span><button class="ib" data-cerrar>✕</button></h2>
+  <label>Nombre de este móvil</label><input id="aTerm" placeholder="Móvil profesional">
+  <label>Ámbito por defecto</label><select id="aAmb"><option value="trabajo">Trabajo</option><option value="personal">Personal</option></select>
+  <div class="fila"><div><label>Modo noche desde</label><input type="time" id="aDesde"></div><div><label>Hasta</label><input type="time" id="aHasta"></div></div>
+  <label>Transcribir la voz a texto</label><select id="aTrans"><option value="1">Sí</option><option value="0">No (solo guardar el audio)</option></select>
+  <label>Guardar la ubicación en cada nota</label><select id="aUbi"><option value="0">No</option><option value="1">Sí</option></select>
+  <button class="btn" id="bGuardarAjustes">Guardar ajustes</button>
+  <p style="margin-top:22px"><b>Consejos</b><br>
+  · Instala Chispa en la pantalla de inicio: menú ⋮ de Chrome → <i>Añadir a pantalla de inicio</i> (o <i>Instalar aplicación</i>).<br>
+  · Mantén pulsado el icono de Chispa: verás <b>Grabar voz</b> y <b>Ancla rápida</b>, ideales para el coche.<br>
+  · En el horario de noche la pantalla se pone negra, sin sonidos; al abrir Chispa ya se guarda un ancla con la hora. Si escribes algo, se sustituye por tu nota.<br>
+  · Todo queda guardado en el móvil hasta que lo envías, aunque no haya cobertura.</p>
+  <p id="version"></p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const VERSION = "0.2";
+const $ = s => document.querySelector(s);
+const pad = n => String(n).padStart(2, "0");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(t){ const el = $("#toast"); el.textContent = t; el.classList.add("ver"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("ver"), 2200); }
+function vibrar(ms = 60){ try { navigator.vibrate && navigator.vibrate(ms); } catch(e){} }
+function nuevoId(d){ return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}-${Math.random().toString(36).slice(2,6)}`; }
+const horaDe = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+/* ---------- Almacén local (IndexedDB) ---------- */
+const db = {
+  _p: null,
+  abrir(){ return this._p ||= new Promise((ok, ko) => { const r = indexedDB.open("chispa-movil", 1);
+    r.onupgradeneeded = () => { r.result.createObjectStore("notas", {keyPath: "id"}); r.result.createObjectStore("cfg"); };
+    r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); }); },
+  async tx(store, modo, fn){ const d = await this.abrir(); return new Promise((ok, ko) => { const t = d.transaction(store, modo); const r = fn(t.objectStore(store)); t.oncomplete = () => ok(r && r.result); t.onerror = () => ko(t.error); }); },
+  todas(){ return this.tx("notas", "readonly", s => s.getAll()); },
+  poner(n){ return this.tx("notas", "readwrite", s => s.put(n)); },
+  quitar(id){ return this.tx("notas", "readwrite", s => s.delete(id)); },
+  cfg(k){ return this.tx("cfg", "readonly", s => s.get(k)); },
+  setCfg(k, v){ return this.tx("cfg", "readwrite", s => s.put(v, k)); }
+};
+let ajustes = {terminal: "Móvil", ambito: "trabajo", desde: "23:00", hasta: "06:00", trans: true, ubi: false};
+
+/* ---------- Modo noche ---------- */
+const min = h => { const [a, b] = (h || "0:0").split(":").map(Number); return a*60 + b; };
+function esNoche(d = new Date()){ const a = min(ajustes.desde), b = min(ajustes.hasta), x = d.getHours()*60 + d.getMinutes(); return a <= b ? x >= a && x < b : x >= a || x < b; }
+function aplicarNoche(){ document.body.classList.toggle("noche", esNoche()); document.querySelector('meta[name=theme-color]').content = esNoche() ? "#000000" : "#1f2a44"; }
+
+/* ---------- Borrador actual ---------- */
+let borrador, tocado = false, anclaAbierta = null;
+function nuevoBorrador(){
+  borrador = {audio: null, transcripcion: "", fotos: [], trazo: false};
+  $("#texto").value = ""; limpiarLienzo(); pintarExtras();
+  setAmbito(ajustes.ambito);
+  tocado = false;
+  anclaAbierta = esNoche() ? new Date() : null;   // en modo noche, abrir ya cuenta como ancla
+}
+function vacio(){ return !$("#texto").value.trim() && !borrador.audio && !borrador.fotos.length && !borrador.trazo && !grabando(); }
+function setAmbito(a){ document.querySelectorAll("#ambito button").forEach(b => b.classList.toggle("on", b.dataset.a === a)); }
+const ambito = () => document.querySelector("#ambito button.on")?.dataset.a || "trabajo";
+document.querySelectorAll("#ambito button").forEach(b => b.onclick = () => { tocado = true; setAmbito(b.dataset.a); });
+
+function pintarExtras(){
+  const ex = $("#extras"); ex.innerHTML = "";
+  if (borrador.audio) ex.insertAdjacentHTML("beforeend", `<span class="chip">🎙️ Audio ${borrador.dur || ""}</span>`);
+  if (borrador.transcripcion) ex.insertAdjacentHTML("beforeend", `<span class="chip">📝 ${esc(borrador.transcripcion.slice(0, 40))}${borrador.transcripcion.length > 40 ? "…" : ""}</span>`);
+  for (const f of borrador.fotos){ const i = document.createElement("img"); i.src = URL.createObjectURL(f); ex.appendChild(i); }
+}
+
+/* ---------- Escritura con el dedo ---------- */
+const cv = $("#lienzo"), cx = cv.getContext("2d");
+function ajustarLienzo(){ const r = cv.getBoundingClientRect(), k = devicePixelRatio || 1;
+  if (cv.width !== Math.round(r.width*k)){ const copia = borrador?.trazo ? cx.getImageData(0, 0, cv.width, cv.height) : null; cv.width = Math.round(r.width*k); cv.height = Math.round(r.height*k); if (copia) cx.putImageData(copia, 0, 0); } }
+function limpiarLienzo(){ cx.clearRect(0, 0, cv.width, cv.height); if (borrador) borrador.trazo = false; $("#pista").classList.remove("oculto"); $("#bBorrarTrazo").classList.add("oculto"); }
+(() => {
+  let on = false;
+  const p = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+  cv.addEventListener("pointerdown", e => { on = true; tocado = true; cv.setPointerCapture(e.pointerId); cx.beginPath(); cx.moveTo(...p(e));
+    cx.lineWidth = 5 * (devicePixelRatio || 1); cx.lineCap = cx.lineJoin = "round"; cx.strokeStyle = getComputedStyle(document.body).getPropertyValue("--trazo"); });
+  cv.addEventListener("pointermove", e => { if (!on) return; cx.lineTo(...p(e)); cx.stroke();
+    if (!borrador.trazo){ borrador.trazo = true; $("#pista").classList.add("oculto"); $("#bBorrarTrazo").classList.remove("oculto"); } });
+  const fin = () => on = false; cv.addEventListener("pointerup", fin); cv.addEventListener("pointercancel", fin);
+})();
+$("#bBorrarTrazo").onclick = limpiarLienzo;
+async function trazoComoImagen(){
+  // fondo blanco y tinta oscura, para que se lea bien en el PC aunque se escribiera en modo noche
+  const c = document.createElement("canvas"); c.width = cv.width; c.height = cv.height; const g = c.getContext("2d");
+  g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
+  const tmp = document.createElement("canvas"); tmp.width = cv.width; tmp.height = cv.height; const t = tmp.getContext("2d");
+  t.drawImage(cv, 0, 0); t.globalCompositeOperation = "source-in"; t.fillStyle = "#1f2633"; t.fillRect(0, 0, tmp.width, tmp.height);
+  g.drawImage(tmp, 0, 0);
+  return new Promise(r => c.toBlob(r, "image/png"));
+}
+
+/* ---------- Teclado ---------- */
+$("#bTeclado").onclick = () => { tocado = true; const t = $("#texto"); t.classList.toggle("oculto"); if (!t.classList.contains("oculto")) t.focus(); requestAnimationFrame(ajustarLienzo); };
+$("#texto").addEventListener("input", () => tocado = true);
+
+/* ---------- Foto ---------- */
+$("#bFoto").onclick = () => { tocado = true; $("#inFoto").click(); };
+$("#inFoto").onchange = () => { for (const f of $("#inFoto").files) borrador.fotos.push(f); $("#inFoto").value = ""; pintarExtras(); };
+
+/* ---------- Voz ---------- */
+let rec = null, sr = null, trozos = [], t0 = 0;
+const grabando = () => !!rec;
+async function empezarVoz(){
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+    trozos = []; t0 = Date.now();
+    rec = new MediaRecorder(stream);
+    rec.ondataavailable = e => e.data.size && trozos.push(e.data);
+    rec.onstop = () => { stream.getTracks().forEach(t => t.stop());
+      const tipo = rec?.mimeType || trozos[0]?.type || "audio/webm";
+      borrador.audio = new Blob(trozos, {type: tipo}); const s = Math.round((Date.now() - t0)/1000); borrador.dur = `${Math.floor(s/60)}:${pad(s%60)}`;
+      rec = null; pintarExtras(); if (rec === null && pararVoz.alGuardar){ pararVoz.alGuardar(); pararVoz.alGuardar = null; } };
+    rec.start(1000);
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (ajustes.trans && SR){
+      try { sr = new SR(); sr.lang = "es-ES"; sr.continuous = true; sr.interimResults = false;
+        sr.onresult = e => { for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) borrador.transcripcion = (borrador.transcripcion + " " + e.results[i][0].transcript).trim(); pintarExtras(); };
+        sr.onerror = () => {}; sr.start(); } catch(e){ sr = null; }
+    }
+    $("#bMic").classList.add("grabando"); $("#bMic").textContent = "⏹"; vibrar(40);
+  } catch(e){ rec = null; toast("No puedo usar el micrófono. Revisa el permiso."); }
+}
+function pararVoz(){
+  try { sr && sr.stop(); } catch(e){} sr = null;
+  if (rec && rec.state !== "inactive") rec.stop();
+  $("#bMic").classList.remove("grabando"); $("#bMic").textContent = "🎤";
+}
+$("#bMic").onclick = () => { tocado = true; grabando() ? pararVoz() : empezarVoz(); };
+
+/* ---------- Guardar ---------- */
+async function ubicacion(){
+  if (!ajustes.ubi || !navigator.geolocation) return null;
+  return new Promise(ok => navigator.geolocation.getCurrentPosition(p => ok({lat: +p.coords.latitude.toFixed(5), lon: +p.coords.longitude.toFixed(5)}), () => ok(null), {timeout: 4000, maximumAge: 120000}));
+}
+async function guardar(){
+  if (grabando()){ await new Promise(r => { pararVoz.alGuardar = r; pararVoz(); }); }
+  if (vacio()){ toast("No hay nada que guardar"); return; }
+  const ahora = new Date(), id = nuevoId(ahora);
+  const n = { id, creada: ahora.toISOString(), origen: "movil", terminal: ajustes.terminal, nocturna: esNoche(ahora), ancla: false,
+    texto: $("#texto").value.trim(), transcripcion: borrador.transcripcion || "", ambito: ambito(),
+    audio: borrador.audio || null, fotos: [...borrador.fotos], trazo: borrador.trazo ? await trazoComoImagen() : null, ubicacion: null };
+  if (!n.texto && n.transcripcion) n.texto = n.transcripcion;
+  n.ubicacion = await ubicacion();
+  await db.poner(n);
+  vibrar(80); toast(n.nocturna ? "🌙 Guardada" : "✓ Guardada");
+  nuevoBorrador(); anclaAbierta = null; refrescarPendientes();
+}
+$("#bGuardar").onclick = guardar;
+
+async function guardarAncla(cuando = new Date()){
+  const n = { id: nuevoId(cuando), creada: cuando.toISOString(), origen: "movil", terminal: ajustes.terminal, nocturna: esNoche(cuando), ancla: true,
+    texto: "", transcripcion: "", ambito: ambito(), audio: null, fotos: [], trazo: null, ubicacion: await ubicacion() };
+  await db.poner(n); vibrar(80); refrescarPendientes(); return n;
+}
+$("#bAncla").onclick = async () => { await guardarAncla(); anclaAbierta = null; toast("⚓ Ancla guardada a las " + horaDe(new Date())); };
+
+// Modo noche: si abres Chispa y la cierras sin escribir nada, queda un ancla con la hora
+document.addEventListener("visibilitychange", async () => {
+  if (document.visibilityState === "hidden"){
+    if (anclaAbierta && !tocado && vacio()){ const a = anclaAbierta; anclaAbierta = null; await guardarAncla(a); }
+  } else {
+    aplicarNoche();
+    if (!tocado && vacio()) anclaAbierta = esNoche() ? new Date() : null;
+    refrescarPendientes();
+  }
+});
+
+/* ---------- Envío a OneDrive (menú compartir) ---------- */
+let pendientes = [];
+async function refrescarPendientes(){
+  const todas = await db.todas();
+  // las notas ya enviadas y confirmadas se borran; las enviadas sin confirmar se guardan 7 días por seguridad
+  for (const n of todas) if (n.enviada && Date.now() - n.enviada > 7*864e5) await db.quitar(n.id);
+  pendientes = (await db.todas()).filter(n => !n.enviada).sort((a, b) => a.creada.localeCompare(b.creada));
+  $("#nPend").textContent = pendientes.length;
+  $("#bEnviar").classList.toggle("oculto", !pendientes.length);
+}
+function extAudio(b){ const t = b.type || ""; return t.includes("mp4") || t.includes("aac") ? "m4a" : t.includes("ogg") ? "ogg" : "weba"; }
+function extFoto(f){ const t = f.type || ""; return t.includes("png") ? "png" : t.includes("webp") ? "webp" : "jpg"; }
+function ficheros(lista){
+  const out = [];
+  for (const n of lista){
+    const adj = {audio: null, fotos: []};
+    if (n.audio){ const nom = `${n.id}.${extAudio(n.audio)}`; out.push(new File([n.audio], nom, {type: n.audio.type || "audio/webm"})); adj.audio = nom; }
+    n.fotos.forEach((f, i) => { const nom = `${n.id}-${i+1}.${extFoto(f)}`; out.push(new File([f], nom, {type: f.type || "image/jpeg"})); adj.fotos.push(nom); });
+    if (n.trazo){ const nom = `${n.id}-trazo.png`; out.push(new File([n.trazo], nom, {type: "image/png"})); adj.fotos.push(nom); }
+    const meta = { formato: "chispa-1", id: n.id, creada: n.creada, origen: n.origen, terminal: n.terminal, nocturna: n.nocturna, ancla: n.ancla,
+      texto: n.texto, transcripcion: n.transcripcion, ambito: n.ambito, ubicacion: n.ubicacion, adjuntos: adj };
+    // la nota viaja como .txt (Android no deja compartir ficheros .json); se guarda la última para que llegue después de sus adjuntos
+    out.push(new File([JSON.stringify(meta, null, 2)], `${n.id}.chispa.txt`, {type: "text/plain"}));
+  }
+  return out;
+}
+$("#bEnviar").onclick = async () => {
+  await refrescarPendientes();
+  $("#listaPend").innerHTML = pendientes.map(n => { const d = new Date(n.creada);
+    const qué = n.ancla ? "⚓ Ancla" : esc((n.texto || "").slice(0, 60)) || [n.audio && "🎙️ audio", n.fotos.length && "📷 foto", n.trazo && "✍️ escrito a mano"].filter(Boolean).join(" · ");
+    return `<div class="item">${n.nocturna ? "🌙 " : ""}${qué}<br><small>${d.toLocaleDateString("es-ES", {day: "numeric", month: "short"})} ${horaDe(d)} · ${n.ambito === "personal" ? "Personal" : "Trabajo"}</small></div>`; }).join("");
+  $("#bConfirmar").classList.add("oculto");
+  $("#bDescargar").classList.toggle("oculto", !!navigator.canShare);
+  $("#pEnvio").classList.add("abierto");
+};
+$("#bCompartir").onclick = async () => {
+  const fs = ficheros(pendientes);
+  if (!fs.length) return;
+  if (navigator.canShare && navigator.canShare({files: fs})){
+    try { await navigator.share({files: fs, title: "Chispa"}); $("#bConfirmar").classList.remove("oculto"); }
+    catch(e){ if (e.name !== "AbortError"){ toast("No se pudo compartir: " + e.message); $("#bDescargar").classList.remove("oculto"); } }
+  } else { toast("Este navegador no deja compartir ficheros"); $("#bDescargar").classList.remove("oculto"); }
+};
+$("#bDescargar").onclick = () => {
+  ficheros(pendientes).forEach((f, i) => setTimeout(() => { const a = document.createElement("a"); a.href = URL.createObjectURL(f); a.download = f.name; a.click(); }, i * 400));
+  $("#bConfirmar").classList.remove("oculto");
+};
+$("#bConfirmar").onclick = async () => {
+  for (const n of pendientes){ n.enviada = Date.now(); n.audio = null; n.fotos = []; n.trazo = null; await db.poner(n); }
+  await refrescarPendientes(); $("#pEnvio").classList.remove("abierto"); toast("✓ Enviadas. Se colocarán al abrir Chispa en el PC");
+};
+
+/* ---------- Ajustes ---------- */
+async function cargarAjustes(){
+  Object.assign(ajustes, (await db.cfg("ajustes")) || {});
+  // ajustes que llegan desde el código QR del PC
+  const q = new URLSearchParams(location.search);
+  if (q.has("t") || q.has("a") || q.has("nd")){
+    if (q.get("t")) ajustes.terminal = q.get("t");
+    if (q.get("a")) ajustes.ambito = q.get("a") === "personal" ? "personal" : "trabajo";
+    if (q.get("nd")) ajustes.desde = q.get("nd");
+    if (q.get("nh")) ajustes.hasta = q.get("nh");
+    await db.setCfg("ajustes", ajustes);
+    toast(`📱 Configurado como «${ajustes.terminal}»`);
+  }
+  $("#term").textContent = ajustes.terminal;
+  return q.get("accion");
+}
+$("#bAjustes").onclick = () => {
+  tocado = true;
+  $("#aTerm").value = ajustes.terminal; $("#aAmb").value = ajustes.ambito; $("#aDesde").value = ajustes.desde; $("#aHasta").value = ajustes.hasta;
+  $("#aTrans").value = ajustes.trans ? "1" : "0"; $("#aUbi").value = ajustes.ubi ? "1" : "0";
+  $("#version").textContent = "Chispa Móvil · versión " + VERSION;
+  $("#pAjustes").classList.add("abierto");
+};
+$("#bGuardarAjustes").onclick = async () => {
+  Object.assign(ajustes, { terminal: $("#aTerm").value.trim() || "Móvil", ambito: $("#aAmb").value, desde: $("#aDesde").value || "23:00", hasta: $("#aHasta").value || "06:00",
+    trans: $("#aTrans").value === "1", ubi: $("#aUbi").value === "1" });
+  await db.setCfg("ajustes", ajustes);
+  if (ajustes.ubi && navigator.geolocation) navigator.geolocation.getCurrentPosition(() => {}, () => {});
+  $("#term").textContent = ajustes.terminal; aplicarNoche(); setAmbito(ajustes.ambito);
+  $("#pAjustes").classList.remove("abierto"); toast("Ajustes guardados");
+};
+document.querySelectorAll("[data-cerrar]").forEach(b => b.onclick = () => b.closest(".panel").classList.remove("abierto"));
+
+/* ---------- Arranque ---------- */
+(async () => {
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
+  const accion = await cargarAjustes();
+  history.replaceState(null, "", location.pathname);
+  aplicarNoche(); setInterval(aplicarNoche, 60000);
+  ajustarLienzo(); addEventListener("resize", ajustarLienzo);
+  nuevoBorrador(); refrescarPendientes();
+  if (accion === "ancla"){ anclaAbierta = null; await guardarAncla(); toast("⚓ Ancla guardada a las " + horaDe(new Date())); }
+  if (accion === "voz"){ tocado = true; empezarVoz(); }
+})();
+</script>
+</body>
+</html>
