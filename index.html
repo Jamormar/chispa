@@ -457,7 +457,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.4.4";
+const VERSION = "0.4.5";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -1529,7 +1529,7 @@ function pintarAjustes(){
   $("#vAjustes").innerHTML = cab("Ajustes")
     + `<div class="enlaces"><button class="enlace" data-ir="estad">${ic("grafico")}Estadísticas</button><button class="enlace" data-ir="ayuda">${ic("ayuda")}Ayuda</button></div>
     <div class="grupo"><h3>Este dispositivo</h3><div class="caja">
-      <div class="ajuste">${ic("movil")}<div class="lbl">Nombre<small>Aparece en cada nota</small></div><input type="text" id="kTerm" value="${esc(disp.terminal)}" placeholder="${esMovil() ? "Móvil profesional" : "PC oficina"}"></div>
+      <div class="ajuste">${ic("movil")}<div class="lbl">Nombre<small>Aparece en cada nota</small></div><input type="text" id="kTerm" value="${esc(disp.terminal)}" placeholder="Por ejemplo, ${esMovil() ? "Móvil profesional" : "PC oficina"}"></div>
       <div class="ajuste">${ic("maletin")}<div class="lbl">Ámbito por defecto</div><select id="kAmb"><option value="trabajo">Trabajo</option><option value="personal">Personal</option></select></div>
       <div class="ajuste">${ic("mic")}<div class="lbl">Transcribir la voz<small>El audio se guarda siempre</small></div><select id="kTrans"><option value="1">Sí</option><option value="0">No</option></select></div>
       <div class="ajuste">${ic("pin")}<div class="lbl">Guardar ubicación</div><select id="kUbi"><option value="0">No</option><option value="1">Sí</option></select></div>
@@ -1565,7 +1565,7 @@ function pintarAjustes(){
   document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => ver(b.dataset.ir));
   const lineas = id => [...new Set($(id).value.split("\n").map(s => s.trim()).filter(Boolean))];
   const guardarAjustes = () => {
-    Object.assign(disp, {terminal: $("#kTerm").value.trim(), ambito: $("#kAmb").value, trans: $("#kTrans").value === "1", ubi: $("#kUbi").value === "1", tema: $("#kTema").value});
+    Object.assign(disp, {terminal: $("#kTerm").value.trim() || (esMovil() ? "Móvil" : "PC"), ambito: $("#kAmb").value, trans: $("#kTrans").value === "1", ubi: $("#kUbi").value === "1", tema: $("#kTema").value});
     lsSet("chispa.disp", disp);
     if (disp.ubi && navigator.geolocation) navigator.geolocation.getCurrentPosition(() => {}, () => {});
     Object.assign(config, {nocheDesde: $("#kDesde").value || "23:00", nocheHasta: $("#kHasta").value || "06:00", correoTrabajo: $("#kCT").value.trim(), correoPersonal: $("#kCP").value.trim(),
@@ -1614,7 +1614,7 @@ function pintarAyuda(){
   <h3>Hora y avisos</h3><p>Si escribes «a las 5» o «a las 17:30», Chispa pone la hora. Mientras Chispa esté abierta o en segundo plano, te avisa a esa hora.</p>
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
-  <h3>Novedades</h3><p><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
@@ -1645,7 +1645,7 @@ function pintarAyuda(){
   ver(esMovil() ? "anotar" : "hoy");
   addEventListener("resize", () => { prepararTeclado(); ajustarLienzo(); aplicarTema(); pintarEstado(); });
   nuevoBorrador(); ajustarLienzo();
-  if (!disp.terminal) setTimeout(() => toast("Ponle nombre a este dispositivo en Ajustes", "movil", 4000), 900);
+  if (!disp.terminal){ disp.terminal = esMovil() ? "Móvil" : "PC"; lsSet("chispa.disp", disp); }   // nombre por defecto, cambiable en Ajustes
   if (accion === "ancla"){ anclaAbierta = null; await guardarAncla(new Date(), true); }
   if (accion === "voz"){ tocado = true; empezarVoz(); }
   sincronizar(true);
