@@ -561,7 +561,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.7";
+const VERSION = "0.7.1";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -1608,7 +1608,9 @@ async function buscarVersionApp(forzar = false){
   } catch(e){}
 }
 function actualizarApp(){
-  nativo("ChispaNativo")?.abrirUrl({url: DESCARGA}).catch(() => {});
+  // las apps antiguas no saben abrir enlaces: entonces se navega al enlace y Android lo abre en el navegador
+  const nat = nativo("ChispaNativo");
+  Promise.resolve(nat?.abrirUrl ? nat.abrirUrl({url: DESCARGA}) : Promise.reject()).catch(() => { location.href = DESCARGA; });
   toast("Se está descargando. Ábrela al terminar e instálala encima", "subir", 6000);
 }
 // Ajustes del teléfono: aviso al colgar, modo coche y versión de la app
