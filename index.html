@@ -218,6 +218,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .hinfo{display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin:2px 2px 0}
 .hinfo span,.hinfo a{display:inline-flex;align-items:center;gap:5px;color:inherit;text-decoration:none}
 .hinfo svg{width:15px;height:15px}
+#eTexto.corto{min-height:26px}
 #eTexto{width:100%;border:0;outline:0;resize:none;background:transparent;font-size:17px;line-height:1.5;padding:0;min-height:90px;display:block}
 .transc{border-left:3px solid var(--spark);padding:4px 0 4px 12px;color:var(--muted);font-size:14.5px;margin:6px 0 4px}
 .galeria{display:flex;gap:10px;overflow-x:auto;padding:12px 2px 4px}
@@ -297,6 +298,11 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .eitem.on textarea{text-decoration:line-through;color:var(--faint)}
 .eitem{align-items:flex-start} .eitem .ck{margin-top:9px} .eitem .ibtn{margin-top:4px} .eitem.nuevo{align-items:center}
 .eitem .ibtn{width:34px;height:34px;opacity:.6}
+.mover{width:26px;height:40px;display:grid;place-items:center;color:var(--faint);cursor:grab;touch-action:none;flex:none;margin:0 -4px 0 -2px}
+.mover svg{width:18px;height:18px}
+.mover:hover{color:var(--muted)}
+.eitem.arrastrando{position:relative;z-index:5;background:var(--surface);box-shadow:0 10px 26px -8px rgba(22,33,58,.35);border-radius:12px;cursor:grabbing}
+.eitem.arrastrando .mover{cursor:grabbing;color:var(--work)}
 .hechos-tit{display:inline-flex;align-items:center;gap:7px;margin:12px 2px 8px;color:var(--muted);font-weight:600;font-size:14px;padding:6px 8px;border-radius:10px}
 .hechos-tit:hover{background:var(--raise)} .hechos-tit svg{width:16px;height:16px;color:var(--home)}
 .elista.hechos{background:var(--bg)}
@@ -488,7 +494,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
   <div class="ecuerpo">
     <div class="hinfo" id="eInfo"></div>
     <section class="esec">
-      <h4>Texto<button class="enl" id="eAddLista"></button></h4>
+      <h4><span id="eTitTexto">Texto</span><button class="enl" id="eAddLista"></button></h4>
       <div class="efield"><textarea id="eTexto" rows="3" placeholder="Escribe la nota"></textarea></div>
       <div class="transc oculto" id="eTransc"></div>
       <div id="eTransBtn"></div>
@@ -535,7 +541,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.4.8";
+const VERSION = "0.4.9";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -578,6 +584,8 @@ const ICONOS = {
   tarea: '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 12.2l2.5 2.5 4.5-5"/>',
   mas: '<path d="M12 5v14M5 12h14"/>',
   teclado: '<rect x="2.5" y="6" width="19" height="12.5" rx="2.5"/><path d="M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M6.5 13.5h.01M17.5 13.5h.01M9 14.5h6"/>',
+  agarre: '<circle cx="9" cy="6" r="1.4" fill="currentColor"/><circle cx="15" cy="6" r="1.4" fill="currentColor"/><circle cx="9" cy="12" r="1.4" fill="currentColor"/><circle cx="15" cy="12" r="1.4" fill="currentColor"/><circle cx="9" cy="18" r="1.4" fill="currentColor"/><circle cx="15" cy="18" r="1.4" fill="currentColor"/>',
+  subir: '<path d="M12 19V5M6 11l6-6 6 6"/>',
   deshacer: '<path d="M4 9.5h10.5a5 5 0 0 1 0 10H11M4 9.5l4-4M4 9.5l4 4"/>'
 };
 const ic = (n, cls = "") => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONOS[n] || ""}</svg>`;
@@ -1250,7 +1258,7 @@ function pintarListaEdicion(foco = false){
   const h = eItems.filter(i => i.hecho).length;
   $("#eProg").textContent = eItems.length ? `${h} de ${eItems.length}` : "";
   $("#eBarra").style.width = eItems.length ? (h / eItems.length * 100) + "%" : "0";
-  const filaItem = (it, i) => `<div class="eitem ${it.hecho ? "on" : ""}"><button class="ck" data-ei="${i}" aria-label="${it.hecho ? "Volver a pendiente" : "Marcar hecho"}">${ic("check")}</button><textarea rows="1" data-eit="${i}" aria-label="Punto ${i + 1}">${esc(it.texto)}</textarea><button class="ibtn" data-eix="${i}" aria-label="Quitar punto">${ic("x")}</button></div>`;
+  const filaItem = (it, i) => `<div class="eitem ${it.hecho ? "on" : ""}">${it.hecho ? "" : `<span class="mover" title="Arrastra para cambiar el orden" aria-hidden="true">${ic("agarre")}</span>`}<button class="ck" data-ei="${i}" aria-label="${it.hecho ? "Volver a pendiente" : "Marcar hecho"}">${ic("check")}</button><textarea rows="1" data-eit="${i}" aria-label="Punto ${i + 1}">${esc(it.texto)}</textarea><button class="ibtn" data-eix="${i}" aria-label="Quitar punto">${ic("x")}</button></div>`;
   const pend = [], hechos = []; eItems.forEach((it, i) => (it.hecho ? hechos : pend).push(filaItem(it, i)));
   $("#eLista").innerHTML = (pend.length ? pend.join("") : `<div class="todo-hecho">${ic("check")}Todo hecho</div>`)
     + `<div class="eitem nuevo">${ic("mas")}<input id="eNuevoItem" placeholder="Añadir un punto y pulsar Intro" enterkeyhint="enter"></div>`;
@@ -1258,6 +1266,42 @@ function pintarListaEdicion(foco = false){
   requestAnimationFrame(() => document.querySelectorAll("#eLista textarea,#eHechos textarea").forEach(crecer));
   if (foco) setTimeout(() => $("#eNuevoItem")?.focus(), 50);
 }
+// Ordenar los puntos pendientes arrastrando el asa (dedo o ratón)
+async function guardarOrden(nuevo){
+  eItems = [...nuevo, ...eItems.filter(i => i.hecho)]; pintarListaEdicion();
+  editando.texto = unirLista($("#eTexto").value, eItems); await guardarNotaLocal(editando);
+}
+(() => {
+  let drag = null;
+  const lista = $("#eLista");
+  lista.addEventListener("pointerdown", e => {
+    const h = e.target.closest(".mover"); if (!h) return;
+    e.preventDefault(); const row = h.closest(".eitem");
+    drag = {row, y0: e.clientY, movido: false}; row.classList.add("arrastrando"); try { h.setPointerCapture(e.pointerId); } catch(err){} vibrar(20);
+  });
+  lista.addEventListener("pointermove", e => {
+    if (!drag) return;
+    const r = drag.row, filas = [...lista.querySelectorAll(".eitem:not(.nuevo):not(.on)")], i = filas.indexOf(r), prev = filas[i - 1], next = filas[i + 1];
+    if (next && e.clientY > next.getBoundingClientRect().top + next.offsetHeight / 2){ next.after(r); drag.y0 += next.offsetHeight; drag.movido = true; }
+    else if (prev && e.clientY < prev.getBoundingClientRect().top + prev.offsetHeight / 2){ prev.before(r); drag.y0 -= prev.offsetHeight; drag.movido = true; }
+    r.style.transform = `translateY(${e.clientY - drag.y0}px)`;
+  });
+  const soltar = async () => {
+    if (!drag) return; const {row, movido} = drag; drag = null;
+    row.classList.remove("arrastrando"); row.style.transform = "";
+    if (!movido) return;
+    const orden = [...lista.querySelectorAll(".eitem:not(.nuevo):not(.on) [data-ei]")].map(b => eItems[Number(b.dataset.ei)]);
+    await guardarOrden(orden); toast("Orden guardado", "check", 1200);
+  };
+  lista.addEventListener("pointerup", soltar); lista.addEventListener("pointercancel", soltar);
+  // con el teclado: Alt + flecha arriba/abajo mueve el punto
+  lista.addEventListener("keydown", async e => {
+    const i = e.target.dataset?.eit; if (i === undefined || !e.altKey || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
+    e.preventDefault(); const pend = eItems.filter(x => !x.hecho), it = eItems[Number(i)], k = pend.indexOf(it), d = e.key === "ArrowUp" ? -1 : 1;
+    if (k < 0 || !pend[k + d]) return; [pend[k], pend[k + d]] = [pend[k + d], pend[k]];
+    await guardarOrden(pend); lista.querySelector(`[data-eit="${eItems.indexOf(it)}"]`)?.focus();
+  });
+})();
 function crecer(t){ t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
 const clicLista = async e => {
   const ck = e.target.closest("[data-ei]"), x = e.target.closest("[data-eix]");
@@ -1304,6 +1348,8 @@ function abrirEdicion(n){
   eAdj = {audio: n.audio || null, fotos: [...(n.fotos || [])], nuevas: [], quitar: []};
   const pl = partirLista(n.texto); eItems = ordenarItems(pl.items.map(i => ({...i}))); verHechos = false;
   $("#eTexto").value = pl.intro; pintarListaEdicion();
+  const conLista = eItems.length > 0; $("#eTitTexto").textContent = conLista ? "Título" : "Texto";
+  $("#eTexto").placeholder = conLista ? "Título de la lista (opcional)" : "Escribe la nota"; $("#eTexto").classList.toggle("corto", conLista && !pl.intro);
   $("#eCat").value = n.para?.categoria || ""; $("#eNombre").value = n.para?.nombre || ""; $("#eFecha").value = n.fecha || ""; $("#eHora").value = n.hora || "";
   $("#eTransBtn").innerHTML = n.audio && !n.transcripcion && voz() ? `<button class="btn sec" id="eTranscribir" style="margin-top:10px">${ic("mic")}${n._transcribir ? "Transcribiendo…" : "Transcribir el audio"}</button>` : "";
   if ($("#eTranscribir")) $("#eTranscribir").onclick = async () => { $("#eTranscribir").textContent = "Transcribiendo…"; const ok = await transcribirNota(n, true); if (ok){ cerrarHojas(); abrirEdicion(n); } else $("#eTranscribir").textContent = "No se pudo. Reintentar"; };
@@ -1318,10 +1364,10 @@ function abrirEdicion(n){
   const c = config.contactos || {}, usados = notas.map(x => x.para?.nombre).filter(Boolean);
   $("#dlNombres").innerHTML = [...new Set([...(c.cliente||[]), ...(c.proveedor||[]), ...(c.companero||[]), ...usados])].sort().map(x => `<option value="${esc(x)}">`).join("");
   abrirHoja("#hEditar"); $("#hEditar").scrollTop = 0;
-  requestAnimationFrame(() => { const t = $("#eTexto"); t.style.height = "auto"; t.style.height = Math.max(80, t.scrollHeight) + "px"; });
+  requestAnimationFrame(() => { const t = $("#eTexto"); t.style.height = "auto"; t.style.height = Math.max(t.classList.contains("corto") ? 26 : 80, t.scrollHeight) + "px"; });
 }
 $("#eTexto").addEventListener("keydown", continuarLista);
-$("#eTexto").addEventListener("input", function(){ this.style.height = "auto"; this.style.height = Math.max(80, this.scrollHeight) + "px"; });
+$("#eTexto").addEventListener("input", function(){ this.style.height = "auto"; this.style.height = Math.max(this.classList.contains("corto") ? 26 : 80, this.scrollHeight) + "px"; });
 function pausarAudio(){ try { audioEl && audioEl.pause(); } catch(e){} }
 function pintarAdjEdicion(){
   const au = $("#eAudio"); au.innerHTML = ""; pausarAudio(); audioEl = null;
@@ -1782,8 +1828,8 @@ function pintarAyuda(){
   <h3>Hora y avisos</h3><p>Si escribes «a las 5» o «a las 17:30», Chispa pone la hora. Mientras Chispa esté abierta o en segundo plano, te avisa a esa hora.</p>
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
-  <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
-  <h3>Novedades</h3><p><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
+  <h3>Novedades</h3><p><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
