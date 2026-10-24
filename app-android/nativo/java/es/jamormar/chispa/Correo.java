@@ -368,6 +368,10 @@ final class Correo {
         String cuerpo;
     }
 
+    private static Respuesta pedir(String metodo, String url, String acceso, String tipo, byte[] cuerpo) throws Exception {
+        return pedir(metodo, url, acceso, tipo, cuerpo, null);
+    }
+
     /** Petición HTTP sencilla. Lanza un error si la respuesta no es correcta, salvo los códigos permitidos. */
     private static Respuesta pedir(String metodo, String url, String acceso, String tipo, byte[] cuerpo, int[] permitidos) throws Exception {
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();

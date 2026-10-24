@@ -69,7 +69,12 @@ jobs:
         run: |
           if [ -z "$PRUEBA" ]; then export CHISPA_KS_PASS="$KS_SECRETO"; fi
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          set -o pipefail
+          if ! ./gradlew assembleRelease --no-daemon 2>&1 | tee ../compilacion.log; then
+            # los errores de Java aparecen como avisos en la ejecución
+            grep -E "error:|e: |What went wrong" -A3 ../compilacion.log | head -60 | while IFS= read -r l; do echo "::error::$l"; done
+            exit 1
+          fi
           cp app/build/outputs/apk/release/app-release.apk ../Chispa.apk
 
       - name: Guardar el APK como artefacto
