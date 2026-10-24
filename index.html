@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1f2a44">
 <title>Chispa</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -10,369 +10,939 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{
-  --bg:#f5f6f8; --surface:#fff; --surface2:#eceff3; --text:#2b3240; --muted:#6b7280; --border:#e0e4ea;
-  --accent:#3d5a80; --spark:#e9b949; --danger:#b5544f; --trazo:#2b3240;
+  --bg:#f5f6f8; --surface:#fff; --surface2:#eef1f5; --text:#2b3240; --muted:#6b7280; --border:#e2e6ec;
+  --accent:#3d5a80; --accent-soft:#e6edf5; --spark:#e9b949; --spark-soft:#fbf3dc; --warn:#c0763b; --danger:#b5544f; --ok:#4f8a6b;
+  --trazo:#2b3240; --shadow:0 1px 3px rgba(20,30,50,.06),0 4px 14px rgba(20,30,50,.05); --line:rgba(61,90,128,.07);
 }
-body.noche{
-  --bg:#000; --surface:#0a0a0a; --surface2:#111; --text:#6d6d6d; --muted:#4a4a4a; --border:#1a1a1a;
-  --accent:#3a3a3a; --spark:#5a4a1e; --danger:#5a2a28; --trazo:#5c5c5c;
+:root[data-theme="dark"]{
+  --bg:#11151d; --surface:#181d27; --surface2:#212736; --text:#e4e7ec; --muted:#9aa3b2; --border:#2a3140;
+  --accent:#8fb0d8; --accent-soft:#223047; --spark:#e9c46a; --spark-soft:#3a3322; --warn:#e0a46e; --danger:#e08a85; --ok:#7fbf9b;
+  --trazo:#e4e7ec; --shadow:0 1px 3px rgba(0,0,0,.3); --line:rgba(143,176,216,.06);
+}
+:root[data-theme="noche"]{
+  --bg:#000; --surface:#070707; --surface2:#111; --text:#707070; --muted:#4c4c4c; --border:#1a1a1a;
+  --accent:#3b3b3b; --accent-soft:#151515; --spark:#5a4a1e; --spark-soft:#17140b; --warn:#7a5a3a; --danger:#5a2a28; --ok:#3c5a48;
+  --trazo:#606060; --shadow:none; --line:rgba(255,255,255,.015);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;overscroll-behavior:none}
-body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);
-  display:flex;flex-direction:column;height:100dvh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);user-select:none}
-header{display:flex;align-items:center;gap:10px;padding:10px 14px}
-header .nom{font-weight:600;font-size:18px}
-header .term{font-size:12px;color:var(--muted)}
+html,body{margin:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.45;min-height:100dvh}
+#fondo{position:fixed;inset:0;z-index:0;pointer-events:none}
+#fondo svg{width:100%;height:100%}
+.oculto{display:none!important}
+button{font:inherit;color:inherit}
+input,select,textarea{font:inherit;font-size:16px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:9px 11px;width:100%}
+textarea{resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+label{font-size:13px;color:var(--muted);display:block;margin:10px 0 4px}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:12px;padding:10px 16px;cursor:pointer}
+:root[data-theme="dark"] .btn{color:#11151d}
+.btn.sec{background:var(--surface2);color:var(--text)}
+.btn.chispa{background:var(--spark);color:#2b2410}
+.fila{display:flex;gap:10px;flex-wrap:wrap}.fila>*{flex:1;min-width:140px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);margin-bottom:10px}
+.vacio{color:var(--muted);font-size:14px;padding:6px 2px}
+.chip{background:var(--surface2);border-radius:20px;padding:2px 9px;white-space:nowrap;font-size:12px}
+.chip.trabajo{background:var(--accent-soft);color:var(--accent)}
+.chip.personal{background:var(--spark-soft);color:#9a7417}
+:root[data-theme="dark"] .chip.personal{color:var(--spark)}
+.chip.vence{background:transparent;border:1px solid var(--border)}
+.chip.vencida{border-color:var(--warn);color:var(--warn)}
+h2{font-size:17px;font-weight:600;margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+h2 .n{font-size:12px;font-weight:500;color:var(--muted);background:var(--surface2);border-radius:20px;padding:1px 8px}
+
+/* Entrada */
+#login{position:relative;z-index:1;max-width:460px;margin:0 auto;padding:12vh 20px;text-align:center}
+#login p{color:var(--muted)}
+
+/* Estructura */
+#app{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100dvh}
+header{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 16px 8px;max-width:1100px;width:100%;margin:0 auto}
+header .nom{font-weight:600;font-size:19px;line-height:1.1}
+header .sub{font-size:12px;color:var(--muted)}
 header .esp{flex:1}
-.ib{background:var(--surface2);color:var(--text);border:0;border-radius:12px;padding:8px 12px;font:inherit;font-size:15px}
-.ib.envio{background:var(--spark);color:#2b2410;font-weight:600}
-body.noche .ib.envio{color:#000}
-.seg{display:flex;margin:0 14px 8px;background:var(--surface2);border-radius:12px;padding:3px}
-.seg button{flex:1;border:0;background:none;color:var(--muted);padding:7px;border-radius:9px;font:inherit;font-size:14px}
-.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
-textarea{margin:0 14px 8px;border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--text);
-  font:inherit;font-size:17px;padding:10px 12px;min-height:90px;resize:none;user-select:text}
-.lienzo{flex:1;margin:0 14px;position:relative;min-height:120px}
-canvas{position:absolute;inset:0;width:100%;height:100%;background:var(--surface);border:1px dashed var(--border);border-radius:18px;touch-action:none}
-.pista{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);
-  font-size:15px;pointer-events:none;padding:20px;line-height:1.5}
-.borrar{position:absolute;top:8px;right:8px;z-index:2}
-.extras{display:flex;gap:8px;align-items:center;margin:8px 14px 0;min-height:0;flex-wrap:wrap}
+#estado{font-size:12px;color:var(--muted);background:var(--surface2);border:0;border-radius:20px;padding:5px 10px;cursor:pointer}
+#estado.pend{color:var(--warn)} #estado.err{color:var(--danger)}
+#navPC{display:flex;gap:2px}
+#navPC button,#tabs button{background:none;border:0;color:var(--muted);cursor:pointer}
+#navPC button{padding:8px 11px;border-radius:10px}
+#navPC button.activo{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+main{flex:1;width:100%;max-width:1100px;margin:0 auto;padding:0 16px 24px;display:flex;flex-direction:column}
+main>section{flex:1;display:flex;flex-direction:column}
+#tabs{display:none}
+@media (max-width:760px){
+  #navPC{display:none}
+  #tabs{display:flex;position:sticky;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--border);padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
+  #tabs button{flex:1;padding:6px 0;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:1px}
+  #tabs button b{font-size:20px;font-weight:400;line-height:1.2}
+  #tabs button.activo{color:var(--accent)}
+  :root[data-theme="noche"] #tabs button.activo{color:#888}
+  main{padding:0 12px 12px}
+  .buscador select{flex:1 1 calc(50% - 4px);min-width:0;padding:7px 9px;font-size:14px}
+}
+
+/* Anotar */
+#vAnotar{min-height:calc(100dvh - 150px)}
+.seg{display:flex;background:var(--surface2);border-radius:12px;padding:3px}
+.seg button{flex:1;border:0;background:none;padding:7px;border-radius:9px;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+#cTexto{margin-top:8px;min-height:84px;font-size:17px}
+.lienzo{flex:1;position:relative;min-height:180px;margin-top:8px}
+@media (min-width:761px){ .lienzo{flex:none;height:300px} }
+#lienzo{position:absolute;inset:0;width:100%;height:100%;background:var(--surface);border:1px dashed var(--border);border-radius:18px;touch-action:none}
+.pista{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);pointer-events:none;padding:20px}
+.borrarT{position:absolute;top:8px;right:8px}
+.extras{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
 .extras img{width:48px;height:48px;object-fit:cover;border-radius:8px}
-.chip{background:var(--surface2);border-radius:20px;padding:5px 10px;font-size:13px}
-.barra{display:flex;align-items:center;justify-content:space-around;padding:12px 10px 14px}
-.barra button{border:0;background:var(--surface2);color:var(--text);width:54px;height:54px;border-radius:50%;font-size:22px}
-.barra .mic{width:76px;height:76px;font-size:32px;background:var(--accent);color:#fff}
-body.noche .barra .mic{color:#888}
+.barra{display:flex;align-items:center;justify-content:space-around;padding:12px 0 4px}
+.barra button{border:0;background:var(--surface2);width:54px;height:54px;border-radius:50%;font-size:22px;cursor:pointer}
+.barra .mic{width:74px;height:74px;font-size:30px;background:var(--accent);color:#fff}
 .barra .ok{background:var(--spark);color:#2b2410}
-body.noche .barra .ok{color:#000}
+:root[data-theme="noche"] .barra .mic{color:#777} :root[data-theme="noche"] .barra .ok{color:#000}
 .grabando{background:var(--danger)!important;animation:lat 1.2s infinite}
 @keyframes lat{50%{opacity:.6}}
-.toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:14px;
-  font-size:15px;opacity:0;transition:.25s;pointer-events:none;z-index:30;max-width:90vw;text-align:center}
+
+/* Notas */
+.nota{display:flex;gap:10px}
+.nota .ico{font-size:18px;width:24px;flex:none;text-align:center}
+.nota .cuerpo{flex:1;min-width:0}
+.nota .texto{white-space:pre-wrap;word-wrap:break-word}
+.nota.hecha .texto{text-decoration:line-through;color:var(--muted)}
+.nota .transc{font-size:13px;color:var(--muted);margin-top:3px;font-style:italic}
+.meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;font-size:12px;color:var(--muted);align-items:center}
+.acciones{display:flex;flex-direction:column;gap:2px;flex:none}
+@media (min-width:761px){ .acciones{flex-direction:row;align-items:flex-start} }
+.ib{background:none;border:0;cursor:pointer;color:var(--muted);font-size:16px;padding:6px 8px;border-radius:8px}
+.ib:hover{background:var(--surface2);color:var(--text)}
+.fotos{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.fotos img{width:78px;height:78px;object-fit:cover;border-radius:10px;border:1px solid var(--border);cursor:zoom-in;background:var(--surface2)}
+.anclaR{display:flex;gap:8px;margin-top:8px}
+.anclaR input{padding:7px 10px}
+.buscador{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.buscador input{flex:3;min-width:200px}.buscador select{flex:1;min-width:120px}
+.subiendo{font-size:11px;color:var(--warn)}
+
+/* Estadísticas */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px}
+.kpi b{display:block;font-size:26px;font-weight:600}.kpi span{font-size:13px;color:var(--muted)}
+.bar{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:14px}
+.bar .et{width:150px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .pi{flex:1;background:var(--surface2);border-radius:6px;height:12px;overflow:hidden}
+.bar .pi div{height:100%;background:var(--accent);border-radius:6px}
+.bar .v{width:34px;text-align:right;color:var(--muted)}
+
+/* Modales */
+.modal{position:fixed;inset:0;background:rgba(10,15,25,.5);z-index:20;display:none;align-items:flex-start;justify-content:center;padding:4vh 10px;overflow:auto}
+.modal.abierto{display:flex}
+.modal .caja{background:var(--surface);border-radius:18px;padding:18px;width:100%;max-width:600px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal h3{margin:0 0 10px;font-size:18px;font-weight:600}
+.pie{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+#visor{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:30}
+#visor img{max-width:96vw;max-height:92vh;border-radius:8px}
+.toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:14px;z-index:40;font-size:14px;opacity:0;transition:.25s;pointer-events:none;max-width:92vw;text-align:center}
 .toast.ver{opacity:1}
-.panel{position:fixed;inset:0;background:var(--bg);z-index:20;display:none;flex-direction:column;overflow:auto;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}
-.panel.abierto{display:flex}
-.panel h2{font-size:19px;margin:6px 0 14px;display:flex;align-items:center;gap:10px}
-.panel h2 .esp{flex:1}
-.panel label{font-size:13px;color:var(--muted);display:block;margin:12px 0 4px}
-.panel input,.panel select{width:100%;font:inherit;font-size:16px;padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text)}
-.panel .fila{display:flex;gap:10px}.panel .fila>*{flex:1}
-.panel p{font-size:14px;color:var(--muted);line-height:1.5}
-.btn{border:0;border-radius:14px;padding:14px;font:inherit;font-size:16px;background:var(--accent);color:#fff;width:100%;margin-top:14px}
-.btn.sec{background:var(--surface2);color:var(--text)}
-.item{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px 12px;margin-bottom:8px;font-size:14px}
-.item small{color:var(--muted)}
-.oculto{display:none!important}
+.ayuda h3{font-size:15px;margin:16px 0 4px}.ayuda p,.ayuda li{font-size:14px}
 </style>
 </head>
 <body>
-<header>
-  <img src="icon-192.png" width="34" height="34" style="border-radius:9px" alt="">
-  <div><div class="nom">Chispa</div><div class="term" id="term"></div></div>
-  <div class="esp"></div>
-  <button class="ib envio oculto" id="bEnviar">📤 <span id="nPend">0</span></button>
-  <button class="ib" id="bAjustes" aria-label="Ajustes">⚙</button>
-</header>
+<div id="fondo"></div>
 
-<div class="seg" id="ambito"><button data-a="trabajo">Trabajo</button><button data-a="personal">Personal</button></div>
-<textarea id="texto" class="oculto" placeholder="Escribe aquí…"></textarea>
+<!-- Entrada con la cuenta de Microsoft -->
+<section id="login" class="oculto">
+  <img src="icon-192.png" width="88" height="88" style="border-radius:22px" alt="">
+  <h1 style="font-weight:600;margin:14px 0 4px">Chispa</h1>
+  <p>Que no se te escape nada.</p>
+  <p id="loginMsg">Entra con tu cuenta personal de Microsoft. Tus notas se guardan en tu OneDrive, en la carpeta <b>Aplicaciones › Chispa</b>.</p>
+  <button class="btn" id="bLogin" style="padding:13px 22px;font-size:16px">Entrar con Microsoft</button>
+</section>
 
-<div class="lienzo">
-  <canvas id="lienzo"></canvas>
-  <div class="pista" id="pista">Escribe aquí con el dedo<br><small>o usa los botones de abajo</small></div>
-  <button class="ib borrar oculto" id="bBorrarTrazo">Borrar</button>
+<div id="app" class="oculto">
+  <header>
+    <img src="icon-192.png" width="34" height="34" style="border-radius:9px" alt="">
+    <div><div class="nom">Chispa</div><div class="sub" id="subTerm"></div></div>
+    <div class="esp"></div>
+    <nav id="navPC">
+      <button data-v="anotar">Anotar</button><button data-v="hoy">Para hoy</button><button data-v="notas">Notas</button>
+      <button data-v="estad">Estadísticas</button><button data-v="ajustes">Ajustes</button><button data-v="ayuda">Ayuda</button>
+    </nav>
+    <button id="estado" title="Sincronizar ahora">☁</button>
+  </header>
+
+  <main>
+    <section id="vAnotar">
+      <div class="seg" id="cAmbito"><button data-a="trabajo">Trabajo</button><button data-a="personal">Personal</button></div>
+      <textarea id="cTexto" class="oculto" placeholder="Escribe o dicta lo que no quieres olvidar…"></textarea>
+      <div class="lienzo">
+        <canvas id="lienzo"></canvas>
+        <div class="pista" id="pista"><div>Escribe aquí con el dedo</div><small>o usa los botones de abajo</small></div>
+        <button class="btn sec borrarT oculto" id="bBorrarTrazo">Borrar</button>
+      </div>
+      <div class="extras" id="extras"></div>
+      <div class="barra">
+        <button id="bAncla" title="Ancla: guarda la hora">⚓</button>
+        <button id="bFoto" title="Foto">📷</button>
+        <button class="mic" id="bMic" title="Grabar voz">🎤</button>
+        <button id="bTeclado" title="Teclado">⌨</button>
+        <button class="ok" id="bGuardar" title="Guardar">✓</button>
+      </div>
+      <input type="file" id="inFoto" accept="image/*" capture="environment" multiple class="oculto">
+    </section>
+
+    <section id="vHoy" class="oculto"></section>
+
+    <section id="vNotas" class="oculto">
+      <div class="buscador">
+        <input id="q" placeholder="Buscar en notas, transcripciones, nombres…">
+        <select id="fAmbito"><option value="">Trabajo y personal</option><option value="trabajo">Trabajo</option><option value="personal">Personal</option></select>
+        <select id="fTipo"><option value="">Todos los tipos</option><option value="tarea">Tareas</option><option value="idea">Ideas</option><option value="recordatorio">Recordatorios</option><option value="nota">Notas</option></select>
+        <select id="fCat"><option value="">Para cualquiera</option><option value="cliente">Clientes</option><option value="proveedor">Proveedores</option><option value="companero">Compañeros</option><option value="personal">Personal</option></select>
+        <select id="fEstado"><option value="pend">Pendientes</option><option value="">Pendientes y hechas</option><option value="hecha">Hechas</option></select>
+      </div>
+      <div id="listaNotas"></div>
+    </section>
+
+    <section id="vEstad" class="oculto"></section>
+    <section id="vAjustes" class="oculto"></section>
+    <section id="vAyuda" class="oculto ayuda"></section>
+  </main>
+
+  <nav id="tabs">
+    <button data-v="anotar"><b>✍</b>Anotar</button>
+    <button data-v="hoy"><b>📅</b>Hoy</button>
+    <button data-v="notas"><b>🗂</b>Notas</button>
+    <button data-v="ajustes"><b>⚙</b>Más</button>
+  </nav>
 </div>
-<div class="extras" id="extras"></div>
 
-<div class="barra">
-  <button id="bAncla" aria-label="Ancla">⚓</button>
-  <button id="bFoto" aria-label="Foto">📷</button>
-  <button class="mic" id="bMic" aria-label="Grabar voz">🎤</button>
-  <button id="bTeclado" aria-label="Teclado">⌨</button>
-  <button class="ok" id="bGuardar" aria-label="Guardar">✓</button>
-</div>
-<input type="file" id="inFoto" accept="image/*" capture="environment" class="oculto">
-
-<!-- Envío -->
-<div class="panel" id="pEnvio">
-  <h2>📤 Enviar a Chispa <span class="esp"></span><button class="ib" data-cerrar>✕</button></h2>
-  <p>Al pulsar <b>Enviar</b> se abre el menú de compartir de Android. Elige <b>OneDrive</b> y la carpeta <b>Chispa › Entrada</b>. Al abrir Chispa en el PC, las notas se colocarán solas.</p>
-  <div id="listaPend"></div>
-  <button class="btn" id="bCompartir">Enviar</button>
-  <button class="btn sec oculto" id="bConfirmar">✓ Ya están en OneDrive, quitarlas del móvil</button>
-  <button class="btn sec oculto" id="bDescargar">Descargar los ficheros en su lugar</button>
-</div>
-
-<!-- Ajustes -->
-<div class="panel" id="pAjustes">
-  <h2>⚙ Ajustes <span class="esp"></span><button class="ib" data-cerrar>✕</button></h2>
-  <label>Nombre de este móvil</label><input id="aTerm" placeholder="Móvil profesional">
-  <label>Ámbito por defecto</label><select id="aAmb"><option value="trabajo">Trabajo</option><option value="personal">Personal</option></select>
-  <div class="fila"><div><label>Modo noche desde</label><input type="time" id="aDesde"></div><div><label>Hasta</label><input type="time" id="aHasta"></div></div>
-  <label>Transcribir la voz a texto</label><select id="aTrans"><option value="1">Sí</option><option value="0">No (solo guardar el audio)</option></select>
-  <label>Guardar la ubicación en cada nota</label><select id="aUbi"><option value="0">No</option><option value="1">Sí</option></select>
-  <button class="btn" id="bGuardarAjustes">Guardar ajustes</button>
-  <p style="margin-top:22px"><b>Consejos</b><br>
-  · Instala Chispa en la pantalla de inicio: menú ⋮ de Chrome → <i>Añadir a pantalla de inicio</i> (o <i>Instalar aplicación</i>).<br>
-  · Mantén pulsado el icono de Chispa: verás <b>Grabar voz</b> y <b>Ancla rápida</b>, ideales para el coche.<br>
-  · En el horario de noche la pantalla se pone negra, sin sonidos; al abrir Chispa ya se guarda un ancla con la hora. Si escribes algo, se sustituye por tu nota.<br>
-  · Todo queda guardado en el móvil hasta que lo envías, aunque no haya cobertura.</p>
-  <p id="version"></p>
+<!-- Editar nota -->
+<div class="modal" id="mEditar">
+  <div class="caja">
+    <h3>Editar nota</h3>
+    <textarea id="eTexto" rows="4"></textarea>
+    <div class="fila">
+      <div><label>Ámbito</label><select id="eAmbito"><option value="trabajo">Trabajo</option><option value="personal">Personal</option></select></div>
+      <div><label>Tipo</label><select id="eTipo"><option value="nota">Nota</option><option value="tarea">Tarea</option><option value="idea">Idea</option><option value="recordatorio">Recordatorio</option></select></div>
+    </div>
+    <div class="fila">
+      <div><label>¿Para quién es?</label><select id="eCat"><option value="">Sin indicar</option><option value="cliente">Cliente</option><option value="proveedor">Proveedor</option><option value="companero">Compañero</option><option value="personal">Personal</option></select></div>
+      <div><label>Nombre</label><input id="eNombre" list="dlNombres"><datalist id="dlNombres"></datalist></div>
+    </div>
+    <label>Fecha de acción</label>
+    <div class="fila"><input type="date" id="eFecha"><button class="btn sec" id="eSinFecha" style="flex:none">Sin fecha</button></div>
+    <div class="pie">
+      <button class="btn sec" id="eBorrar" style="margin-right:auto;color:var(--danger)">🗑 Borrar</button>
+      <button class="btn sec" id="eCancelar">Cancelar</button>
+      <button class="btn" id="eGuardar">Guardar</button>
+    </div>
+  </div>
 </div>
 
+<!-- Palabra del ancla -->
+<div class="modal" id="mAncla">
+  <div class="caja">
+    <h3>⚓ Ancla guardada</h3>
+    <p class="vacio" style="margin-top:0">¿Una palabra para acordarte luego? (opcional)</p>
+    <input id="aPalabra" placeholder="presupuesto, Pedro, cables…" autocomplete="off">
+    <div class="pie"><button class="btn sec" id="aSaltar">Así vale</button><button class="btn" id="aOk">Guardar</button></div>
+  </div>
+</div>
+
+<div id="visor"><img alt=""></div>
 <div class="toast" id="toast"></div>
 
 <script>
 "use strict";
-const VERSION = "0.2";
+const VERSION = "0.3";
+/* ================= Conexión con Microsoft ================= */
+const CLIENT_ID = "3dc57230-4cdb-4e60-bb83-2def7cd5441f";
+const AUTH = "https://login.microsoftonline.com/consumers/oauth2/v2.0";
+const SCOPES = "openid profile offline_access Files.ReadWrite.AppFolder";
+const REDIRECT = location.origin + location.pathname.replace(/index\.html$/, "");
+const GRAPH = "https://graph.microsoft.com/v1.0/me/drive/special/approot";
+
+/* ================= Utilidades ================= */
 const $ = s => document.querySelector(s);
-const pad = n => String(n).padStart(2, "0");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function toast(t){ const el = $("#toast"); el.textContent = t; el.classList.add("ver"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("ver"), 2200); }
+const norm = s => String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+const pad = n => String(n).padStart(2, "0");
+const isoDia = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const hoyISO = () => isoDia(new Date());
+const hora = iso => { const d = new Date(iso); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const fechaLarga = iso => new Date(iso.length === 10 ? iso + "T12:00" : iso).toLocaleDateString("es-ES", {weekday:"short", day:"numeric", month:"short"});
+function toast(t, ms = 2400){ const el = $("#toast"); el.textContent = t; el.classList.add("ver"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("ver"), ms); }
 function vibrar(ms = 60){ try { navigator.vibrate && navigator.vibrate(ms); } catch(e){} }
 function nuevoId(d){ return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}-${Math.random().toString(36).slice(2,6)}`; }
-const horaDe = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
+const b64url = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const aleatorio = n => b64url(crypto.getRandomValues(new Uint8Array(n)));
 
-/* ---------- Almacén local (IndexedDB) ---------- */
-const db = {
+/* ================= Almacén local (IndexedDB) ================= */
+const idb = {
   _p: null,
-  abrir(){ return this._p ||= new Promise((ok, ko) => { const r = indexedDB.open("chispa-movil", 1);
-    r.onupgradeneeded = () => { r.result.createObjectStore("notas", {keyPath: "id"}); r.result.createObjectStore("cfg"); };
+  abrir(){ return this._p ||= new Promise((ok, ko) => { const r = indexedDB.open("chispa3", 1);
+    r.onupgradeneeded = () => { const d = r.result; d.createObjectStore("notas", {keyPath: "id"}); d.createObjectStore("blobs"); d.createObjectStore("kv"); };
     r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); }); },
-  async tx(store, modo, fn){ const d = await this.abrir(); return new Promise((ok, ko) => { const t = d.transaction(store, modo); const r = fn(t.objectStore(store)); t.oncomplete = () => ok(r && r.result); t.onerror = () => ko(t.error); }); },
-  todas(){ return this.tx("notas", "readonly", s => s.getAll()); },
-  poner(n){ return this.tx("notas", "readwrite", s => s.put(n)); },
-  quitar(id){ return this.tx("notas", "readwrite", s => s.delete(id)); },
-  cfg(k){ return this.tx("cfg", "readonly", s => s.get(k)); },
-  setCfg(k, v){ return this.tx("cfg", "readwrite", s => s.put(v, k)); }
+  async op(store, modo, fn){ const d = await this.abrir(); return new Promise((ok, ko) => { const t = d.transaction(store, modo); const r = fn(t.objectStore(store)); t.oncomplete = () => ok(r && r.result); t.onerror = () => ko(t.error); }); },
+  todas(){ return this.op("notas", "readonly", s => s.getAll()); },
+  poner(n){ return this.op("notas", "readwrite", s => s.put(n)); },
+  quitar(id){ return this.op("notas", "readwrite", s => s.delete(id)); },
+  blob(k){ return this.op("blobs", "readonly", s => s.get(k)); },
+  ponerBlob(k, v){ return this.op("blobs", "readwrite", s => s.put(v, k)); },
+  quitarBlob(k){ return this.op("blobs", "readwrite", s => s.delete(k)); },
+  kv(k){ return this.op("kv", "readonly", s => s.get(k)); },
+  ponerKv(k, v){ return this.op("kv", "readwrite", s => s.put(v, k)); }
 };
-let ajustes = {terminal: "Móvil", ambito: "trabajo", desde: "23:00", hasta: "06:00", trans: true, ubi: false};
 
-/* ---------- Modo noche ---------- */
-const min = h => { const [a, b] = (h || "0:0").split(":").map(Number); return a*60 + b; };
-function esNoche(d = new Date()){ const a = min(ajustes.desde), b = min(ajustes.hasta), x = d.getHours()*60 + d.getMinutes(); return a <= b ? x >= a && x < b : x >= a || x < b; }
-function aplicarNoche(){ document.body.classList.toggle("noche", esNoche()); document.querySelector('meta[name=theme-color]').content = esNoche() ? "#000000" : "#1f2a44"; }
-
-/* ---------- Borrador actual ---------- */
-let borrador, tocado = false, anclaAbierta = null;
-function nuevoBorrador(){
-  borrador = {audio: null, transcripcion: "", fotos: [], trazo: false};
-  $("#texto").value = ""; limpiarLienzo(); pintarExtras();
-  setAmbito(ajustes.ambito);
-  tocado = false;
-  anclaAbierta = esNoche() ? new Date() : null;   // en modo noche, abrir ya cuenta como ancla
+/* ================= Inicio de sesión (OAuth con PKCE) ================= */
+let token = lsGet("chispa.token");     // {access, refresh, exp}
+let necesitaLogin = false;
+async function irALogin(silencioso = false){
+  const verifier = aleatorio(48), state = aleatorio(16);
+  const challenge = b64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)));
+  lsSet("chispa.pkce", {verifier, state, silencioso});
+  const p = new URLSearchParams({ client_id: CLIENT_ID, response_type: "code", redirect_uri: REDIRECT, response_mode: "query",
+    scope: SCOPES, state, code_challenge: challenge, code_challenge_method: "S256" });
+  if (silencioso){ p.set("prompt", "none"); const u = lsGet("chispa.usuario"); if (u) p.set("login_hint", u); }
+  location.href = `${AUTH}/authorize?${p}`;
 }
-function vacio(){ return !$("#texto").value.trim() && !borrador.audio && !borrador.fotos.length && !borrador.trazo && !grabando(); }
-function setAmbito(a){ document.querySelectorAll("#ambito button").forEach(b => b.classList.toggle("on", b.dataset.a === a)); }
-const ambito = () => document.querySelector("#ambito button.on")?.dataset.a || "trabajo";
-document.querySelectorAll("#ambito button").forEach(b => b.onclick = () => { tocado = true; setAmbito(b.dataset.a); });
+async function pedirToken(datos){
+  const r = await fetch(`${AUTH}/token`, { method: "POST", headers: {"Content-Type": "application/x-www-form-urlencoded"},
+    body: new URLSearchParams({client_id: CLIENT_ID, scope: SCOPES, redirect_uri: REDIRECT, ...datos}) });
+  const j = await r.json();
+  if (!r.ok) throw Object.assign(new Error(j.error_description || j.error || "Error de inicio de sesión"), {codigo: j.error});
+  token = { access: j.access_token, refresh: j.refresh_token || token?.refresh, exp: Date.now() + (j.expires_in - 120) * 1000 };
+  lsSet("chispa.token", token);
+  try { const idt = JSON.parse(atob(j.id_token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); if (idt.preferred_username) lsSet("chispa.usuario", idt.preferred_username); } catch(e){}
+  necesitaLogin = false;
+  return token.access;
+}
+// Vuelta desde la página de Microsoft
+async function volverDeLogin(){
+  const q = new URLSearchParams(location.search);
+  if (!q.has("code") && !q.has("error")) return null;
+  const pk = lsGet("chispa.pkce"); localStorage.removeItem("chispa.pkce");
+  history.replaceState(null, "", REDIRECT);
+  if (q.has("error")) return q.get("error");
+  if (!pk || pk.state !== q.get("state")) return "estado";
+  try { await pedirToken({grant_type: "authorization_code", code: q.get("code"), code_verifier: pk.verifier}); return "ok"; }
+  catch(e){ return e.message; }
+}
+async function accessToken(){
+  if (token?.access && Date.now() < token.exp) return token.access;
+  if (token?.refresh){
+    try { return await pedirToken({grant_type: "refresh_token", refresh_token: token.refresh}); }
+    catch(e){ if (e.codigo === "invalid_grant" || e.codigo === "interaction_required"){ token = null; lsSet("chispa.token", null); } else throw e; }
+  }
+  necesitaLogin = true;
+  throw Object.assign(new Error("Hay que volver a entrar"), {login: true});
+}
 
+/* ================= OneDrive (Microsoft Graph) ================= */
+const rutaUrl = p => `${GRAPH}:/${p.split("/").map(encodeURIComponent).join("/")}`;
+async function graph(url, opts = {}, reintento = true){
+  const r = await fetch(url, {...opts, headers: {...(opts.headers || {}), Authorization: "Bearer " + await accessToken()}});
+  if (r.status === 401 && reintento){ token.exp = 0; return graph(url, opts, false); }
+  if (r.status === 429 || r.status === 503){ await new Promise(s => setTimeout(s, 3000)); return graph(url, opts, false); }
+  return r;
+}
+const carpetas = new Map();
+async function asegurarCarpeta(ruta){
+  if (carpetas.has(ruta)) return carpetas.get(ruta);
+  let r = await graph(rutaUrl(ruta));
+  if (r.status === 404){
+    const partes = ruta.split("/"), nombre = partes.pop(), padre = partes.join("/");
+    const url = padre ? `${rutaUrl(padre)}:/children` : `${GRAPH}/children`;
+    if (padre) await asegurarCarpeta(padre);
+    r = await graph(url, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({name: nombre, folder: {}, "@microsoft.graph.conflictBehavior": "fail"})});
+    if (r.status === 409) r = await graph(rutaUrl(ruta));
+  }
+  if (!r.ok) throw new Error(`OneDrive (${r.status}) en ${ruta}`);
+  const id = (await r.json()).id; carpetas.set(ruta, id); return id;
+}
+async function subir(ruta, datos, tipo){
+  const partes = ruta.split("/"); partes.pop(); if (partes.length) await asegurarCarpeta(partes.join("/"));
+  const r = await graph(`${rutaUrl(ruta)}:/content`, {method: "PUT", headers: {"Content-Type": tipo || "application/octet-stream"}, body: datos});
+  if (!r.ok) throw new Error(`No se pudo subir ${ruta} (${r.status})`);
+  return r.json();
+}
+async function listar(ruta){
+  let url = `${rutaUrl(ruta)}:/children?$top=500`, out = [];
+  while (url){
+    const r = await graph(url);
+    if (r.status === 404) return [];
+    if (!r.ok) throw new Error(`OneDrive (${r.status}) al listar ${ruta}`);
+    const j = await r.json(); out.push(...j.value); url = j["@odata.nextLink"];
+  }
+  return out;
+}
+async function descargarRuta(ruta){
+  const r = await graph(rutaUrl(ruta));
+  if (!r.ok) throw new Error("No encontrado: " + ruta);
+  const it = await r.json();
+  const d = await fetch(it["@microsoft.graph.downloadUrl"]);
+  if (!d.ok) throw new Error("Descarga fallida");
+  return d.blob();
+}
+async function aPapelera(ruta){
+  const pap = await asegurarCarpeta("Papelera");
+  const r = await graph(`${rutaUrl(ruta)}?@microsoft.graph.conflictBehavior=rename`, {method: "PATCH", headers: {"Content-Type": "application/json"}, body: JSON.stringify({parentReference: {id: pap}})});
+  if (!r.ok && r.status !== 404) throw new Error(`No se pudo mover ${ruta} (${r.status})`);
+}
+
+/* ================= Estado ================= */
+let notas = [];
+let config = { nocheDesde: "23:00", nocheHasta: "06:00", correoTrabajo: "", correoPersonal: "", contactos: {cliente: [], proveedor: [], companero: []} };
+let disp = { terminal: "", ambito: "trabajo", trans: true, ubi: false };   // ajustes de este dispositivo
+const esMovil = () => matchMedia("(max-width:760px)").matches;
+
+/* ================= Sincronización ================= */
+let sincronizando = false, errorSync = "", ultimaSync = 0;
+function pintarEstado(){
+  const pend = notas.filter(n => n._pend || n._borrar).length + (lsGet("chispa.cfgPend") ? 1 : 0);
+  const el = $("#estado");
+  el.className = "";
+  if (necesitaLogin){ el.textContent = "🔑 Volver a entrar"; el.className = "err"; }
+  else if (sincronizando) el.textContent = "☁ …";
+  else if (!navigator.onLine){ el.textContent = pend ? `📴 ${pend} sin subir` : "📴 Sin conexión"; el.className = "pend"; }
+  else if (errorSync){ el.textContent = "⚠ Error"; el.className = "err"; el.title = errorSync; }
+  else if (pend){ el.textContent = `☁ ${pend} por subir`; el.className = "pend"; }
+  else { el.textContent = "☁ ✓"; el.title = "Todo guardado en tu OneDrive"; }
+}
+$("#estado").onclick = () => { if (necesitaLogin) irALogin(false); else { if (errorSync) toast(errorSync, 5000); sincronizar(true); } };
+
+async function sincronizar(forzar = false){
+  if (sincronizando || !navigator.onLine || !token) return;
+  if (!forzar && Date.now() - ultimaSync < 15000) return;
+  sincronizando = true; pintarEstado();
+  try {
+    // 1) Subir lo pendiente
+    for (const n of notas.filter(x => x._borrar)){
+      for (const r of [`Notas/${n.id}.json`, n.audio, ...(n.fotos || [])].filter(Boolean)) await aPapelera(r);
+      await idb.quitar(n.id); notas = notas.filter(x => x !== n);
+    }
+    for (const n of notas.filter(x => x._pend)){
+      for (const r of n._subir || []){
+        const b = await idb.blob(r);
+        if (b) await subir(r, b, b.type);
+      }
+      const it = await subir(`Notas/${n.id}.json`, JSON.stringify(limpia(n), null, 2), "application/json");
+      n._etag = it.eTag; n._pend = false; n._subir = [];
+      await idb.poner(n);
+    }
+    if (lsGet("chispa.cfgPend")){ const it = await subir("Configuracion/config.json", JSON.stringify(config, null, 2), "application/json"); lsSet("chispa.cfgEtag", it.eTag); lsSet("chispa.cfgPend", false); }
+    // 2) Bajar novedades de otros dispositivos
+    const remotos = await listar("Notas"), vistos = new Set();
+    const porBajar = [];
+    for (const it of remotos){
+      if (!it.file || !it.name.endsWith(".json")) continue;
+      const id = it.name.slice(0, -5); vistos.add(id);
+      const loc = notas.find(x => x.id === id);
+      if (!loc || (!loc._pend && loc._etag !== it.eTag)) porBajar.push(it);
+    }
+    for (let i = 0; i < porBajar.length; i += 6){
+      await Promise.all(porBajar.slice(i, i + 6).map(async it => {
+        try { const n = await (await fetch(it["@microsoft.graph.downloadUrl"])).json(); n._etag = it.eTag; n._pend = false;
+          await idb.poner(n); const k = notas.findIndex(x => x.id === n.id); if (k >= 0) notas[k] = n; else notas.push(n); } catch(e){}
+      }));
+    }
+    for (const n of [...notas]) if (!n._pend && !n._borrar && n._etag && !vistos.has(n.id)){ await idb.quitar(n.id); notas = notas.filter(x => x !== n); }
+    // 3) Configuración compartida
+    const cfgIt = (await listar("Configuracion")).find(x => x.name === "config.json");
+    if (cfgIt && cfgIt.eTag !== lsGet("chispa.cfgEtag") && !lsGet("chispa.cfgPend")){
+      try { config = Object.assign(config, await (await fetch(cfgIt["@microsoft.graph.downloadUrl"])).json()); lsSet("chispa.config", config); lsSet("chispa.cfgEtag", cfgIt.eTag); } catch(e){}
+    }
+    ordenar(); errorSync = ""; ultimaSync = Date.now();
+    if (porBajar.length) refrescar();
+  } catch(e){
+    errorSync = e.login ? "" : (e.message || "Error de sincronización");
+  } finally { sincronizando = false; pintarEstado(); }
+}
+const limpia = n => { const o = {}; for (const k in n) if (!k.startsWith("_")) o[k] = n[k]; return o; };
+const ordenar = () => notas.sort((a, b) => b.creada.localeCompare(a.creada));
+async function guardarNotaLocal(n, nuevosAdjuntos = []){
+  n.actualizada = new Date().toISOString(); n._pend = true;
+  n._subir = [...new Set([...(n._subir || []), ...nuevosAdjuntos])];
+  await idb.poner(n);
+  const k = notas.findIndex(x => x.id === n.id); if (k >= 0) notas[k] = n; else notas.push(n);
+  ordenar(); pintarEstado(); setTimeout(() => sincronizar(true), 50);
+}
+addEventListener("online", () => { pintarEstado(); sincronizar(true); });
+addEventListener("offline", pintarEstado);
+setInterval(() => { if (document.visibilityState === "visible") sincronizar(); }, 60000);
+
+/* ================= Adjuntos (audio, fotos) ================= */
+const cacheUrl = new Map();
+async function urlAdjunto(ruta){
+  if (cacheUrl.has(ruta)) return cacheUrl.get(ruta);
+  let b = await idb.blob(ruta);
+  if (!b){ b = await descargarRuta(ruta); await idb.ponerBlob(ruta, b); }
+  const u = URL.createObjectURL(b); cacheUrl.set(ruta, u); return u;
+}
+async function reducirFoto(f){
+  try {
+    const img = await createImageBitmap(f), max = 1800, k = Math.min(1, max / Math.max(img.width, img.height));
+    const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    return await new Promise(r => c.toBlob(r, "image/jpeg", 0.85));
+  } catch(e){ return f; }
+}
+
+/* ================= Tema y modo noche ================= */
+const minutos = h => { const [a, b] = (h || "0:0").split(":").map(Number); return a*60 + b; };
+function esNoche(d = new Date()){ const a = minutos(config.nocheDesde), b = minutos(config.nocheHasta), x = d.getHours()*60 + d.getMinutes(); return a <= b ? x >= a && x < b : x >= a || x < b; }
+function aplicarTema(){
+  const t = disp.tema || "auto";
+  const tema = esNoche() && t !== "claro" ? (esMovil() ? "noche" : "dark") : (t === "oscuro" ? "dark" : "light");
+  document.documentElement.dataset.theme = tema;
+  document.querySelector("meta[name=theme-color]").content = tema === "noche" ? "#000000" : tema === "dark" ? "#11151d" : "#1f2a44";
+}
+setInterval(aplicarTema, 60000);
+(function fondo(){
+  let p = "", c = "", r = n => Math.floor(Math.random()*n), s = "";
+  for (let i = 0; i < 24; i++){ let x = r(1600), y = r(1000), d = `M${x} ${y}`;
+    for (let k = 0; k < 4; k++){ if (k % 2) y += (r(2)?1:-1)*(60+r(160)); else x += (r(2)?1:-1)*(80+r(220)); d += ` L${x} ${y}`; }
+    p += `<path d="${d}"/>`; c += `<circle cx="${x}" cy="${y}" r="3"/>`; if (i % 5 === 0) s += `<circle cx="${x}" cy="${y}" r="10" fill="url(#g)"/>`; }
+  $("#fondo").innerHTML = `<svg viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice"><defs><radialGradient id="g"><stop offset="0" stop-color="#e9b949" stop-opacity=".3"/><stop offset="1" stop-color="#e9b949" stop-opacity="0"/></radialGradient></defs><g fill="none" stroke="var(--line)" stroke-width="1.5">${p}</g><g fill="var(--line)">${c}</g>${s}</svg>`;
+})();
+
+/* ================= Detección de fechas, tipo y nombres ================= */
+const DIAS = ["domingo","lunes","martes","miercoles","jueves","viernes","sabado"];
+const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+function detectarFecha(texto, base = new Date()){
+  const t = norm(texto), b = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+  const mas = n => { const d = new Date(b); d.setDate(d.getDate() + n); return isoDia(d); };
+  if (/\bpasado manana\b/.test(t)) return mas(2);
+  if (/\bmanana\b/.test(t) && !/\bpor la manana\b/.test(t.replace(/\bmanana por la manana\b/, "manana"))) return mas(1);
+  if (/\bhoy\b|\besta tarde\b|\besta noche\b/.test(t)) return mas(0);
+  let m = t.match(/\b(?:en|dentro de)\s+(\d+|un|una|dos|tres|cuatro|cinco)\s+(dia|dias|semana|semanas)\b/);
+  if (m){ const num = {un:1,una:1,dos:2,tres:3,cuatro:4,cinco:5}[m[1]] ?? Number(m[1]); return mas(num * (m[2].startsWith("semana") ? 7 : 1)); }
+  if (/\b(la semana que viene|la proxima semana)\b/.test(t)){ const dd = (8 - b.getDay()) % 7 || 7; return mas(dd); }
+  m = t.match(/\b(\d{1,2})[\/\-.](\d{1,2})(?:[\/\-.](\d{2,4}))?\b/);
+  if (m){ let y = m[3] ? Number(m[3].length === 2 ? "20" + m[3] : m[3]) : b.getFullYear(); const d = new Date(y, Number(m[2]) - 1, Number(m[1])); if (!m[3] && d < b) d.setFullYear(y + 1); if (!isNaN(d)) return isoDia(d); }
+  m = t.match(/\b(?:el\s+)?(?:dia\s+)?(\d{1,2})\s+de\s+([a-z]+)\b/);
+  if (m && MESES.includes(m[2])){ const d = new Date(b.getFullYear(), MESES.indexOf(m[2]), Number(m[1])); if (d < b) d.setFullYear(d.getFullYear() + 1); return isoDia(d); }
+  m = t.match(/\bel\s+(lunes|martes|miercoles|jueves|viernes|sabado|domingo)\b|\b(lunes|martes|miercoles|jueves|viernes|sabado|domingo)\s+que viene\b/);
+  if (m){ const obj = DIAS.indexOf(m[1] || m[2]); let dd = (obj - b.getDay() + 7) % 7; if (dd === 0) dd = 7; return mas(dd); }
+  m = t.match(/\bel\s+dia\s+(\d{1,2})\b/);
+  if (m){ const d = new Date(b.getFullYear(), b.getMonth(), Number(m[1])); if (d < b) d.setMonth(d.getMonth() + 1); return isoDia(d); }
+  return null;
+}
+function sugerir(texto, base = new Date()){
+  const t = norm(texto), s = {};
+  s.fecha = detectarFecha(texto, base);
+  for (const cat of ["cliente", "proveedor", "companero"]){
+    for (const nom of config.contactos?.[cat] || []){ const nn = norm(nom).trim(); if (nn.length > 2 && t.includes(nn)){ s.cat = cat; s.nombre = nom; break; } }
+    if (s.cat) break;
+  }
+  if (/^\s*idea\b|\bidea:|\bse me ocurre\b/.test(t)) s.tipo = "idea";
+  else if (s.fecha) s.tipo = "recordatorio";
+  else if (/^\s*(llamar|enviar|mandar|revisar|preparar|pedir|hablar|comprar|preguntar|hacer|confirmar|reclamar|buscar|pagar)\b/.test(t)) s.tipo = "tarea";
+  return s;
+}
+
+/* ================= Anotar ================= */
+let borrador = null, tocado = false, anclaAbierta = null;
+function nuevoBorrador(){
+  borrador = {audio: null, dur: "", transcripcion: "", fotos: [], trazo: false};
+  $("#cTexto").value = ""; limpiarLienzo(); pintarExtras(); setAmbito(disp.ambito || "trabajo");
+  tocado = false; anclaAbierta = esNoche() && esMovil() ? new Date() : null;
+}
+const vacio = () => !$("#cTexto").value.trim() && !borrador.audio && !borrador.fotos.length && !borrador.trazo && !rec;
+function setAmbito(a){ document.querySelectorAll("#cAmbito button").forEach(b => b.classList.toggle("on", b.dataset.a === a)); }
+const ambitoSel = () => document.querySelector("#cAmbito button.on")?.dataset.a || "trabajo";
+document.querySelectorAll("#cAmbito button").forEach(b => b.onclick = () => { tocado = true; setAmbito(b.dataset.a); });
 function pintarExtras(){
   const ex = $("#extras"); ex.innerHTML = "";
-  if (borrador.audio) ex.insertAdjacentHTML("beforeend", `<span class="chip">🎙️ Audio ${borrador.dur || ""}</span>`);
-  if (borrador.transcripcion) ex.insertAdjacentHTML("beforeend", `<span class="chip">📝 ${esc(borrador.transcripcion.slice(0, 40))}${borrador.transcripcion.length > 40 ? "…" : ""}</span>`);
+  if (borrador.audio) ex.insertAdjacentHTML("beforeend", `<span class="chip">🎙️ Audio ${borrador.dur}</span>`);
+  if (borrador.transcripcion) ex.insertAdjacentHTML("beforeend", `<span class="chip">📝 ${esc(borrador.transcripcion.slice(0, 50))}${borrador.transcripcion.length > 50 ? "…" : ""}</span>`);
   for (const f of borrador.fotos){ const i = document.createElement("img"); i.src = URL.createObjectURL(f); ex.appendChild(i); }
 }
-
-/* ---------- Escritura con el dedo ---------- */
+// Escritura con el dedo
 const cv = $("#lienzo"), cx = cv.getContext("2d");
-function ajustarLienzo(){ const r = cv.getBoundingClientRect(), k = devicePixelRatio || 1;
-  if (cv.width !== Math.round(r.width*k)){ const copia = borrador?.trazo ? cx.getImageData(0, 0, cv.width, cv.height) : null; cv.width = Math.round(r.width*k); cv.height = Math.round(r.height*k); if (copia) cx.putImageData(copia, 0, 0); } }
+function ajustarLienzo(){ const r = cv.getBoundingClientRect(), k = devicePixelRatio || 1; if (!r.width) return;
+  if (cv.width !== Math.round(r.width*k) || cv.height !== Math.round(r.height*k)){
+    const copia = borrador?.trazo ? cx.getImageData(0, 0, cv.width, cv.height) : null;
+    cv.width = Math.round(r.width*k); cv.height = Math.round(r.height*k); if (copia) cx.putImageData(copia, 0, 0); } }
 function limpiarLienzo(){ cx.clearRect(0, 0, cv.width, cv.height); if (borrador) borrador.trazo = false; $("#pista").classList.remove("oculto"); $("#bBorrarTrazo").classList.add("oculto"); }
 (() => {
   let on = false;
   const p = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
   cv.addEventListener("pointerdown", e => { on = true; tocado = true; cv.setPointerCapture(e.pointerId); cx.beginPath(); cx.moveTo(...p(e));
-    cx.lineWidth = 5 * (devicePixelRatio || 1); cx.lineCap = cx.lineJoin = "round"; cx.strokeStyle = getComputedStyle(document.body).getPropertyValue("--trazo"); });
+    cx.lineWidth = 5 * (devicePixelRatio || 1); cx.lineCap = cx.lineJoin = "round"; cx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--trazo"); });
   cv.addEventListener("pointermove", e => { if (!on) return; cx.lineTo(...p(e)); cx.stroke();
     if (!borrador.trazo){ borrador.trazo = true; $("#pista").classList.add("oculto"); $("#bBorrarTrazo").classList.remove("oculto"); } });
   const fin = () => on = false; cv.addEventListener("pointerup", fin); cv.addEventListener("pointercancel", fin);
 })();
 $("#bBorrarTrazo").onclick = limpiarLienzo;
 async function trazoComoImagen(){
-  // fondo blanco y tinta oscura, para que se lea bien en el PC aunque se escribiera en modo noche
   const c = document.createElement("canvas"); c.width = cv.width; c.height = cv.height; const g = c.getContext("2d");
   g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
-  const tmp = document.createElement("canvas"); tmp.width = cv.width; tmp.height = cv.height; const t = tmp.getContext("2d");
-  t.drawImage(cv, 0, 0); t.globalCompositeOperation = "source-in"; t.fillStyle = "#1f2633"; t.fillRect(0, 0, tmp.width, tmp.height);
-  g.drawImage(tmp, 0, 0);
-  return new Promise(r => c.toBlob(r, "image/png"));
+  const t = document.createElement("canvas"); t.width = cv.width; t.height = cv.height; const tc = t.getContext("2d");
+  tc.drawImage(cv, 0, 0); tc.globalCompositeOperation = "source-in"; tc.fillStyle = "#1f2633"; tc.fillRect(0, 0, t.width, t.height);
+  g.drawImage(t, 0, 0); return new Promise(r => c.toBlob(r, "image/png"));
 }
-
-/* ---------- Teclado ---------- */
-$("#bTeclado").onclick = () => { tocado = true; const t = $("#texto"); t.classList.toggle("oculto"); if (!t.classList.contains("oculto")) t.focus(); requestAnimationFrame(ajustarLienzo); };
-$("#texto").addEventListener("input", () => tocado = true);
-
-/* ---------- Foto ---------- */
+$("#bTeclado").onclick = () => { tocado = true; const t = $("#cTexto"); t.classList.toggle("oculto"); if (!t.classList.contains("oculto")) t.focus(); requestAnimationFrame(ajustarLienzo); };
+$("#cTexto").addEventListener("input", () => tocado = true);
 $("#bFoto").onclick = () => { tocado = true; $("#inFoto").click(); };
-$("#inFoto").onchange = () => { for (const f of $("#inFoto").files) borrador.fotos.push(f); $("#inFoto").value = ""; pintarExtras(); };
+$("#inFoto").onchange = async () => { for (const f of $("#inFoto").files) borrador.fotos.push(await reducirFoto(f)); $("#inFoto").value = ""; pintarExtras(); };
 
-/* ---------- Voz ---------- */
-let rec = null, sr = null, trozos = [], t0 = 0;
-const grabando = () => !!rec;
+// Voz: guarda el audio original y, si el móvil lo permite, lo transcribe
+let rec = null, sr = null, trozos = [], t0 = 0, alParar = null;
 async function empezarVoz(){
   try {
     const stream = await navigator.mediaDevices.getUserMedia({audio: true});
-    trozos = []; t0 = Date.now();
-    rec = new MediaRecorder(stream);
+    trozos = []; t0 = Date.now(); rec = new MediaRecorder(stream);
     rec.ondataavailable = e => e.data.size && trozos.push(e.data);
     rec.onstop = () => { stream.getTracks().forEach(t => t.stop());
-      const tipo = rec?.mimeType || trozos[0]?.type || "audio/webm";
-      borrador.audio = new Blob(trozos, {type: tipo}); const s = Math.round((Date.now() - t0)/1000); borrador.dur = `${Math.floor(s/60)}:${pad(s%60)}`;
-      rec = null; pintarExtras(); if (rec === null && pararVoz.alGuardar){ pararVoz.alGuardar(); pararVoz.alGuardar = null; } };
+      borrador.audio = new Blob(trozos, {type: rec.mimeType || trozos[0]?.type || "audio/webm"});
+      const s = Math.round((Date.now() - t0) / 1000); borrador.dur = `${Math.floor(s/60)}:${pad(s%60)}`;
+      rec = null; pintarExtras(); if (alParar){ const f = alParar; alParar = null; f(); } };
     rec.start(1000);
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (ajustes.trans && SR){
-      try { sr = new SR(); sr.lang = "es-ES"; sr.continuous = true; sr.interimResults = false;
-        sr.onresult = e => { for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) borrador.transcripcion = (borrador.transcripcion + " " + e.results[i][0].transcript).trim(); pintarExtras(); };
-        sr.onerror = () => {}; sr.start(); } catch(e){ sr = null; }
-    }
+    if (disp.trans !== false && SR){ try { sr = new SR(); sr.lang = "es-ES"; sr.continuous = true; sr.interimResults = false;
+      sr.onresult = e => { for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) borrador.transcripcion = (borrador.transcripcion + " " + e.results[i][0].transcript).trim(); pintarExtras(); };
+      sr.onerror = () => {}; sr.start(); } catch(e){ sr = null; } }
     $("#bMic").classList.add("grabando"); $("#bMic").textContent = "⏹"; vibrar(40);
-  } catch(e){ rec = null; toast("No puedo usar el micrófono. Revisa el permiso."); }
+  } catch(e){ rec = null; toast("No puedo usar el micrófono. Revisa el permiso del navegador."); }
 }
-function pararVoz(){
-  try { sr && sr.stop(); } catch(e){} sr = null;
-  if (rec && rec.state !== "inactive") rec.stop();
-  $("#bMic").classList.remove("grabando"); $("#bMic").textContent = "🎤";
-}
-$("#bMic").onclick = () => { tocado = true; grabando() ? pararVoz() : empezarVoz(); };
+function pararVoz(){ try { sr && sr.stop(); } catch(e){} sr = null; if (rec && rec.state !== "inactive") rec.stop(); $("#bMic").classList.remove("grabando"); $("#bMic").textContent = "🎤"; }
+$("#bMic").onclick = () => { tocado = true; rec ? pararVoz() : empezarVoz(); };
 
-/* ---------- Guardar ---------- */
 async function ubicacion(){
-  if (!ajustes.ubi || !navigator.geolocation) return null;
+  if (!disp.ubi || !navigator.geolocation) return null;
   return new Promise(ok => navigator.geolocation.getCurrentPosition(p => ok({lat: +p.coords.latitude.toFixed(5), lon: +p.coords.longitude.toFixed(5)}), () => ok(null), {timeout: 4000, maximumAge: 120000}));
 }
-async function guardar(){
-  if (grabando()){ await new Promise(r => { pararVoz.alGuardar = r; pararVoz(); }); }
+function notaBase(cuando){
+  return { id: nuevoId(cuando), creada: cuando.toISOString(), origen: esMovil() ? "movil" : "web", terminal: disp.terminal || (esMovil() ? "Móvil" : "PC"),
+    nocturna: esNoche(cuando), ancla: false, hecha: false, texto: "", tipo: "nota", ambito: ambitoSel(), para: {categoria: "", nombre: ""}, fecha: null, audio: null, fotos: [], ubicacion: null };
+}
+async function guardarCaptura(){
+  if (rec) await new Promise(r => { alParar = r; pararVoz(); });
   if (vacio()){ toast("No hay nada que guardar"); return; }
-  const ahora = new Date(), id = nuevoId(ahora);
-  const n = { id, creada: ahora.toISOString(), origen: "movil", terminal: ajustes.terminal, nocturna: esNoche(ahora), ancla: false,
-    texto: $("#texto").value.trim(), transcripcion: borrador.transcripcion || "", ambito: ambito(),
-    audio: borrador.audio || null, fotos: [...borrador.fotos], trazo: borrador.trazo ? await trazoComoImagen() : null, ubicacion: null };
-  if (!n.texto && n.transcripcion) n.texto = n.transcripcion;
+  const ahora = new Date(), n = notaBase(ahora), carpeta = `${ahora.getFullYear()}/${pad(ahora.getMonth()+1)}`, adj = [];
+  n.texto = $("#cTexto").value.trim();
+  if (borrador.transcripcion){ n.transcripcion = borrador.transcripcion; if (!n.texto) n.texto = borrador.transcripcion; }
+  if (borrador.audio){ const t = borrador.audio.type || "", ext = t.includes("mp4") || t.includes("aac") ? "m4a" : t.includes("ogg") ? "ogg" : "webm";
+    n.audio = `Audios/${carpeta}/${n.id}.${ext}`; await idb.ponerBlob(n.audio, borrador.audio); adj.push(n.audio); }
+  let i = 1;
+  for (const f of borrador.fotos){ const r = `Fotos/${carpeta}/${n.id}-${i++}.jpg`; await idb.ponerBlob(r, f); n.fotos.push(r); adj.push(r); }
+  if (borrador.trazo){ const r = `Fotos/${carpeta}/${n.id}-trazo.png`; await idb.ponerBlob(r, await trazoComoImagen()); n.fotos.push(r); adj.push(r); }
+  const s = sugerir(n.texto, ahora), det = [];
+  if (s.fecha){ n.fecha = s.fecha; det.push(fechaLarga(s.fecha)); }
+  if (s.tipo) n.tipo = s.tipo;
+  if (s.cat){ n.para = {categoria: s.cat, nombre: s.nombre}; det.push(s.nombre); }
   n.ubicacion = await ubicacion();
-  await db.poner(n);
-  vibrar(80); toast(n.nocturna ? "🌙 Guardada" : "✓ Guardada");
-  nuevoBorrador(); anclaAbierta = null; refrescarPendientes();
+  await guardarNotaLocal(n, adj);
+  vibrar(80); toast((n.nocturna ? "🌙 Guardada" : "✓ Guardada") + (det.length ? " · " + det.join(" · ") : ""));
+  nuevoBorrador(); anclaAbierta = null;
 }
-$("#bGuardar").onclick = guardar;
+$("#bGuardar").onclick = guardarCaptura;
 
-async function guardarAncla(cuando = new Date()){
-  const n = { id: nuevoId(cuando), creada: cuando.toISOString(), origen: "movil", terminal: ajustes.terminal, nocturna: esNoche(cuando), ancla: true,
-    texto: "", transcripcion: "", ambito: ambito(), audio: null, fotos: [], trazo: null, ubicacion: await ubicacion() };
-  await db.poner(n); vibrar(80); refrescarPendientes(); return n;
+// Ancla: guarda la hora y, si quieres, una palabra
+let anclaActual = null;
+async function guardarAncla(cuando = new Date(), preguntar = true){
+  const n = notaBase(cuando); n.ancla = true; n.ubicacion = await ubicacion();
+  await guardarNotaLocal(n); vibrar(80);
+  if (preguntar){ anclaActual = n; $("#aPalabra").value = ""; $("#mAncla").classList.add("abierto"); setTimeout(() => $("#aPalabra").focus(), 60); }
+  return n;
 }
-$("#bAncla").onclick = async () => { await guardarAncla(); anclaAbierta = null; toast("⚓ Ancla guardada a las " + horaDe(new Date())); };
+$("#bAncla").onclick = () => { anclaAbierta = null; guardarAncla(); };
+$("#aSaltar").onclick = () => { $("#mAncla").classList.remove("abierto"); toast("⚓ Ancla a las " + hora(anclaActual.creada)); };
+$("#aOk").onclick = async () => {
+  const v = $("#aPalabra").value.trim(); $("#mAncla").classList.remove("abierto");
+  if (v && anclaActual){ anclaActual.texto = v; await guardarNotaLocal(anclaActual); }
+  toast("⚓ Ancla a las " + hora(anclaActual.creada) + (v ? " · " + v : ""));
+};
+$("#aPalabra").addEventListener("keydown", e => { if (e.key === "Enter") $("#aOk").click(); });
 
-// Modo noche: si abres Chispa y la cierras sin escribir nada, queda un ancla con la hora
+// Modo noche: abrir Chispa y cerrarla sin escribir deja un ancla con la hora
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "hidden"){
-    if (anclaAbierta && !tocado && vacio()){ const a = anclaAbierta; anclaAbierta = null; await guardarAncla(a); }
+    if (anclaAbierta && !tocado && borrador && vacio()){ const a = anclaAbierta; anclaAbierta = null; await guardarAncla(a, false); }
   } else {
-    aplicarNoche();
-    if (!tocado && vacio()) anclaAbierta = esNoche() ? new Date() : null;
-    refrescarPendientes();
+    aplicarTema();
+    if (borrador && !tocado && vacio()) anclaAbierta = esNoche() && esMovil() ? new Date() : null;
+    sincronizar(); if (vista !== "anotar") refrescar();
   }
 });
 
-/* ---------- Envío a OneDrive (menú compartir) ---------- */
-let pendientes = [];
-async function refrescarPendientes(){
-  const todas = await db.todas();
-  // las notas ya enviadas y confirmadas se borran; las enviadas sin confirmar se guardan 7 días por seguridad
-  for (const n of todas) if (n.enviada && Date.now() - n.enviada > 7*864e5) await db.quitar(n.id);
-  pendientes = (await db.todas()).filter(n => !n.enviada).sort((a, b) => a.creada.localeCompare(b.creada));
-  $("#nPend").textContent = pendientes.length;
-  $("#bEnviar").classList.toggle("oculto", !pendientes.length);
+/* ================= Tarjetas de nota ================= */
+const ICONO = {tarea: "☑️", idea: "💡", recordatorio: "⏰", nota: "📝"};
+const CAT = {cliente: "Cliente", proveedor: "Proveedor", companero: "Compañero", personal: "Personal"};
+const deNotas = () => notas.filter(n => !n._borrar);
+function tarjeta(n){
+  const hoy = hoyISO(), vencida = n.fecha && n.fecha < hoy && !n.hecha;
+  const para = n.para?.categoria ? `${CAT[n.para.categoria]}${n.para.nombre ? ": " + n.para.nombre : ""}` : (n.para?.nombre || "");
+  const titulo = n.ancla ? `<b>¿Qué se te ocurrió a las ${hora(n.creada)}?</b>${n.texto ? " · " + esc(n.texto) : ""}` : esc(n.texto || (n.audio ? "(nota de voz)" : n.fotos?.length ? "(imagen)" : ""));
+  return `<div class="card nota ${n.hecha ? "hecha" : ""}">
+    <div class="ico">${n.ancla ? "⚓" : n.nocturna ? "🌙" : ICONO[n.tipo] || "📝"}</div>
+    <div class="cuerpo">
+      <div class="texto">${titulo}</div>
+      ${n.transcripcion && n.transcripcion !== n.texto ? `<div class="transc">Transcripción: ${esc(n.transcripcion)}</div>` : ""}
+      ${n.ancla ? `<div class="anclaR"><input placeholder="Escribe lo que era…" data-resolver="${n.id}"><button class="btn" data-ok="${n.id}">OK</button></div>` : ""}
+      ${n.fotos?.length ? `<div class="fotos" data-fotos="${n.id}"></div>` : ""}
+      <div class="meta">
+        <span>${fechaLarga(n.creada)} · ${hora(n.creada)}</span>
+        <span class="chip ${n.ambito}">${n.ambito === "personal" ? "Personal" : "Trabajo"}</span>
+        ${para ? `<span class="chip">👤 ${esc(para)}</span>` : ""}
+        ${n.fecha ? `<span class="chip vence ${vencida ? "vencida" : ""}">📅 ${fechaLarga(n.fecha)}${vencida ? " · vencida" : ""}</span>` : ""}
+        ${n.terminal ? `<span class="chip">${esc(n.terminal)}</span>` : ""}
+        ${n.ubicacion ? `<a class="chip" target="_blank" rel="noopener" href="https://www.google.com/maps?q=${n.ubicacion.lat},${n.ubicacion.lon}">📍</a>` : ""}
+        ${n.audio ? `<button class="ib" data-audio="${n.id}" title="Escuchar">▶ Escuchar</button>` : ""}
+        ${n._pend ? `<span class="subiendo">sin subir</span>` : ""}
+      </div>
+    </div>
+    <div class="acciones">
+      <button class="ib" data-hecha="${n.id}" title="${n.hecha ? "Marcar pendiente" : "Marcar hecha"}">${n.hecha ? "↺" : "✓"}</button>
+      <button class="ib" data-editar="${n.id}" title="Editar">✎</button>
+      <button class="ib" data-borrar="${n.id}" title="Borrar">🗑</button>
+    </div>
+  </div>`;
 }
-function extAudio(b){ const t = b.type || ""; return t.includes("mp4") || t.includes("aac") ? "m4a" : t.includes("ogg") ? "ogg" : "weba"; }
-function extFoto(f){ const t = f.type || ""; return t.includes("png") ? "png" : t.includes("webp") ? "webp" : "jpg"; }
-function ficheros(lista){
-  const out = [];
-  for (const n of lista){
-    const adj = {audio: null, fotos: []};
-    if (n.audio){ const nom = `${n.id}.${extAudio(n.audio)}`; out.push(new File([n.audio], nom, {type: n.audio.type || "audio/webm"})); adj.audio = nom; }
-    n.fotos.forEach((f, i) => { const nom = `${n.id}-${i+1}.${extFoto(f)}`; out.push(new File([f], nom, {type: f.type || "image/jpeg"})); adj.fotos.push(nom); });
-    if (n.trazo){ const nom = `${n.id}-trazo.png`; out.push(new File([n.trazo], nom, {type: "image/png"})); adj.fotos.push(nom); }
-    const meta = { formato: "chispa-1", id: n.id, creada: n.creada, origen: n.origen, terminal: n.terminal, nocturna: n.nocturna, ancla: n.ancla,
-      texto: n.texto, transcripcion: n.transcripcion, ambito: n.ambito, ubicacion: n.ubicacion, adjuntos: adj };
-    // la nota viaja como .txt (Android no deja compartir ficheros .json); se guarda la última para que llegue después de sus adjuntos
-    out.push(new File([JSON.stringify(meta, null, 2)], `${n.id}.chispa.txt`, {type: "text/plain"}));
+async function cargarFotos(cont){
+  for (const el of cont.querySelectorAll("[data-fotos]")){
+    const n = notas.find(x => x.id === el.dataset.fotos);
+    for (const r of n?.fotos || []){ const img = document.createElement("img"); el.appendChild(img); urlAdjunto(r).then(u => img.src = u).catch(() => img.alt = "sin conexión"); }
   }
-  return out;
 }
-$("#bEnviar").onclick = async () => {
-  await refrescarPendientes();
-  $("#listaPend").innerHTML = pendientes.map(n => { const d = new Date(n.creada);
-    const qué = n.ancla ? "⚓ Ancla" : esc((n.texto || "").slice(0, 60)) || [n.audio && "🎙️ audio", n.fotos.length && "📷 foto", n.trazo && "✍️ escrito a mano"].filter(Boolean).join(" · ");
-    return `<div class="item">${n.nocturna ? "🌙 " : ""}${qué}<br><small>${d.toLocaleDateString("es-ES", {day: "numeric", month: "short"})} ${horaDe(d)} · ${n.ambito === "personal" ? "Personal" : "Trabajo"}</small></div>`; }).join("");
-  $("#bConfirmar").classList.add("oculto");
-  $("#bDescargar").classList.toggle("oculto", !!navigator.canShare);
-  $("#pEnvio").classList.add("abierto");
-};
-$("#bCompartir").onclick = async () => {
-  const fs = ficheros(pendientes);
-  if (!fs.length) return;
-  if (navigator.canShare && navigator.canShare({files: fs})){
-    try { await navigator.share({files: fs, title: "Chispa"}); $("#bConfirmar").classList.remove("oculto"); }
-    catch(e){ if (e.name !== "AbortError"){ toast("No se pudo compartir: " + e.message); $("#bDescargar").classList.remove("oculto"); } }
-  } else { toast("Este navegador no deja compartir ficheros"); $("#bDescargar").classList.remove("oculto"); }
-};
-$("#bDescargar").onclick = () => {
-  ficheros(pendientes).forEach((f, i) => setTimeout(() => { const a = document.createElement("a"); a.href = URL.createObjectURL(f); a.download = f.name; a.click(); }, i * 400));
-  $("#bConfirmar").classList.remove("oculto");
-};
-$("#bConfirmar").onclick = async () => {
-  for (const n of pendientes){ n.enviada = Date.now(); n.audio = null; n.fotos = []; n.trazo = null; await db.poner(n); }
-  await refrescarPendientes(); $("#pEnvio").classList.remove("abierto"); toast("✓ Enviadas. Se colocarán al abrir Chispa en el PC");
-};
-
-/* ---------- Ajustes ---------- */
-async function cargarAjustes(){
-  Object.assign(ajustes, (await db.cfg("ajustes")) || {});
-  // ajustes que llegan desde el código QR del PC
-  const q = new URLSearchParams(location.search);
-  if (q.has("t") || q.has("a") || q.has("nd")){
-    if (q.get("t")) ajustes.terminal = q.get("t");
-    if (q.get("a")) ajustes.ambito = q.get("a") === "personal" ? "personal" : "trabajo";
-    if (q.get("nd")) ajustes.desde = q.get("nd");
-    if (q.get("nh")) ajustes.hasta = q.get("nh");
-    await db.setCfg("ajustes", ajustes);
-    toast(`📱 Configurado como «${ajustes.terminal}»`);
+document.addEventListener("click", async e => {
+  const t = e.target.closest("button,img"); if (!t) return;
+  const nota = id => notas.find(x => x.id === id);
+  if (t.dataset.hecha){ const n = nota(t.dataset.hecha); n.hecha = !n.hecha; await guardarNotaLocal(n); refrescar(); }
+  else if (t.dataset.editar) abrirEdicion(nota(t.dataset.editar));
+  else if (t.dataset.borrar){ if (confirm("¿Borrar esta nota? Irá a la Papelera de Chispa en tu OneDrive.")) borrarNota(nota(t.dataset.borrar)); }
+  else if (t.dataset.audio){ try { new Audio(await urlAdjunto(nota(t.dataset.audio).audio)).play(); } catch(err){ toast("No se pudo cargar el audio (¿sin conexión?)"); } }
+  else if (t.dataset.ok){
+    const n = nota(t.dataset.ok), v = document.querySelector(`[data-resolver="${t.dataset.ok}"]`).value.trim(); if (!v) return;
+    n.texto = v; n.ancla = false; const s = sugerir(v, new Date(n.creada)); if (s.fecha) n.fecha = s.fecha; if (s.tipo) n.tipo = s.tipo; if (s.cat) n.para = {categoria: s.cat, nombre: s.nombre};
+    await guardarNotaLocal(n); refrescar(); toast("Ancla resuelta ✓");
   }
-  $("#term").textContent = ajustes.terminal;
-  return q.get("accion");
+  else if (t.tagName === "IMG" && t.closest(".fotos") && t.src){ $("#visor img").src = t.src; $("#visor").style.display = "flex"; }
+});
+$("#visor").onclick = () => $("#visor").style.display = "none";
+async function borrarNota(n){
+  if (!n) return;
+  if (n._etag){ n._borrar = true; n._pend = false; await idb.poner(n); }   // ya estaba en OneDrive: se mueve a la Papelera al sincronizar
+  else { await idb.quitar(n.id); notas = notas.filter(x => x !== n); }    // nunca llegó a subir: se borra sin más
+  refrescar(); pintarEstado(); sincronizar(true); toast("Nota borrada");
 }
-$("#bAjustes").onclick = () => {
-  tocado = true;
-  $("#aTerm").value = ajustes.terminal; $("#aAmb").value = ajustes.ambito; $("#aDesde").value = ajustes.desde; $("#aHasta").value = ajustes.hasta;
-  $("#aTrans").value = ajustes.trans ? "1" : "0"; $("#aUbi").value = ajustes.ubi ? "1" : "0";
-  $("#version").textContent = "Chispa Móvil · versión " + VERSION;
-  $("#pAjustes").classList.add("abierto");
-};
-$("#bGuardarAjustes").onclick = async () => {
-  Object.assign(ajustes, { terminal: $("#aTerm").value.trim() || "Móvil", ambito: $("#aAmb").value, desde: $("#aDesde").value || "23:00", hasta: $("#aHasta").value || "06:00",
-    trans: $("#aTrans").value === "1", ubi: $("#aUbi").value === "1" });
-  await db.setCfg("ajustes", ajustes);
-  if (ajustes.ubi && navigator.geolocation) navigator.geolocation.getCurrentPosition(() => {}, () => {});
-  $("#term").textContent = ajustes.terminal; aplicarNoche(); setAmbito(ajustes.ambito);
-  $("#pAjustes").classList.remove("abierto"); toast("Ajustes guardados");
-};
-document.querySelectorAll("[data-cerrar]").forEach(b => b.onclick = () => b.closest(".panel").classList.remove("abierto"));
 
-/* ---------- Arranque ---------- */
+/* ================= Editar ================= */
+let editando = null;
+function abrirEdicion(n){
+  editando = n;
+  $("#eTexto").value = n.texto || ""; $("#eAmbito").value = n.ambito || "trabajo"; $("#eTipo").value = n.tipo || "nota";
+  $("#eCat").value = n.para?.categoria || ""; $("#eNombre").value = n.para?.nombre || ""; $("#eFecha").value = n.fecha || "";
+  const c = config.contactos || {}, usados = notas.map(x => x.para?.nombre).filter(Boolean);
+  $("#dlNombres").innerHTML = [...new Set([...(c.cliente||[]), ...(c.proveedor||[]), ...(c.companero||[]), ...usados])].sort().map(x => `<option value="${esc(x)}">`).join("");
+  $("#mEditar").classList.add("abierto");
+}
+$("#eSinFecha").onclick = () => $("#eFecha").value = "";
+$("#eCancelar").onclick = () => $("#mEditar").classList.remove("abierto");
+$("#eBorrar").onclick = () => { $("#mEditar").classList.remove("abierto"); if (confirm("¿Borrar esta nota?")) borrarNota(editando); };
+$("#eGuardar").onclick = async () => {
+  const n = editando; if (!n) return;
+  n.texto = $("#eTexto").value.trim(); n.ambito = $("#eAmbito").value; n.tipo = $("#eTipo").value;
+  n.para = {categoria: $("#eCat").value, nombre: $("#eNombre").value.trim()}; n.fecha = $("#eFecha").value || null;
+  if (n.ancla && n.texto) n.ancla = false;
+  const cat = n.para.categoria;
+  if (n.para.nombre && ["cliente","proveedor","companero"].includes(cat)){
+    config.contactos[cat] = config.contactos[cat] || [];
+    if (!config.contactos[cat].some(x => norm(x) === norm(n.para.nombre))){ config.contactos[cat].push(n.para.nombre); guardarConfig(); }
+  }
+  $("#mEditar").classList.remove("abierto"); await guardarNotaLocal(n); refrescar(); toast("Guardada ✓");
+};
+function guardarConfig(){ lsSet("chispa.config", config); lsSet("chispa.cfgPend", true); pintarEstado(); sincronizar(true); }
+
+/* ================= Vistas ================= */
+let vista = "anotar";
+function ver(v){
+  vista = v;
+  document.querySelectorAll("#navPC button,#tabs button").forEach(b => b.classList.toggle("activo", b.dataset.v === v || (v === "estad" || v === "ayuda") && b.dataset.v === "ajustes" && b.closest("#tabs")));
+  for (const id of ["anotar","hoy","notas","estad","ajustes","ayuda"]) $("#v" + id[0].toUpperCase() + id.slice(1)).classList.toggle("oculto", id !== v);
+  if (v === "anotar") requestAnimationFrame(ajustarLienzo);
+  refrescar(); scrollTo(0, 0);
+}
+document.querySelectorAll("#navPC button,#tabs button").forEach(b => b.onclick = () => ver(b.dataset.v));
+function refrescar(){ ({anotar: () => {}, hoy: pintarHoy, notas: pintarNotas, estad: pintarEstad, ajustes: pintarAjustes, ayuda: pintarAyuda})[vista](); pintarEstado(); }
+const bloque = (t, l, vac) => `<h2>${t} <span class="n">${l.length}</span></h2>` + (l.length ? l.map(tarjeta).join("") : `<div class="vacio">${vac}</div>`);
+
+function pintarHoy(){
+  const hoy = hoyISO(), en7 = isoDia(new Date(Date.now() + 7*864e5)), ayer = isoDia(new Date(Date.now() - 864e5));
+  const todas = deNotas(), pend = todas.filter(n => !n.hecha);
+  const anclas = pend.filter(n => n.ancla), vencidas = pend.filter(n => n.fecha && n.fecha < hoy), deHoy = pend.filter(n => n.fecha === hoy);
+  const nocturnas = todas.filter(n => n.nocturna && !n.ancla && isoDia(new Date(n.creada)) >= ayer);
+  const proximas = pend.filter(n => n.fecha && n.fecha > hoy && n.fecha <= en7).sort((a, b) => a.fecha.localeCompare(b.fecha));
+  const capturadas = todas.filter(n => isoDia(new Date(n.creada)) === hoy);
+  const h = new Date().getHours(), saludo = h < 14 ? "Buenos días" : h < 21 ? "Buenas tardes" : "Buenas noches";
+  $("#vHoy").innerHTML = `
+    <div class="card" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px">
+      <div style="flex:1;min-width:180px"><b>${saludo}.</b> <span style="color:var(--muted)">${new Date().toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"})}</span></div>
+      <button class="btn sec" id="mailT">✉ Resumen trabajo</button><button class="btn sec" id="mailP">✉ Resumen personal</button>
+    </div>
+    ${anclas.length ? bloque("⚓ Anclas por resolver", anclas, "") : ""}
+    ${vencidas.length ? bloque("Vencidas", vencidas, "") : ""}
+    ${bloque("Para hoy", deHoy, "Nada con fecha para hoy. ¡Respira!")}
+    ${nocturnas.length ? bloque("🌙 Ideas de anoche", nocturnas, "") : ""}
+    ${bloque("Próximos 7 días", proximas, "Sin acciones en los próximos días.")}
+    ${bloque("Capturado hoy", capturadas, "Todavía no has anotado nada hoy.")}`;
+  $("#mailT").onclick = () => prepararCorreo("trabajo"); $("#mailP").onclick = () => prepararCorreo("personal");
+  cargarFotos($("#vHoy"));
+}
+function prepararCorreo(ambito){
+  const hoy = hoyISO(), dest = ambito === "trabajo" ? config.correoTrabajo : config.correoPersonal, del = deNotas().filter(n => n.ambito === ambito);
+  const vence = del.filter(n => !n.hecha && n.fecha && n.fecha <= hoy), nuevas = del.filter(n => isoDia(new Date(n.creada)) === hoy);
+  if (!vence.length && !nuevas.length){ toast("Hoy no hay nada que enviar en " + ambito); return; }
+  const linea = n => `- ${n.ancla ? "(ancla de las " + hora(n.creada) + ") " + (n.texto || "") : n.texto}${n.para?.nombre ? " [" + n.para.nombre + "]" : ""}${n.fecha ? " · " + fechaLarga(n.fecha) : ""}`;
+  let cuerpo = `Resumen de Chispa · ${fechaLarga(hoy)}\n\n`;
+  if (vence.length) cuerpo += `PARA HOY Y VENCIDAS\n${vence.map(linea).join("\n")}\n\n`;
+  if (nuevas.length) cuerpo += `CAPTURADO HOY\n${nuevas.map(linea).join("\n")}\n`;
+  location.href = `mailto:${encodeURIComponent(dest || "")}?subject=${encodeURIComponent("Chispa · " + (ambito === "trabajo" ? "Trabajo" : "Personal") + " · " + fechaLarga(hoy))}&body=${encodeURIComponent(cuerpo)}`;
+}
+function pintarNotas(){
+  const q = norm($("#q").value).split(/\s+/).filter(Boolean), a = $("#fAmbito").value, ti = $("#fTipo").value, c = $("#fCat").value, es = $("#fEstado").value;
+  const lista = deNotas().filter(n => {
+    if (a && n.ambito !== a) return false; if (ti && n.tipo !== ti) return false; if (c && n.para?.categoria !== c) return false;
+    if (es === "pend" && n.hecha) return false; if (es === "hecha" && !n.hecha) return false;
+    if (q.length){ const h = norm([n.texto, n.transcripcion, n.para?.nombre, CAT[n.para?.categoria], n.tipo, n.terminal, fechaLarga(n.creada), n.fecha ? fechaLarga(n.fecha) : "", n.nocturna ? "noche nocturna" : "", n.ancla ? "ancla" : ""].join(" ")); if (!q.every(p => h.includes(p))) return false; }
+    return true;
+  });
+  $("#listaNotas").innerHTML = `<div class="vacio">${lista.length} de ${deNotas().length} notas</div>` + lista.slice(0, 200).map(tarjeta).join("");
+  cargarFotos($("#listaNotas"));
+}
+for (const id of ["#q","#fAmbito","#fTipo","#fCat","#fEstado"]) $(id).addEventListener("input", pintarNotas);
+
+function barras(obj, max = 10){
+  const f = Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, max), top = f[0]?.[1] || 1;
+  return f.length ? f.map(([k, v]) => `<div class="bar"><div class="et" title="${esc(k)}">${esc(k)}</div><div class="pi"><div style="width:${v/top*100}%"></div></div><div class="v">${v}</div></div>`).join("") : `<div class="vacio">Aún sin datos.</div>`;
+}
+const contar = (l, f) => { const o = {}; for (const n of l){ const k = f(n); if (k) o[k] = (o[k] || 0) + 1; } return o; };
+function pintarEstad(){
+  const ns = deNotas(), u30 = ns.filter(n => Date.now() - new Date(n.creada) < 30*864e5);
+  const meses = {}; for (let i = 5; i >= 0; i--){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i); meses[d.toLocaleDateString("es-ES", {month: "short", year: "2-digit"})] = 0; }
+  for (const n of ns){ const k = new Date(n.creada).toLocaleDateString("es-ES", {month: "short", year: "2-digit"}); if (k in meses) meses[k]++; }
+  $("#vEstad").innerHTML = `
+    <div class="kpis"><div class="kpi"><b>${ns.length}</b><span>notas en total</span></div><div class="kpi"><b>${u30.length}</b><span>últimos 30 días</span></div>
+      <div class="kpi"><b>${ns.filter(n => !n.hecha && (n.tipo === "tarea" || n.fecha)).length}</b><span>pendientes</span></div><div class="kpi"><b>${ns.filter(n => n.nocturna).length}</b><span>ideas nocturnas</span></div></div>
+    <div class="fila" style="margin-top:10px">
+      <div class="card"><h2>Para quién trabajas</h2>${barras(contar(ns, n => n.para?.categoria ? CAT[n.para.categoria] : "Sin indicar"))}</div>
+      <div class="card"><h2>Trabajo y personal</h2>${barras(contar(ns, n => n.ambito === "personal" ? "Personal" : "Trabajo"))}</div></div>
+    <div class="card"><h2>Clientes con más notas</h2>${barras(contar(ns.filter(n => n.para?.categoria === "cliente"), n => n.para.nombre))}</div>
+    <div class="fila"><div class="card"><h2>Proveedores</h2>${barras(contar(ns.filter(n => n.para?.categoria === "proveedor"), n => n.para.nombre))}</div>
+      <div class="card"><h2>Compañeros</h2>${barras(contar(ns.filter(n => n.para?.categoria === "companero"), n => n.para.nombre))}</div></div>
+    <div class="fila"><div class="card"><h2>Por tipo</h2>${barras(contar(ns, n => ({tarea: "Tareas", idea: "Ideas", recordatorio: "Recordatorios", nota: "Notas"})[n.tipo]))}</div>
+      <div class="card"><h2>Últimos 6 meses</h2>${barras(meses, 6)}</div></div>`;
+}
+
+function pintarAjustes(){
+  const c = config, cont = c.contactos || {};
+  $("#vAjustes").innerHTML = `
+    <div class="fila" style="margin-top:8px"><button class="btn sec" id="irEstad">📊 Estadísticas</button><button class="btn sec" id="irAyuda">❔ Ayuda</button></div>
+    <div class="card" style="margin-top:10px"><h2>Este dispositivo</h2>
+      <div class="fila"><div><label>Nombre (aparece en cada nota)</label><input id="kTerm" value="${esc(disp.terminal)}" placeholder="${esMovil() ? "Móvil profesional" : "PC oficina"}"></div>
+        <div><label>Ámbito por defecto</label><select id="kAmb"><option value="trabajo">Trabajo</option><option value="personal">Personal</option></select></div></div>
+      <div class="fila"><div><label>Transcribir la voz a texto</label><select id="kTrans"><option value="1">Sí</option><option value="0">No, solo audio</option></select></div>
+        <div><label>Guardar ubicación</label><select id="kUbi"><option value="0">No</option><option value="1">Sí</option></select></div>
+        <div><label>Tema de día</label><select id="kTema"><option value="auto">Claro</option><option value="oscuro">Oscuro</option></select></div></div>
+    </div>
+    <div class="card"><h2>🌙 Modo noche</h2>
+      <div class="fila"><div><label>Desde</label><input type="time" id="kDesde" value="${c.nocheDesde}"></div><div><label>Hasta</label><input type="time" id="kHasta" value="${c.nocheHasta}"></div></div>
+      <div class="vacio">En este horario la pantalla del móvil se pone negra y las notas se marcan como «idea nocturna».</div></div>
+    <div class="card"><h2>✉ Correos para los resúmenes</h2>
+      <div class="fila"><div><label>Correo del trabajo</label><input id="kCT" type="email" value="${esc(c.correoTrabajo)}"></div><div><label>Correo personal</label><input id="kCP" type="email" value="${esc(c.correoPersonal)}"></div></div></div>
+    <div class="card"><h2>👤 Nombres que Chispa reconoce</h2><div class="vacio">Uno por línea. Al escribir o dictar un nombre, la nota se asigna sola.</div>
+      <div class="fila"><div><label>Clientes</label><textarea id="kCli" rows="6">${esc((cont.cliente||[]).join("\n"))}</textarea></div>
+        <div><label>Proveedores</label><textarea id="kPro" rows="6">${esc((cont.proveedor||[]).join("\n"))}</textarea></div>
+        <div><label>Compañeros</label><textarea id="kCom" rows="6">${esc((cont.companero||[]).join("\n"))}</textarea></div></div></div>
+    <button class="btn" id="kGuardar" style="width:100%;padding:13px">Guardar ajustes</button>
+    <div class="card" style="margin-top:14px"><h2>📱 Añadir un móvil</h2>
+      <div class="vacio">En el móvil basta con abrir <b>${esc(REDIRECT)}</b> en Chrome, entrar con tu cuenta y elegir menú ⋮ → «Añadir a pantalla de inicio». O escanea este código:</div>
+      <div class="fila"><div><label>Nombre del móvil</label><input id="kMovNom" value="Móvil profesional"></div><div><label>Ámbito</label><select id="kMovAmb"><option value="trabajo">Trabajo</option><option value="personal">Personal</option></select></div></div>
+      <button class="btn sec" id="kQR" style="margin-top:10px">Generar código QR</button><div id="qr" style="text-align:center"></div></div>
+    <div class="card"><h2>Cuenta</h2><div class="vacio">Conectado como ${esc(lsGet("chispa.usuario") || "tu cuenta de Microsoft")}. Tus datos están en OneDrive › Aplicaciones › Chispa.</div>
+      <button class="btn sec" id="kSalir" style="margin-top:8px">Cerrar sesión en este dispositivo</button></div>
+    <div class="vacio" style="text-align:center">Chispa ${VERSION}</div>`;
+  $("#kAmb").value = disp.ambito || "trabajo"; $("#kTrans").value = disp.trans === false ? "0" : "1"; $("#kUbi").value = disp.ubi ? "1" : "0"; $("#kTema").value = disp.tema === "oscuro" ? "oscuro" : "auto";
+  $("#irEstad").onclick = () => ver("estad"); $("#irAyuda").onclick = () => ver("ayuda");
+  const lineas = id => [...new Set($(id).value.split("\n").map(s => s.trim()).filter(Boolean))];
+  $("#kGuardar").onclick = () => {
+    Object.assign(disp, {terminal: $("#kTerm").value.trim(), ambito: $("#kAmb").value, trans: $("#kTrans").value === "1", ubi: $("#kUbi").value === "1", tema: $("#kTema").value});
+    lsSet("chispa.disp", disp);
+    if (disp.ubi && navigator.geolocation) navigator.geolocation.getCurrentPosition(() => {}, () => {});
+    Object.assign(config, {nocheDesde: $("#kDesde").value || "23:00", nocheHasta: $("#kHasta").value || "06:00", correoTrabajo: $("#kCT").value.trim(), correoPersonal: $("#kCP").value.trim(),
+      contactos: {cliente: lineas("#kCli"), proveedor: lineas("#kPro"), companero: lineas("#kCom")}});
+    guardarConfig(); aplicarTema(); $("#subTerm").textContent = disp.terminal; setAmbito(disp.ambito); toast("Ajustes guardados ✓");
+  };
+  $("#kSalir").onclick = () => {
+    const pend = notas.filter(n => n._pend || n._borrar).length;
+    if (pend && !confirm(`Hay ${pend} cambios sin subir que se perderán. ¿Cerrar sesión igualmente?`)) return;
+    localStorage.removeItem("chispa.token"); indexedDB.deleteDatabase("chispa3"); location.href = `https://login.microsoftonline.com/consumers/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(REDIRECT)}`;
+  };
+  $("#kQR").onclick = async () => {
+    const url = REDIRECT + "?" + new URLSearchParams({t: $("#kMovNom").value.trim() || "Móvil", a: $("#kMovAmb").value});
+    try {
+      if (!window.qrcode) await new Promise((ok, ko) => { const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"; s.onload = ok; s.onerror = ko; document.head.appendChild(s); });
+      const q = qrcode(0, "M"); q.addData(url, "Byte"); q.make();
+      $("#qr").innerHTML = `<div style="background:#fff;display:inline-block;padding:12px;border-radius:12px;margin-top:10px">${q.createSvgTag({cellSize: 6, margin: 2})}</div>`;
+    } catch(e){ $("#qr").innerHTML = `<div class="vacio" style="word-break:break-all">${esc(url)}</div>`; }
+  };
+}
+
+function pintarAyuda(){
+  $("#vAyuda").innerHTML = `<div class="card" style="margin-top:8px">
+  <h2>Ayuda de Chispa <span class="n">versión ${VERSION}</span></h2>
+  <h3>Qué es</h3><p>Tu sitio para soltar todo lo que no quieres tener en la cabeza. Es la misma Chispa en el móvil y en el PC, y todo se guarda en tu OneDrive personal, en <b>Aplicaciones › Chispa</b>.</p>
+  <h3>✍ Anotar</h3><ul>
+    <li>Escribe con el dedo en la zona grande, dicta con 🎤, teclea con ⌨ o haz fotos con 📷. Pulsa ✓ para guardar.</li>
+    <li>Al dictar se guarda <b>el audio original</b>. Si la transcripción no cuadra, pulsa «▶ Escuchar» en la nota.</li>
+    <li>Chispa detecta <b>fechas</b> («mañana», «el jueves», «el 25 de noviembre», «en 3 días») y los <b>nombres</b> de tus listas.</li>
+    <li><b>⚓ Ancla</b>: guarda la hora y te deja poner una palabra para acordarte. Luego la completas en «Hoy».</li></ul>
+  <h3>☁ Sincronización</h3><p>Cada nota se guarda primero en el dispositivo y se sube sola a OneDrive. Sin cobertura no pasa nada: se sube cuando vuelva. El indicador de arriba muestra «☁ ✓» cuando todo está subido. Si pone «🔑 Volver a entrar», púlsalo.</p>
+  <h3>📅 Hoy</h3><p>Tu agenda de acciones: anclas, vencidas, lo de hoy, ideas de anoche, próximos 7 días y lo capturado hoy.</p>
+  <h3>🗂 Notas</h3><p>Buscador y filtros. En cada nota: ✓ hecha, ✎ editar (texto, ámbito, tipo, para quién, fecha) y 🗑 borrar (va a la Papelera de Chispa en OneDrive).</p>
+  <h3>🌙 Modo noche</h3><p>En tu horario la pantalla del móvil se pone negra. Si abres Chispa y la cierras sin escribir, queda un ancla con la hora.</p>
+  <h3>📱 Instalar en el móvil</h3><p>Abre ${esc(REDIRECT)} en Chrome, entra con tu cuenta y elige menú ⋮ → «Añadir a pantalla de inicio». Si mantienes pulsado el icono, tienes los atajos <b>Grabar voz</b> (para el coche) y <b>Ancla rápida</b>.</p>
+  <h3>Dónde están mis datos</h3><p>OneDrive › Aplicaciones › Chispa: <b>Notas</b> (un .json legible por nota), <b>Audios</b>, <b>Fotos</b>, <b>Configuracion</b> y <b>Papelera</b>.</p>
+  <h3>Novedades</h3><ul>
+    <li><b>0.3</b>: una sola Chispa para móvil y PC, sincronizada sola con tu OneDrive personal. En el móvil ya puedes ver, editar y borrar notas. El ancla admite una palabra.</li>
+    <li><b>0.2</b>: Chispa Móvil y la carpeta Entrada.</li><li><b>0.1</b>: primera versión.</li></ul></div>`;
+}
+
+/* ================= Arranque ================= */
 (async () => {
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
-  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
-  const accion = await cargarAjustes();
-  history.replaceState(null, "", location.pathname);
-  aplicarNoche(); setInterval(aplicarNoche, 60000);
-  ajustarLienzo(); addEventListener("resize", ajustarLienzo);
-  nuevoBorrador(); refrescarPendientes();
-  if (accion === "ancla"){ anclaAbierta = null; await guardarAncla(); toast("⚓ Ancla guardada a las " + horaDe(new Date())); }
+  try { navigator.storage?.persist?.(); } catch(e){}
+  disp = Object.assign(disp, lsGet("chispa.disp") || {});
+  config = Object.assign(config, lsGet("chispa.config") || {});
+  // Ajustes que llegan desde el código QR
+  const q = new URLSearchParams(location.search), accion = q.get("accion") || lsGet("chispa.accion");
+  if (q.get("t")){ disp.terminal = q.get("t"); disp.ambito = q.get("a") === "personal" ? "personal" : "trabajo"; lsSet("chispa.disp", disp); }
+  localStorage.removeItem("chispa.accion");
+  const vuelta = await volverDeLogin();
+  if (!vuelta && (q.has("t") || q.has("accion"))) history.replaceState(null, "", REDIRECT);
+  aplicarTema();
+
+  if (!token){
+    if (vuelta && vuelta !== "ok" && vuelta !== "login_required" && vuelta !== "interaction_required") $("#loginMsg").innerHTML = `No se pudo entrar: ${esc(vuelta)}. Inténtalo de nuevo.`;
+    if (accion) lsSet("chispa.accion", accion);
+    $("#login").classList.remove("oculto"); $("#bLogin").onclick = () => irALogin(false); return;
+  }
+  // La sesión de Microsoft para webs dura 24 h: si caducó, se renueva sola con un salto rápido
+  if (Date.now() >= token.exp && navigator.onLine){
+    try { await accessToken(); } catch(e){ if (e.login && vuelta !== "login_required" && vuelta !== "interaction_required"){ if (accion) lsSet("chispa.accion", accion); return irALogin(true); } }
+  }
+  notas = (await idb.todas()) || []; ordenar();
+  $("#app").classList.remove("oculto");
+  $("#subTerm").textContent = disp.terminal || (esMovil() ? "" : "");
+  ver(esMovil() ? "anotar" : "hoy");
+  ajustarLienzo(); addEventListener("resize", () => { ajustarLienzo(); aplicarTema(); });
+  nuevoBorrador();
+  if (!disp.terminal) setTimeout(() => toast("Ponle nombre a este dispositivo en ⚙ Ajustes", 3500), 800);
+  if (accion === "ancla"){ anclaAbierta = null; await guardarAncla(new Date(), true); }
   if (accion === "voz"){ tocado = true; empezarVoz(); }
+  sincronizar(true);
 })();
 </script>
 </body>
