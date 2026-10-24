@@ -215,10 +215,10 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .hcab .esp{flex:1}
 .ibtn{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;color:var(--muted)}
 .ibtn:hover{background:var(--raise);color:var(--text)}
-.hinfo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin:2px 2px 10px}
+.hinfo{display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin:2px 2px 0}
 .hinfo span,.hinfo a{display:inline-flex;align-items:center;gap:5px;color:inherit;text-decoration:none}
 .hinfo svg{width:15px;height:15px}
-#eTexto{width:100%;border:0;outline:0;resize:none;background:transparent;font-size:19px;line-height:1.4;padding:4px 2px;min-height:80px}
+#eTexto{width:100%;border:0;outline:0;resize:none;background:transparent;font-size:17px;line-height:1.5;padding:0;min-height:90px;display:block}
 .transc{border-left:3px solid var(--spark);padding:4px 0 4px 12px;color:var(--muted);font-size:14.5px;margin:6px 0 4px}
 .galeria{display:flex;gap:10px;overflow-x:auto;padding:12px 2px 4px}
 .galeria .ft{position:relative;flex:none}
@@ -242,6 +242,67 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .opc{height:34px;padding:0 12px;border-radius:11px;background:var(--raise);font-size:13.5px;font-weight:500;color:var(--muted)}
 .opc.on{background:var(--ink);color:var(--on-ink)}
 @media (max-width:899px){ .prop .lbl{flex:1} .prop .val{flex-basis:100%;padding-left:32px;min-width:0} }
+/* Editor: barra fija arriba y secciones */
+.hoja.editor{padding:0}
+.ebar{position:sticky;top:0;z-index:3;background:var(--surface);border-bottom:1px solid var(--line);padding:6px 14px 10px;border-radius:28px 28px 0 0}
+.ebar .asa{margin:2px auto 8px}
+.ebar-in{display:flex;align-items:center;gap:8px}
+.ebar-in .esp{flex:1}
+.accion{height:42px;padding:0 13px;border-radius:13px;display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:14px;background:var(--raise);color:var(--text)}
+.accion svg{width:18px;height:18px}
+.accion.borrar{color:var(--danger);background:var(--danger-soft)}
+.accion.hecha-on{color:var(--home)}
+.ebar .btn{height:42px}
+.accion .corto{display:none}
+@media (max-width:560px){ #eBorrar span{display:none} #eBorrar{width:42px;padding:0;justify-content:center} .accion .largo{display:none} .accion .corto{display:inline} .prop input[type=date],.prop input[type=time]{flex:1 1 130px} }
+.ecuerpo{padding:12px 18px calc(28px + env(safe-area-inset-bottom))}
+.esec{margin-top:20px}
+.esec h4{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px 2px;font-family:var(--display);font-size:15px;font-weight:600;color:var(--muted)}
+.efield{border:1.5px solid var(--line);border-radius:16px;padding:12px 14px;background:var(--bg);transition:border-color .15s,background .15s}
+.efield:focus-within{border-color:var(--work);background:var(--surface)}
+.enl{display:inline-flex;align-items:center;gap:6px;color:var(--work);font-family:var(--body);font-weight:600;font-size:14px;padding:6px 8px;border-radius:10px}
+.enl:hover{background:var(--raise)}
+.enl svg{width:17px;height:17px}
+.sin-adj{color:var(--faint);font-size:14px;padding:4px 2px}
+.props{border:1px solid var(--line);border-radius:18px;padding:0 14px;margin:0}
+.props .prop:first-child{border-top:0}
+.segm{display:inline-flex;flex-wrap:wrap;background:var(--raise);border-radius:12px;padding:3px;gap:2px}
+.segm .opc{background:none;height:34px}
+.segm .opc.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(22,33,58,.12)}
+.atajos{display:flex;gap:6px;flex-wrap:wrap;width:100%}
+@media (min-width:900px){
+  .hoja.editor{width:700px}
+  .ebar{padding:14px 22px;border-radius:26px 26px 0 0}
+  .ecuerpo{padding:14px 24px 26px}
+  .prop .lbl{width:110px}
+}
+/* Listas */
+.milista{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+.milista .mi{display:flex;align-items:flex-start;gap:9px;text-align:left;padding:3px 0;color:var(--text);font-size:14.5px;line-height:1.35}
+.milista .mi i{width:17px;height:17px;border-radius:5px;border:1.75px solid var(--faint);flex:none;margin-top:1px;transition:background .15s}
+.milista .mi.on i{background:var(--home);border-color:var(--home)}
+.milista .mi.on span{text-decoration:line-through;color:var(--faint)}
+.mas-items{font-size:13px;color:var(--faint);padding-left:26px}
+.mt .prog{color:var(--work);font-weight:600} .mt .prog.completa{color:var(--home)}
+.prog-t{font-family:var(--body);font-weight:500;color:var(--faint);font-size:13.5px;margin-left:6px}
+.barra-prog{height:6px;border-radius:3px;background:var(--raise);overflow:hidden;margin:0 2px 10px}
+.barra-prog i{display:block;height:100%;width:0;background:var(--home);border-radius:3px;transition:width .25s}
+.elista{border:1px solid var(--line);border-radius:16px;padding:4px 6px}
+.eitem{display:flex;align-items:center;gap:8px;padding:2px 4px;border-bottom:1px solid var(--line)}
+.eitem:last-child{border-bottom:0}
+.eitem .ck{width:24px;height:24px;border-radius:7px;border:2px solid var(--faint);display:grid;place-items:center;color:transparent;flex:none}
+.eitem .ck svg{width:14px;height:14px;stroke-width:3}
+.eitem.on .ck{background:var(--home);border-color:var(--home);color:#fff}
+.eitem input,.eitem textarea{flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:15.5px;line-height:1.4;padding:11px 2px;color:var(--text);resize:none;overflow:hidden;font-family:var(--body)}
+.eitem.on textarea{text-decoration:line-through;color:var(--faint)}
+.eitem{align-items:flex-start} .eitem .ck{margin-top:9px} .eitem .ibtn{margin-top:4px} .eitem.nuevo{align-items:center}
+.eitem .ibtn{width:34px;height:34px;opacity:.6}
+.hechos-tit{display:inline-flex;align-items:center;gap:7px;margin:12px 2px 8px;color:var(--muted);font-weight:600;font-size:14px;padding:6px 8px;border-radius:10px}
+.hechos-tit:hover{background:var(--raise)} .hechos-tit svg{width:16px;height:16px;color:var(--home)}
+.elista.hechos{background:var(--bg)}
+.todo-hecho{display:flex;align-items:center;gap:8px;color:var(--home);font-weight:600;padding:12px 6px;border-bottom:1px solid var(--line)}
+.todo-hecho svg{width:18px;height:18px}
+.eitem.nuevo{color:var(--faint)} .eitem.nuevo svg{width:20px;height:20px;margin:0 2px}
 .hpie{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
 .hpie .borrar{color:var(--danger);background:var(--danger-soft)}
 .hpie .esp{flex:1}
@@ -413,33 +474,50 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <!-- Hoja de edición -->
 <div class="velo" id="velo"></div>
-<div class="hoja" id="hEditar" role="dialog" aria-label="Editar nota">
-  <div class="asa"></div>
-  <div class="hcab">
-    <button class="ibtn" id="eCerrar" aria-label="Cerrar"></button>
-    <div class="esp"></div>
-    <button class="btn" id="eGuardar">Guardar</button>
+<div class="hoja editor" id="hEditar" role="dialog" aria-label="Editar nota">
+  <div class="ebar">
+    <div class="asa"></div>
+    <div class="ebar-in">
+      <button class="ibtn" id="eCerrar" aria-label="Cerrar sin guardar" title="Cerrar sin guardar"></button>
+      <div class="esp"></div>
+      <button class="accion borrar" id="eBorrar" title="Borrar la nota"></button>
+      <button class="accion" id="eHecha"></button>
+      <button class="btn" id="eGuardar">Guardar</button>
+    </div>
   </div>
-  <div class="hinfo" id="eInfo"></div>
-  <textarea id="eTexto" rows="3" placeholder="Escribe la nota"></textarea>
-  <div class="transc oculto" id="eTransc"></div>
-  <div id="eTransBtn"></div>
-  <div id="eAudio"></div>
-  <div class="galeria" id="eFotos"></div>
-  <input type="file" id="eInFoto" accept="image/*" multiple class="oculto">
-  <div class="props">
-    <div class="prop"><span data-i="sun"></span><span class="lbl">Ámbito</span><div class="val" id="eAmbito"></div></div>
-    <div class="prop"><span data-i="tag"></span><span class="lbl">Tipo</span><div class="val" id="eTipo"></div></div>
-    <div class="prop"><span data-i="user"></span><span class="lbl">Para</span><div class="val">
-      <select id="eCat"><option value="">Sin indicar</option><option value="cliente">Cliente</option><option value="proveedor">Proveedor</option><option value="companero">Compañero</option><option value="personal">Personal</option></select>
-      <input type="text" id="eNombre" list="dlNombres" placeholder="Nombre"><datalist id="dlNombres"></datalist></div></div>
-    <div class="prop"><span data-i="cal"></span><span class="lbl">Fecha</span><div class="val">
-      <input type="date" id="eFecha"><input type="time" id="eHora" aria-label="Hora (opcional)"><button class="opc" data-f="0">Hoy</button><button class="opc" data-f="1">Mañana</button><button class="opc" data-f="7">En una semana</button><button class="opc" data-f="">Sin fecha</button></div></div>
-  </div>
-  <div class="hpie">
-    <button class="btn sec borrar" id="eBorrar"></button>
-    <div class="esp"></div>
-    <button class="btn sec" id="eHecha"></button>
+  <div class="ecuerpo">
+    <div class="hinfo" id="eInfo"></div>
+    <section class="esec">
+      <h4>Texto<button class="enl" id="eAddLista"></button></h4>
+      <div class="efield"><textarea id="eTexto" rows="3" placeholder="Escribe la nota"></textarea></div>
+      <div class="transc oculto" id="eTransc"></div>
+      <div id="eTransBtn"></div>
+    </section>
+    <section class="esec oculto" id="eSecLista">
+      <h4><span>Lista <span class="prog-t" id="eProg"></span></span></h4>
+      <div class="barra-prog"><i id="eBarra"></i></div>
+      <div class="elista" id="eLista"></div>
+      <div id="eHechos"></div>
+    </section>
+    <section class="esec">
+      <h4>Adjuntos<button class="enl" id="eAddFoto"></button></h4>
+      <div id="eAudio"></div>
+      <div class="galeria" id="eFotos"></div>
+      <input type="file" id="eInFoto" accept="image/*" multiple class="oculto">
+    </section>
+    <section class="esec">
+      <h4>Detalles</h4>
+      <div class="props">
+        <div class="prop"><span data-i="sun"></span><span class="lbl">Ámbito</span><div class="val"><div class="segm" id="eAmbito"></div></div></div>
+        <div class="prop"><span data-i="tag"></span><span class="lbl">Tipo</span><div class="val"><div class="segm" id="eTipo"></div></div></div>
+        <div class="prop"><span data-i="user"></span><span class="lbl">Para quién</span><div class="val">
+          <select id="eCat"><option value="">Sin indicar</option><option value="cliente">Cliente</option><option value="proveedor">Proveedor</option><option value="companero">Compañero</option><option value="personal">Personal</option></select>
+          <input type="text" id="eNombre" list="dlNombres" placeholder="Nombre"><datalist id="dlNombres"></datalist></div></div>
+        <div class="prop"><span data-i="cal"></span><span class="lbl">Fecha y hora</span><div class="val">
+          <input type="date" id="eFecha" aria-label="Fecha"><input type="time" id="eHora" aria-label="Hora (opcional)">
+          <div class="atajos"><button class="opc" data-f="0">Hoy</button><button class="opc" data-f="1">Mañana</button><button class="opc" data-f="7">En una semana</button><button class="opc" data-f="">Sin fecha</button></div></div></div>
+      </div>
+    </section>
   </div>
 </div>
 
@@ -457,7 +535,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.4.5";
+const VERSION = "0.4.8";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -529,8 +607,8 @@ function fechaRelativa(iso){
   return fechaCorta(iso);
 }
 const capital = s => s.charAt(0).toUpperCase() + s.slice(1);
-function toast(t, icono = "check", ms = 2600, deshacer = null){
-  const el = $("#toast"); el.innerHTML = ic(icono) + `<span>${esc(t)}</span>` + (deshacer ? `<button class="deshacer">Deshacer</button>` : "");
+function toast(t, icono = "check", ms = 2600, deshacer = null, etiqueta = "Deshacer"){
+  const el = $("#toast"); el.innerHTML = ic(icono) + `<span>${esc(t)}</span>` + (deshacer ? `<button class="deshacer">${esc(etiqueta)}</button>` : "");
   el.classList.toggle("accion", !!deshacer); el.classList.add("ver"); clearTimeout(toast.t);
   if (deshacer) el.querySelector(".deshacer").onclick = () => { el.classList.remove("ver", "accion"); deshacer(); };
   toast.t = setTimeout(() => el.classList.remove("ver", "accion"), deshacer ? Math.max(ms, 5500) : ms);
@@ -884,6 +962,7 @@ function setAmbito(a){ document.querySelectorAll("#cAmbito button").forEach(b =>
 const ambitoSel = () => document.querySelector("#cAmbito button.on")?.dataset.a || "trabajo";
 document.querySelectorAll("#cAmbito button").forEach(b => b.onclick = () => { tocado = true; setAmbito(b.dataset.a); });
 function autoAlto(){ const t = $("#cTexto"); if ($("#papel").classList.contains("sin-mano") && !esMovil()){ t.style.height = ""; return; } t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 220) + "px"; }
+$("#cTexto").addEventListener("keydown", continuarLista);
 $("#cTexto").addEventListener("input", () => { tocado = true; autoAlto(); pintarDetectado(); });
 function textoBorrador(){ return [$("#cTexto").value, borrador?.transcripcion].filter(Boolean).join(" "); }
 function pintarDetectado(){
@@ -1032,9 +1111,46 @@ document.addEventListener("visibilitychange", async () => {
 
 /* ================= Filas de nota ================= */
 const deNotas = () => notas.filter(n => !n._borrar);
+/* Listas: líneas que empiezan por [ ] o [x] */
+const RX_ITEM = /^\s*(?:[-*•]\s*)?\[( |x|X)\]\s?(.*)$/;
+function partirLista(t){
+  // desde la primera línea con [ ], todas las líneas siguientes son puntos de la lista
+  const intro = [], items = []; let enLista = false;
+  for (const l of String(t || "").split("\n")){
+    const m = l.match(RX_ITEM);
+    if (m){ enLista = true; items.push({hecho: m[1].toLowerCase() === "x", texto: m[2]}); }
+    else if (enLista){ if (l.trim()) items.push({hecho: false, texto: l.trim().replace(/^[-*•]\s+/, "")}); }
+    else intro.push(l);
+  }
+  return {intro: intro.join("\n").trim(), items};
+}
+// se guardan primero los pendientes y al final los hechos
+const ordenarItems = items => [...items.filter(i => !i.hecho), ...items.filter(i => i.hecho)];
+const unirLista = (intro, items) => [String(intro || "").trim(), ...ordenarItems(items).filter(i => i.texto.trim()).map(i => `[${i.hecho ? "x" : " "}] ${i.texto.trim()}`)].filter(Boolean).join("\n");
+// Al pulsar Intro en una línea de lista, la siguiente empieza por [ ]; en una línea vacía, se sale de la lista
+function continuarLista(e){
+  if (e.key !== "Enter" || e.shiftKey || e.ctrlKey || e.metaKey || e.isComposing) return;
+  const t = e.target, pos = t.selectionStart, v = t.value, ini = v.lastIndexOf("\n", pos - 1) + 1, m = v.slice(ini, pos).match(RX_ITEM);
+  if (!m) return;
+  e.preventDefault();
+  if (!m[2].trim()){ t.value = v.slice(0, ini) + v.slice(t.selectionEnd); t.selectionStart = t.selectionEnd = ini; }
+  else { const ins = "\n[ ] "; t.value = v.slice(0, pos) + ins + v.slice(t.selectionEnd); t.selectionStart = t.selectionEnd = pos + ins.length; }
+  t.dispatchEvent(new Event("input", {bubbles: true}));
+}
+async function alternarItem(n, idx){
+  const {intro, items} = partirLista(n.texto); if (!items[idx]) return;  // unirLista lo recoloca en «Hechas»
+  items[idx].hecho = !items[idx].hecho; n.texto = unirLista(intro, items); await guardarNotaLocal(n);
+  avisoListaCompleta(n, items);
+}
+function avisoListaCompleta(n, items){
+  if (items.length && items.every(i => i.hecho) && !n.hecha)
+    toast("Lista completa", "check", 7000, async () => { n.hecha = true; n.hechaEn = new Date().toISOString(); await guardarNotaLocal(n); refrescar(); if ($("#hEditar").classList.contains("on") && editando === n) abrirEdicion(n); }, "Marcar nota hecha");
+}
 function tituloDe(n){
   if (n.ancla) return `Ancla de las ${hora(n.creada)}${n.texto ? ": " + esc(n.texto) : ""}`;
-  if (n.texto) return esc(n.texto);
+  if (n.texto){ const {intro, items} = partirLista(n.texto);
+    if (items.length) return esc(intro.split("\n")[0] || `Lista de ${items.length} ${items.length === 1 ? "punto" : "puntos"}`);
+    return esc(n.texto); }
   return `<span class="vacio">${n.audio ? "Nota de voz" : n.fotos?.length ? "Imagen" : "Nota vacía"}</span>`;
 }
 function fila(n, opts = {}){
@@ -1042,6 +1158,8 @@ function fila(n, opts = {}){
   const mt = [];
   if (n.fecha) mt.push(`<span class="fe ${venc ? "venc" : n.fecha === hoy ? "hoy" : ""}">${ic("cal")}${fechaRelativa(n.fecha)}${n.hora ? ", " + n.hora : ""}</span>`);
   if (n.para?.nombre || n.para?.categoria) mt.push(`<span>${ic("user")}${esc(n.para.nombre || CAT[n.para.categoria])}</span>`);
+  const lista = partirLista(n.texto).items;
+  if (lista.length){ const h = lista.filter(i => i.hecho).length; mt.push(`<span class="prog ${h === lista.length ? "completa" : ""}">${ic("tarea")}${h} de ${lista.length}</span>`); }
   if (n.tipo === "idea") mt.push(`<span>${ic("idea")}Idea</span>`);
   if (n.audio) mt.push(`<span>${ic("mic")}</span>`);
   if (n.fotos?.length > 1) mt.push(`<span>${ic("imagen")}${n.fotos.length}</span>`);
@@ -1051,10 +1169,15 @@ function fila(n, opts = {}){
   if (n._pend) mt.push(`<span class="nube" title="Pendiente de subir">${ic("nube")}</span>`);
   return `<div class="desl"><div class="fondo"></div><div class="fila ${n.hecha ? "hecha" : ""}" data-abrir="${n.id}">
     <button class="chk ${n.ambito === "personal" ? "personal" : ""}" data-hecha="${n.id}" aria-label="${n.hecha ? "Marcar pendiente" : "Marcar hecha"}">${ic("check")}</button>
-    <div class="ct"><div class="tt">${tituloDe(n)}</div>${mt.length ? `<div class="mt">${mt.join("")}</div>` : ""}
+    <div class="ct"><div class="tt">${tituloDe(n)}</div>${lista.length && !n.hecha ? miniLista(n, lista) : ""}${mt.length ? `<div class="mt">${mt.join("")}</div>` : ""}
       ${n.ancla && opts.resolver ? `<div class="resolver"><input placeholder="¿Qué era?" data-resolver="${n.id}"><button data-ok="${n.id}">Listo</button></div>` : ""}</div>
     ${n.fotos?.length ? `<img class="mini" data-mini="${n.fotos[0]}" alt="">` : ""}
   </div></div>`;
+}
+function miniLista(n, items){
+  const pend = items.map((it, i) => ({...it, i})).filter(it => !it.hecho), ver = pend.slice(0, 3);
+  if (!ver.length) return "";
+  return `<div class="milista">${ver.map(it => `<button class="mi" data-item="${n.id}:${it.i}"><i></i><span>${esc(it.texto)}</span></button>`).join("")}${pend.length > 3 ? `<div class="mas-items">y ${pend.length - 3} más</div>` : ""}</div>`;
 }
 // Deslizar: a la derecha marca hecha, a la izquierda borra
 let ignorarClick = false;
@@ -1097,6 +1220,9 @@ document.addEventListener("click", async e => {
   const chk = e.target.closest("[data-hecha]");
   if (chk){ e.stopPropagation(); const n = nota(chk.dataset.hecha); chk.classList.add("pop"); vibrar(30);
     chk.closest(".fila")?.classList.toggle("hecha", !n.hecha); setTimeout(() => alternarHecha(n), 250); return; }
+  const mi = e.target.closest("[data-item]");
+  if (mi){ e.stopPropagation(); const [id, idx] = mi.dataset.item.split(":"); const n = nota(id); mi.classList.add("on"); vibrar(25);
+    setTimeout(async () => { await alternarItem(n, Number(idx)); refrescar(); }, 220); return; }
   const ok = e.target.closest("[data-ok]");
   if (ok){ e.stopPropagation(); const n = nota(ok.dataset.ok), v = document.querySelector(`[data-resolver="${ok.dataset.ok}"]`).value.trim(); if (!v) return;
     n.texto = v; n.ancla = false; const s = sugerir(v, new Date(n.creada)); if (s.fecha){ n.fecha = s.fecha; if (s.hora) n.hora = s.hora; } if (s.tipo) n.tipo = s.tipo; if (s.cat) n.para = {categoria: s.cat, nombre: s.nombre};
@@ -1115,9 +1241,48 @@ $("#velo").onclick = cerrarHojas;
 document.querySelectorAll(".hoja .asa").forEach(a => a.onclick = cerrarHojas);
 
 /* ================= Editar ================= */
+let eItems = [], verHechos = false;
+$("#eAddLista").onclick = () => { if (!eItems.length) eItems = []; $("#eSecLista").classList.remove("oculto"); pintarListaEdicion(true); };
+function pintarListaEdicion(foco = false){
+  const sec = $("#eSecLista");
+  sec.classList.toggle("oculto", !eItems.length && !foco);
+  $("#eAddLista").innerHTML = eItems.length || foco ? "" : ic("tarea") + "Convertir en lista";
+  const h = eItems.filter(i => i.hecho).length;
+  $("#eProg").textContent = eItems.length ? `${h} de ${eItems.length}` : "";
+  $("#eBarra").style.width = eItems.length ? (h / eItems.length * 100) + "%" : "0";
+  const filaItem = (it, i) => `<div class="eitem ${it.hecho ? "on" : ""}"><button class="ck" data-ei="${i}" aria-label="${it.hecho ? "Volver a pendiente" : "Marcar hecho"}">${ic("check")}</button><textarea rows="1" data-eit="${i}" aria-label="Punto ${i + 1}">${esc(it.texto)}</textarea><button class="ibtn" data-eix="${i}" aria-label="Quitar punto">${ic("x")}</button></div>`;
+  const pend = [], hechos = []; eItems.forEach((it, i) => (it.hecho ? hechos : pend).push(filaItem(it, i)));
+  $("#eLista").innerHTML = (pend.length ? pend.join("") : `<div class="todo-hecho">${ic("check")}Todo hecho</div>`)
+    + `<div class="eitem nuevo">${ic("mas")}<input id="eNuevoItem" placeholder="Añadir un punto y pulsar Intro" enterkeyhint="enter"></div>`;
+  $("#eHechos").innerHTML = hechos.length ? `<button class="hechos-tit" id="eVerHechos">${ic(verHechos ? "x" : "check")}<span>${verHechos ? "Ocultar hechos" : `Hechos (${hechos.length})`}</span></button>${verHechos ? `<div class="elista hechos">${hechos.join("")}</div>` : ""}` : "";
+  requestAnimationFrame(() => document.querySelectorAll("#eLista textarea,#eHechos textarea").forEach(crecer));
+  if (foco) setTimeout(() => $("#eNuevoItem")?.focus(), 50);
+}
+function crecer(t){ t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
+const clicLista = async e => {
+  const ck = e.target.closest("[data-ei]"), x = e.target.closest("[data-eix]");
+  if (ck){ const it = eItems[Number(ck.dataset.ei)]; it.hecho = !it.hecho; vibrar(25); eItems = ordenarItems(eItems); pintarListaEdicion();
+    if (it.hecho) toast("Pasado a hechos", "check", 1600);
+    // el tick se guarda al momento, sin esperar a «Guardar»
+    editando.texto = unirLista($("#eTexto").value, eItems); await guardarNotaLocal(editando); avisoListaCompleta(editando, eItems); }
+  if (x){ eItems.splice(Number(x.dataset.eix), 1); pintarListaEdicion(true); }
+};
+$("#eLista").addEventListener("click", clicLista);
+$("#eHechos").addEventListener("click", e => {
+  if (e.target.closest("#eVerHechos")){ verHechos = !verHechos; pintarListaEdicion(); return; }
+  const ck = e.target.closest("[data-ei]"), x = e.target.closest("[data-eix]");
+  if (ck || x) clicLista(e);
+});
+$("#eHechos").addEventListener("input", e => { const i = e.target.dataset.eit; if (i !== undefined){ eItems[Number(i)].texto = e.target.value.replace(/\n/g, " "); crecer(e.target); } });
+$("#eLista").addEventListener("input", e => { const i = e.target.dataset.eit; if (i !== undefined){ eItems[Number(i)].texto = e.target.value.replace(/\n/g, " "); crecer(e.target); } });
+$("#eLista").addEventListener("keydown", e => {
+  if (e.target.dataset.eit !== undefined && e.key === "Enter"){ e.preventDefault(); $("#eNuevoItem").focus(); return; }
+  if (e.target.id === "eNuevoItem" && e.key === "Enter"){ e.preventDefault(); const v = e.target.value.trim(); if (!v) return; eItems.push({hecho: false, texto: v}); eItems = ordenarItems(eItems); pintarListaEdicion(true); }
+});
 let editando = null, eAdj = null, eTipoSel = "nota", eAmbSel = "trabajo", audioEl = null;
 document.querySelectorAll("[data-i]").forEach(s => s.outerHTML = ic(s.dataset.i));
-$("#eCerrar").innerHTML = ic("x"); $("#eBorrar").innerHTML = ic("borrar") + "Borrar";
+$("#eCerrar").innerHTML = ic("x"); $("#eBorrar").innerHTML = ic("borrar") + "<span>Borrar</span>"; $("#eAddFoto").innerHTML = ic("camara") + "Añadir foto";
+$("#eAddFoto").onclick = () => $("#eInFoto").click();
 $("#eCerrar").onclick = cerrarHojas;
 function pintarOpciones(){
   $("#eAmbito").innerHTML = ["trabajo", "personal"].map(a => `<button class="opc ${eAmbSel === a ? "on" : ""}" data-amb="${a}">${a === "trabajo" ? "Trabajo" : "Personal"}</button>`).join("");
@@ -1137,7 +1302,8 @@ function abrirEdicion(n){
   if (!n) return;
   editando = n; eTipoSel = n.tipo || "nota"; eAmbSel = n.ambito || "trabajo";
   eAdj = {audio: n.audio || null, fotos: [...(n.fotos || [])], nuevas: [], quitar: []};
-  $("#eTexto").value = n.ancla && !n.texto ? "" : (n.texto || "");
+  const pl = partirLista(n.texto); eItems = ordenarItems(pl.items.map(i => ({...i}))); verHechos = false;
+  $("#eTexto").value = pl.intro; pintarListaEdicion();
   $("#eCat").value = n.para?.categoria || ""; $("#eNombre").value = n.para?.nombre || ""; $("#eFecha").value = n.fecha || ""; $("#eHora").value = n.hora || "";
   $("#eTransBtn").innerHTML = n.audio && !n.transcripcion && voz() ? `<button class="btn sec" id="eTranscribir" style="margin-top:10px">${ic("mic")}${n._transcribir ? "Transcribiendo…" : "Transcribir el audio"}</button>` : "";
   if ($("#eTranscribir")) $("#eTranscribir").onclick = async () => { $("#eTranscribir").textContent = "Transcribiendo…"; const ok = await transcribirNota(n, true); if (ok){ cerrarHojas(); abrirEdicion(n); } else $("#eTranscribir").textContent = "No se pudo. Reintentar"; };
@@ -1146,13 +1312,15 @@ function abrirEdicion(n){
     + (n.ubicacion ? `<a target="_blank" rel="noopener" href="https://www.google.com/maps?q=${n.ubicacion.lat},${n.ubicacion.lon}">${ic("pin")}Ver lugar</a>` : "");
   const tr = n.transcripcion && n.transcripcion !== n.texto ? n.transcripcion : "";
   $("#eTransc").textContent = tr ? "Dictado: " + tr : ""; $("#eTransc").classList.toggle("oculto", !tr);
-  $("#eHecha").innerHTML = n.hecha ? ic("deshacer") + "Marcar pendiente" : ic("check") + "Marcar hecha";
+  $("#eHecha").innerHTML = n.hecha ? ic("deshacer") + `<span class="largo">Marcar pendiente</span><span class="corto">Pendiente</span>` : ic("check") + `<span class="largo">Marcar hecha</span><span class="corto">Hecha</span>`;
+  $("#eHecha").title = n.hecha ? "Volver a dejarla pendiente" : "Marcar como hecha"; $("#eHecha").classList.toggle("hecha-on", !n.hecha);
   pintarOpciones(); pintarAdjEdicion();
   const c = config.contactos || {}, usados = notas.map(x => x.para?.nombre).filter(Boolean);
   $("#dlNombres").innerHTML = [...new Set([...(c.cliente||[]), ...(c.proveedor||[]), ...(c.companero||[]), ...usados])].sort().map(x => `<option value="${esc(x)}">`).join("");
-  abrirHoja("#hEditar");
+  abrirHoja("#hEditar"); $("#hEditar").scrollTop = 0;
   requestAnimationFrame(() => { const t = $("#eTexto"); t.style.height = "auto"; t.style.height = Math.max(80, t.scrollHeight) + "px"; });
 }
+$("#eTexto").addEventListener("keydown", continuarLista);
 $("#eTexto").addEventListener("input", function(){ this.style.height = "auto"; this.style.height = Math.max(80, this.scrollHeight) + "px"; });
 function pausarAudio(){ try { audioEl && audioEl.pause(); } catch(e){} }
 function pintarAdjEdicion(){
@@ -1174,8 +1342,7 @@ function pintarAdjEdicion(){
     const img = d.querySelector("img"); src(img); img.onclick = () => verImagen(img.src); d.querySelector(".x").onclick = quitar; g.appendChild(d); };
   eAdj.fotos.forEach(r => tarjetaFoto(img => urlAdjunto(r).then(u => img.src = u).catch(() => {}), () => { eAdj.quitar.push(r); eAdj.fotos = eAdj.fotos.filter(x => x !== r); pintarAdjEdicion(); }));
   eAdj.nuevas.forEach((b, i) => tarjetaFoto(img => img.src = URL.createObjectURL(b), () => { eAdj.nuevas.splice(i, 1); pintarAdjEdicion(); }));
-  g.insertAdjacentHTML("beforeend", `<button class="add" id="eAddFoto">${ic("camara")}Añadir foto</button>`);
-  $("#eAddFoto").onclick = () => $("#eInFoto").click();
+  if (!eAdj.audio && !eAdj.fotos.length && !eAdj.nuevas.length) g.innerHTML = `<div class="sin-adj">Esta nota no tiene audio ni fotos.</div>`;
 }
 $("#eInFoto").onchange = async () => { for (const f of $("#eInFoto").files) eAdj.nuevas.push(await reducirFoto(f)); $("#eInFoto").value = ""; pintarAdjEdicion(); };
 $("#eBorrar").onclick = () => { if (confirm("¿Borrar esta nota? Irá a la Papelera de Chispa en tu OneDrive.")){ cerrarHojas(); borrarNota(editando); } };
@@ -1183,7 +1350,8 @@ $("#eHecha").onclick = async () => { editando.hecha = !editando.hecha; editando.
 $("#eGuardar").onclick = async () => { await guardarEdicion(); toast("Cambios guardados"); };
 async function guardarEdicion(){
   const n = editando; if (!n) return;
-  n.texto = $("#eTexto").value.trim(); n.ambito = eAmbSel; n.tipo = eTipoSel;
+  const nuevoPunto = $("#eNuevoItem")?.value.trim(); if (nuevoPunto) eItems.push({hecho: false, texto: nuevoPunto});
+  n.texto = eItems.length ? unirLista($("#eTexto").value, eItems) : $("#eTexto").value.trim(); n.ambito = eAmbSel; n.tipo = eTipoSel;
   n.para = {categoria: $("#eCat").value, nombre: $("#eNombre").value.trim()}; n.fecha = $("#eFecha").value || null;
   n.hora = $("#eHora").value || null; if (n.hora && !n.fecha) n.fecha = hoyISO();
   if (n.hora) pedirPermisoAvisos();
@@ -1614,7 +1782,8 @@ function pintarAyuda(){
   <h3>Hora y avisos</h3><p>Si escribes «a las 5» o «a las 17:30», Chispa pone la hora. Mientras Chispa esté abierta o en segundo plano, te avisa a esa hora.</p>
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
-  <h3>Novedades</h3><p><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
+  <h3>Novedades</h3><p><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
