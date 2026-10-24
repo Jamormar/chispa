@@ -253,7 +253,7 @@ main>section{flex:1;display:flex;flex-direction:column}
 
 <script>
 "use strict";
-const VERSION = "0.3";
+const VERSION = "0.3.1";
 /* ================= Conexión con Microsoft ================= */
 const CLIENT_ID = "3dc57230-4cdb-4e60-bb83-2def7cd5441f";
 const AUTH = "https://login.microsoftonline.com/consumers/oauth2/v2.0";
@@ -347,48 +347,80 @@ async function graph(url, opts = {}, reintento = true){
   if (r.status === 429 || r.status === 503){ await new Promise(s => setTimeout(s, 3000)); return graph(url, opts, false); }
   return r;
 }
+// Las carpetas se buscan y crean por su identificador (más fiable que por ruta)
+const DRIVE = "https://graph.microsoft.com/v1.0/me/drive";
 const carpetas = new Map();
-async function asegurarCarpeta(ruta){
-  if (carpetas.has(ruta)) return carpetas.get(ruta);
-  let r = await graph(rutaUrl(ruta));
-  if (r.status === 404){
-    const partes = ruta.split("/"), nombre = partes.pop(), padre = partes.join("/");
-    const url = padre ? `${rutaUrl(padre)}:/children` : `${GRAPH}/children`;
-    if (padre) await asegurarCarpeta(padre);
-    r = await graph(url, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({name: nombre, folder: {}, "@microsoft.graph.conflictBehavior": "fail"})});
-    if (r.status === 409) r = await graph(rutaUrl(ruta));
-  }
-  if (!r.ok) throw new Error(`OneDrive (${r.status}) en ${ruta}`);
-  const id = (await r.json()).id; carpetas.set(ruta, id); return id;
+let raizId = null;
+async function errorDe(r, que){
+  let m = ""; try { const j = await r.json(); m = j.error?.message || j.error?.code || ""; } catch(e){}
+  return new Error(`OneDrive (${r.status}) ${que}${m ? ": " + m : ""}`);
 }
-async function subir(ruta, datos, tipo){
-  const partes = ruta.split("/"); partes.pop(); if (partes.length) await asegurarCarpeta(partes.join("/"));
-  const r = await graph(`${rutaUrl(ruta)}:/content`, {method: "PUT", headers: {"Content-Type": tipo || "application/octet-stream"}, body: datos});
-  if (!r.ok) throw new Error(`No se pudo subir ${ruta} (${r.status})`);
-  return r.json();
+async function idRaiz(){
+  if (raizId) return raizId;
+  const r = await graph(GRAPH);
+  if (!r.ok) throw await errorDe(r, "al abrir la carpeta de Chispa");
+  return raizId = (await r.json()).id;
 }
-async function listar(ruta){
-  let url = `${rutaUrl(ruta)}:/children?$top=500`, out = [];
+async function hijos(id){
+  let url = `${DRIVE}/items/${id}/children?$top=500`, out = [];
   while (url){
     const r = await graph(url);
-    if (r.status === 404) return [];
-    if (!r.ok) throw new Error(`OneDrive (${r.status}) al listar ${ruta}`);
+    if (!r.ok) throw await errorDe(r, "al leer una carpeta");
     const j = await r.json(); out.push(...j.value); url = j["@odata.nextLink"];
   }
   return out;
 }
+const mismoNombre = (a, b) => a.toLowerCase() === b.toLowerCase();
+async function asegurarCarpeta(ruta, crear = true){
+  if (carpetas.has(ruta)) return carpetas.get(ruta);
+  const partes = ruta.split("/"), nombre = partes.pop(), padre = partes.join("/");
+  const pid = padre ? await asegurarCarpeta(padre, crear) : await idRaiz();
+  if (!pid) return null;
+  let it = (await hijos(pid)).find(x => x.folder && mismoNombre(x.name, nombre));
+  if (!it){
+    if (!crear) return null;
+    const r = await graph(`${DRIVE}/items/${pid}/children`, {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({name: nombre, folder: {}, "@microsoft.graph.conflictBehavior": "fail"})});
+    if (r.ok) it = await r.json();
+    else if (r.status === 409) it = (await hijos(pid)).find(x => x.folder && mismoNombre(x.name, nombre));
+    else throw await errorDe(r, `al crear la carpeta ${ruta}`);
+  }
+  if (!it) throw new Error("No se pudo preparar la carpeta " + ruta);
+  carpetas.set(ruta, it.id); return it.id;
+}
+const separar = ruta => { const p = ruta.split("/"), nombre = p.pop(); return [p.join("/"), nombre]; };
+async function subir(ruta, datos, tipo){
+  const [padre, nombre] = separar(ruta);
+  const pid = padre ? await asegurarCarpeta(padre) : await idRaiz();
+  const r = await graph(`${DRIVE}/items/${pid}:/${encodeURIComponent(nombre)}:/content`, {method: "PUT", headers: {"Content-Type": tipo || "application/octet-stream"}, body: datos});
+  if (!r.ok) throw await errorDe(r, `al subir ${ruta}`);
+  return r.json();
+}
+async function listar(ruta){
+  const id = await asegurarCarpeta(ruta, false);
+  return id ? hijos(id) : [];
+}
+async function itemDe(ruta){
+  const [padre, nombre] = separar(ruta);
+  const pid = padre ? await asegurarCarpeta(padre, false) : await idRaiz();
+  if (!pid) return null;
+  const r = await graph(`${DRIVE}/items/${pid}:/${encodeURIComponent(nombre)}`);
+  if (r.status === 404) return null;
+  if (!r.ok) throw await errorDe(r, `al buscar ${ruta}`);
+  return r.json();
+}
 async function descargarRuta(ruta){
-  const r = await graph(rutaUrl(ruta));
-  if (!r.ok) throw new Error("No encontrado: " + ruta);
-  const it = await r.json();
+  const it = await itemDe(ruta);
+  if (!it) throw new Error("No encontrado: " + ruta);
   const d = await fetch(it["@microsoft.graph.downloadUrl"]);
   if (!d.ok) throw new Error("Descarga fallida");
   return d.blob();
 }
 async function aPapelera(ruta){
+  const it = await itemDe(ruta); if (!it) return;
   const pap = await asegurarCarpeta("Papelera");
-  const r = await graph(`${rutaUrl(ruta)}?@microsoft.graph.conflictBehavior=rename`, {method: "PATCH", headers: {"Content-Type": "application/json"}, body: JSON.stringify({parentReference: {id: pap}})});
-  if (!r.ok && r.status !== 404) throw new Error(`No se pudo mover ${ruta} (${r.status})`);
+  const r = await graph(`${DRIVE}/items/${it.id}?@microsoft.graph.conflictBehavior=rename`, {method: "PATCH", headers: {"Content-Type": "application/json"}, body: JSON.stringify({parentReference: {id: pap}})});
+  if (!r.ok && r.status !== 404) throw await errorDe(r, `al mover ${ruta} a la Papelera`);
 }
 
 /* ================= Estado ================= */
@@ -416,20 +448,29 @@ async function sincronizar(forzar = false){
   if (sincronizando || !navigator.onLine || !token) return;
   if (!forzar && Date.now() - ultimaSync < 15000) return;
   sincronizando = true; pintarEstado();
+  const fallos = [];
   try {
-    // 1) Subir lo pendiente
+    // 1) Subir lo pendiente. Cada nota va por separado: si una falla, las demás siguen subiendo
     for (const n of notas.filter(x => x._borrar)){
-      for (const r of [`Notas/${n.id}.json`, n.audio, ...(n.fotos || [])].filter(Boolean)) await aPapelera(r);
-      await idb.quitar(n.id); notas = notas.filter(x => x !== n);
+      try {
+        for (const r of [`Notas/${n.id}.json`, n.audio, ...(n.fotos || [])].filter(Boolean)) await aPapelera(r);
+        await idb.quitar(n.id); notas = notas.filter(x => x !== n);
+      } catch(e){ if (e.login) throw e; fallos.push(e.message); }
     }
     for (const n of notas.filter(x => x._pend)){
-      for (const r of n._subir || []){
-        const b = await idb.blob(r);
-        if (b) await subir(r, b, b.type);
-      }
-      const it = await subir(`Notas/${n.id}.json`, JSON.stringify(limpia(n), null, 2), "application/json");
-      n._etag = it.eTag; n._pend = false; n._subir = [];
-      await idb.poner(n);
+      try {
+        for (const r of [...(n._subir || [])]){
+          try {
+            const b = await idb.blob(r);
+            if (b && b.size) await subir(r, b, b.type);
+            n._subir = n._subir.filter(x => x !== r);     // subido (o vacío): no se reintenta
+          } catch(e){ if (e.login) throw e; fallos.push(e.message); }
+        }
+        // la nota se sube siempre, para no perder el texto aunque falle algún adjunto
+        const it = await subir(`Notas/${n.id}.json`, JSON.stringify(limpia(n), null, 2), "application/json");
+        n._etag = it.eTag; n._pend = n._subir.length > 0;
+        await idb.poner(n);
+      } catch(e){ if (e.login) throw e; fallos.push(e.message); }
     }
     if (lsGet("chispa.cfgPend")){ const it = await subir("Configuracion/config.json", JSON.stringify(config, null, 2), "application/json"); lsSet("chispa.cfgEtag", it.eTag); lsSet("chispa.cfgPend", false); }
     // 2) Bajar novedades de otros dispositivos
@@ -453,11 +494,14 @@ async function sincronizar(forzar = false){
     if (cfgIt && cfgIt.eTag !== lsGet("chispa.cfgEtag") && !lsGet("chispa.cfgPend")){
       try { config = Object.assign(config, await (await fetch(cfgIt["@microsoft.graph.downloadUrl"])).json()); lsSet("chispa.config", config); lsSet("chispa.cfgEtag", cfgIt.eTag); } catch(e){}
     }
-    ordenar(); errorSync = ""; ultimaSync = Date.now();
+    ordenar(); errorSync = fallos[0] || ""; ultimaSync = Date.now();
     if (porBajar.length) refrescar();
   } catch(e){
     errorSync = e.login ? "" : (e.message || "Error de sincronización");
-  } finally { sincronizando = false; pintarEstado(); }
+  } finally {
+    if (errorSync){ carpetas.clear(); raizId = null; }      // por si alguna carpeta se movió o borró a mano
+    sincronizando = false; pintarEstado();
+  }
 }
 const limpia = n => { const o = {}; for (const k in n) if (!k.startsWith("_")) o[k] = n[k]; return o; };
 const ordenar = () => notas.sort((a, b) => b.creada.localeCompare(a.creada));
@@ -485,7 +529,7 @@ async function reducirFoto(f){
     const img = await createImageBitmap(f), max = 1800, k = Math.min(1, max / Math.max(img.width, img.height));
     const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
     c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-    return await new Promise(r => c.toBlob(r, "image/jpeg", 0.85));
+    return (await new Promise(r => c.toBlob(r, "image/jpeg", 0.85))) || f;
   } catch(e){ return f; }
 }
 
@@ -906,6 +950,7 @@ function pintarAyuda(){
   <h3>📱 Instalar en el móvil</h3><p>Abre ${esc(REDIRECT)} en Chrome, entra con tu cuenta y elige menú ⋮ → «Añadir a pantalla de inicio». Si mantienes pulsado el icono, tienes los atajos <b>Grabar voz</b> (para el coche) y <b>Ancla rápida</b>.</p>
   <h3>Dónde están mis datos</h3><p>OneDrive › Aplicaciones › Chispa: <b>Notas</b> (un .json legible por nota), <b>Audios</b>, <b>Fotos</b>, <b>Configuracion</b> y <b>Papelera</b>.</p>
   <h3>Novedades</h3><ul>
+    <li><b>0.3.1</b>: corrige el error «OneDrive (400)» al crear carpetas y, si un adjunto falla, las demás notas siguen subiendo.</li>
     <li><b>0.3</b>: una sola Chispa para móvil y PC, sincronizada sola con tu OneDrive personal. En el móvil ya puedes ver, editar y borrar notas. El ancla admite una palabra.</li>
     <li><b>0.2</b>: Chispa Móvil y la carpeta Entrada.</li><li><b>0.1</b>: primera versión.</li></ul></div>`;
 }
