@@ -50,6 +50,7 @@ public class ChispaNativoPlugin extends Plugin {
     @Override
     public void load() {
         instancia = this;
+        Correo.programar(getContext());
         if (pendiente != null) {
             notifyListeners("entrada", pendiente, true);
             pendiente = null;
@@ -254,5 +255,45 @@ public class ChispaNativoPlugin extends Plugin {
         } catch (Exception e) {
             call.reject("No se pudo abrir el enlace");
         }
+    }
+
+    // ---------------------------------------------------------------- resumen por correo
+
+    @PluginMethod
+    public void correoEstado(PluginCall call) {
+        JSObject r = new JSObject();
+        r.put("conectado", Correo.conectado(getContext()));
+        r.put("cuenta", Correo.cuenta(getContext()));
+        r.put("ultimo", Correo.ultimo(getContext()));
+        call.resolve(r);
+    }
+
+    /** Devuelve la dirección de Microsoft para dar permiso de envío de correo. */
+    @PluginMethod
+    public void conectarCorreo(PluginCall call) {
+        try {
+            JSObject r = new JSObject();
+            r.put("url", Correo.urlLogin(getContext(), call.getString("pista", "")));
+            call.resolve(r);
+        } catch (Exception e) {
+            call.reject("No se pudo preparar la conexión");
+        }
+    }
+
+    @PluginMethod
+    public void desconectarCorreo(PluginCall call) {
+        Correo.desconectar(getContext());
+        correoEstado(call);
+    }
+
+    /** Envía el resumen ahora. Con prueba=true se envía aunque no sea la hora ni haya nada. */
+    @PluginMethod
+    public void enviarResumen(PluginCall call) {
+        boolean prueba = Boolean.TRUE.equals(call.getBoolean("prueba", true));
+        new Thread(() -> {
+            JSObject r = new JSObject();
+            r.put("resultado", Correo.enviarSiToca(getContext(), prueba));
+            call.resolve(r);
+        }).start();
     }
 }

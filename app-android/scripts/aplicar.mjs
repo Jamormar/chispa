@@ -62,6 +62,12 @@ cambiar(manifiesto, m => {
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="image/*" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="es.jamormar.chispa" android:host="auth" />
+            </intent-filter>
         </activity>`;
   m = m.replace("</activity>", compartir);
   const extra = fs.readFileSync(path.join(nativo, "manifiesto-aplicacion.xml"), "utf8");

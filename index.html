@@ -561,7 +561,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.7.3";
+const VERSION = "0.8";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -862,6 +862,7 @@ async function sincronizar(forzar = false){
       try { config = Object.assign(config, await (await fetch(cfgIt["@microsoft.graph.downloadUrl"])).json()); lsSet("chispa.config", config); lsSet("chispa.cfgEtag", cfgIt.eTag); } catch(e){}
     }
     ordenar(); errorSync = fallos[0] || ""; ultimaSync = Date.now();
+    if (!fallos.length) await subirAgenda().catch(e => console.warn("Agenda", e));
     if (porBajar.length || quitadas) refrescar();
   } catch(e){
     errorSync = e.login ? "" : (e.message || "Error de sincronización");
@@ -869,6 +870,20 @@ async function sincronizar(forzar = false){
     if (errorSync){ carpetas.clear(); raizId = null; }
     sincronizando = false; pintarEstado(); pintarBadges(); programarAvisos();
   }
+}
+// Agenda para el resumen diario por correo: lo pendiente y lo anotado en los últimos días (Configuracion/agenda.json)
+async function subirAgenda(){
+  const limite = Date.now() - 3 * 864e5;
+  const lista = deNotas().filter(n => !n.hecha || new Date(n.creada) > limite).map(n => {
+    const pl = partirLista(n.texto), p = partesNota(n), anclaVacia = !!n.ancla && !n.texto && !n.titulo;
+    return {id: n.id, t: anclaVacia ? "" : (p.titulo || p.vacio || ""), x: (p.desc || "").slice(0, 240), tipo: n.tipo || "nota", amb: n.ambito || "trabajo",
+      f: n.fecha || "", h: n.hora || "", quien: n.para?.nombre || "", cr: n.creada, ancla: anclaVacia, hecha: !!n.hecha,
+      lp: pl.items.filter(i => !i.hecho).map(i => i.texto).slice(0, 12)};
+  }).sort((a, b) => a.id.localeCompare(b.id));
+  const json = JSON.stringify({version: 1, notas: lista}), huella = json.length + ":" + [...json].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0);
+  if (lsGet("chispa.agenda") === huella) return;
+  await subir("Configuracion/agenda.json", JSON.stringify({version: 1, actualizada: new Date().toISOString(), desde: disp.terminal, notas: lista}), "application/json");
+  lsSet("chispa.agenda", huella);
 }
 const limpia = n => { const o = {}; for (const k in n) if (!k.startsWith("_")) o[k] = n[k]; return o; };
 const ordenar = () => notas.sort((a, b) => b.creada.localeCompare(a.creada));
@@ -1648,6 +1663,30 @@ async function pintarTelefono(){
   if ($("#kActualizar")) $("#kActualizar").onclick = actualizarApp;
   if ($("#kBuscarVer")) $("#kBuscarVer").onclick = async () => { await buscarVersionApp(true); if (!appNueva) toast("Tienes la última versión", "check"); };
 }
+// Resumen diario: la app del móvil entra en la cuenta con permiso para enviar correo
+async function pintarCorreo(){
+  const caja = $("#kCorreo"); if (!caja || !esApp()) return;
+  const nat = nativo("ChispaNativo"); let e;
+  try { e = await nat.correoEstado(); }
+  catch(x){ caja.innerHTML = `<div class="ajuste">${ic("mail")}<div class="lbl">Envío desde este móvil<small>Actualiza la app para activarlo</small></div><button class="btn sec" id="kBajar2">${ic("subir")}Actualizar</button></div>`; $("#kBajar2").onclick = actualizarApp; return; }
+  caja.innerHTML = e.conectado
+    ? `<div class="ajuste">${ic("nubeok")}<div class="lbl">Envío desde este móvil<small>${esc(e.cuenta || "Conectado")}${e.ultimo ? " · Último: " + esc(e.ultimo) : ""}</small></div></div>
+       <div class="ajuste"><button class="btn sec" id="kResProbar">${ic("mail")}Enviar prueba ahora</button><button class="btn sec" id="kResDesc">Desconectar</button></div>`
+    : `<div class="ajuste">${ic("mail")}<div class="lbl">Envío desde este móvil<small>Da permiso una vez para enviar el resumen desde tu correo de Microsoft</small></div><button class="btn" id="kResCon">Conectar</button></div>`;
+  if ($("#kResCon")) $("#kResCon").onclick = async () => {
+    try { const {url} = await nat.conectarCorreo({pista: lsGet("chispa.usuario") || ""}); location.href = url; }
+    catch(x){ toast("No se pudo abrir la conexión con Microsoft", "alerta", 4000); }
+  };
+  if ($("#kResProbar")) $("#kResProbar").onclick = async () => {
+    const b = $("#kResProbar"); b.disabled = true; b.textContent = "Enviando…";
+    if (lsGet("chispa.cfgPend") || notas.some(n => n._pend)) await sincronizar(true);
+    await subirAgenda().catch(() => {});
+    try { const r = await nat.enviarResumen({prueba: true}); toast(r.resultado, r.resultado.startsWith("Error") ? "alerta" : "mail", 6000); }
+    catch(x){ toast("No se pudo enviar", "alerta"); }
+    pintarCorreo();
+  };
+  if ($("#kResDesc")) $("#kResDesc").onclick = async () => { await nat.desconectarCorreo().catch(() => {}); pintarCorreo(); };
+}
 function abrirElegirCoche(lista, elegir, cancelar){
   const fondo = document.createElement("div"); fondo.className = "elegir-coche";
   fondo.innerHTML = `<div class="ec-caja" role="dialog" aria-label="Elige tu coche"><h3>¿Cuál es tu coche?</h3><p>Elige el Bluetooth al que se conecta el móvil en el coche.</p>
@@ -1935,6 +1974,8 @@ function pintarAjustes(){
     <div class="grupo"><h3>Resúmenes por correo</h3><div class="caja">
       <div class="ajuste">${ic("maletin")}<div class="lbl">Trabajo</div><input type="email" id="kCT" value="${esc(c.correoTrabajo)}" placeholder="tu correo del trabajo"></div>
       <div class="ajuste">${ic("casa")}<div class="lbl">Personal</div><input type="email" id="kCP" value="${esc(c.correoPersonal)}" placeholder="tu correo personal"></div>
+      <div class="ajuste">${ic("mail")}<div class="lbl">Resumen diario<small>Solo se envía si hay algo para hoy, atrasado, de la semana o anotado ayer</small></div><select id="kResAct"><option value="1">Sí</option><option value="0">No</option></select><input type="time" id="kResHora" value="${esc(c.resumenHora || "07:30")}"></div>
+      ${esApp() ? `<div id="kCorreo"><div class="ajuste"><div class="lbl">Cargando…</div></div></div>` : `<div class="ajuste">${ic("movil")}<div class="lbl">Lo envía la app de Android<small>Conéctalo una vez desde Ajustes en el móvil. El móvil lo envía aunque no abras Chispa</small></div></div>`}
     </div></div>
     <div class="grupo"><h3>Nombres que Chispa reconoce</h3><div class="caja">
       <div class="ajuste"><div class="lbl">Clientes<small>Uno por línea</small></div><textarea id="kCli" rows="4">${esc((cont.cliente||[]).join("\n"))}</textarea></div>
@@ -1955,7 +1996,8 @@ function pintarAjustes(){
       <div class="ajuste">${ic("user")}<div class="lbl">${esc(lsGet("chispa.usuario") || "Cuenta de Microsoft")}<small>Tus datos están en OneDrive, en Aplicaciones › Chispa</small></div><button class="btn sec" id="kSalir">${ic("salir")}Salir</button></div>
     </div></div>
     <div class="cuenta" style="text-align:center;margin:20px 0">Chispa ${VERSION}${esApp() ? ` · app Android ${esc(infoApp?.version || "")}` : ""}</div>`;
-  pintarTelefono();
+  pintarTelefono(); pintarCorreo();
+  $("#kResAct").value = c.resumenActivo === false ? "0" : "1";
   $("#kAmb").value = disp.ambito || "trabajo"; $("#kTrans").value = disp.trans === false ? "0" : "1"; $("#kUbi").value = disp.ubi ? "1" : "0"; $("#kTema").value = disp.tema || "auto";
   document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => ver(b.dataset.ir));
   const lineas = id => [...new Set($(id).value.split("\n").map(s => s.trim()).filter(Boolean))];
@@ -1963,7 +2005,7 @@ function pintarAjustes(){
     Object.assign(disp, {terminal: $("#kTerm").value.trim() || (esMovil() ? "Móvil" : "PC"), ambito: $("#kAmb").value, trans: $("#kTrans").value === "1", ubi: $("#kUbi").value === "1", tema: $("#kTema").value});
     lsSet("chispa.disp", disp);
     if (disp.ubi && navigator.geolocation) navigator.geolocation.getCurrentPosition(() => {}, () => {});
-    Object.assign(config, {nocheDesde: $("#kDesde").value || "23:00", nocheHasta: $("#kHasta").value || "06:00", correoTrabajo: $("#kCT").value.trim(), correoPersonal: $("#kCP").value.trim(),
+    Object.assign(config, {nocheDesde: $("#kDesde").value || "23:00", nocheHasta: $("#kHasta").value || "06:00", correoTrabajo: $("#kCT").value.trim(), correoPersonal: $("#kCP").value.trim(), resumenActivo: $("#kResAct").value === "1", resumenHora: $("#kResHora").value || "07:30",
       contactos: {cliente: lineas("#kCli"), proveedor: lineas("#kPro"), companero: lineas("#kCom")}});
     if ($("#kVozClave")) config.voz = {clave: $("#kVozClave").value.trim(), region: ($("#kVozRegion").value.trim() || "westeurope").toLowerCase()};
     guardarConfig(); aplicarTema(); setAmbito(disp.ambito); toast("Guardado", "check", 1200);
@@ -2025,7 +2067,10 @@ function pintarAyuda(){
   if (q.get("t")){ disp.terminal = q.get("t"); disp.ambito = q.get("a") === "personal" ? "personal" : "trabajo"; lsSet("chispa.disp", disp); }
   localStorage.removeItem("chispa.accion");
   const vuelta = await volverDeLogin();
-  if (!vuelta && (q.has("t") || q.has("accion"))) history.replaceState(null, "", REDIRECT);
+  const vueltaCorreo = q.get("correo");
+  if (!vuelta && (q.has("t") || q.has("accion") || q.has("correo"))) history.replaceState(null, "", REDIRECT);
+  if (vueltaCorreo) setTimeout(() => { ver("ajustes"); setTimeout(() => $("#kCorreo")?.scrollIntoView({block: "center"}), 400);
+    toast(vueltaCorreo === "ok" ? "Correo conectado. El resumen se enviará solo cada día" : "No se pudo conectar: " + vueltaCorreo, vueltaCorreo === "ok" ? "check" : "alerta", 7000); }, 1500);
   aplicarTema();
   matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", aplicarTema);
 

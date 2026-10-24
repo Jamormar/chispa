@@ -1,6 +1,7 @@
 package es.jamormar.chispa;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.getcapacitor.BridgeActivity;
@@ -19,13 +20,28 @@ public class MainActivity extends BridgeActivity {
         // (por ejemplo, el botón Ancla del widget). Solo se atiende cuando es nueva de verdad.
         boolean repetida = savedInstanceState != null
                 || (getIntent().getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0;
-        if (!repetida) ChispaNativoPlugin.recibir(this, getIntent());
+        if (!repetida && !vueltaLogin(getIntent())) ChispaNativoPlugin.recibir(this, getIntent());
+        Correo.programar(this);
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        ChispaNativoPlugin.recibir(this, intent);
+        if (!vueltaLogin(intent)) ChispaNativoPlugin.recibir(this, intent);
+    }
+
+    /** Vuelta de Microsoft tras conectar el correo (es.jamormar.chispa://auth?code=…). */
+    private boolean vueltaLogin(Intent intent) {
+        Uri d = intent != null ? intent.getData() : null;
+        if (d == null || !"es.jamormar.chispa".equals(d.getScheme())) return false;
+        intent.setData(null);
+        new Thread(() -> {
+            String r = Correo.terminarLogin(getApplicationContext(), d);
+            runOnUiThread(() -> {
+                try { getBridge().getWebView().loadUrl(Correo.WEB + "?correo=" + Uri.encode(r)); } catch (Exception ignorado) { }
+            });
+        }).start();
+        return true;
     }
 }
