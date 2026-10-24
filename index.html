@@ -561,7 +561,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.7.1";
+const VERSION = "0.7.2";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -1600,8 +1600,8 @@ async function buscarVersionApp(forzar = false){
       Object.assign(ult, {t: Date.now(), num}); lsSet("chispa.versionApp", ult);
     }
     appNueva = ult.num > infoApp.codigo ? ult.num : null;
-    if (appNueva && ult.avisada !== appNueva){
-      ult.avisada = appNueva; lsSet("chispa.versionApp", ult);
+    if (appNueva && !buscarVersionApp.avisada){   // una vez cada vez que se abre la app, hasta que se actualice
+      buscarVersionApp.avisada = true;
       toast(`Hay una versión nueva de la app (1.0.${appNueva})`, "subir", 12000, actualizarApp, "Actualizar");
     }
     if (vista === "ajustes") pintarTelefono();
