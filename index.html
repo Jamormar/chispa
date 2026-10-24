@@ -96,7 +96,20 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(22,33,58,.08)}
 .seg button.on[data-a="trabajo"]{color:var(--work)} .seg button.on[data-a="personal"]{color:var(--home)}
 .papel{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:28px;overflow:hidden;position:relative}
-#cTexto{border:0;outline:0;resize:none;background:transparent;padding:20px 20px 6px;font-size:20px;line-height:1.35;min-height:64px;max-height:40%;font-family:var(--body)}
+.campo{position:relative;display:flex;gap:10px;align-items:flex-start;margin:10px 10px 0;padding:14px 46px 12px 14px;border-radius:18px;background:var(--bg);border:1.5px solid var(--line);cursor:text;transition:border-color .15s,background .15s}
+.campo:focus-within{border-color:var(--work);background:var(--surface)}
+.campo>svg{color:var(--muted);margin-top:3px}
+.campo .limpiar{position:absolute;top:6px;right:6px;width:36px;height:36px}
+.campo .limpiar svg{width:18px;height:18px}
+#cTexto{flex:1;min-width:0;border:0;outline:0;resize:none;background:transparent;padding:0;font-size:19px;line-height:1.4;min-height:54px;max-height:200px;font-family:var(--body)}
+#cTexto::placeholder{color:var(--muted)}
+.lienzo{margin-top:10px!important}
+@media (min-width:900px){
+  .papel.sin-mano .lienzo{display:none}
+  .papel.sin-mano .campo{flex:1;margin-bottom:10px}
+  .papel.sin-mano #cTexto{max-height:none;height:100%!important}
+  .tool.on{background:var(--raise);border-color:var(--work);color:var(--work)}
+}
 #cTexto::placeholder{color:var(--faint)}
 .detect{display:flex;gap:6px;flex-wrap:wrap;padding:0 18px;min-height:0}
 .detect:not(:empty){padding-bottom:8px}
@@ -357,8 +370,10 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
         <div class="esp"></div>
         <button class="sync cab-sync" data-sync></button>
       </div>
-      <div class="papel">
-        <textarea id="cTexto" rows="2" placeholder="¿Qué tienes en la cabeza?"></textarea>
+      <div class="papel" id="papel">
+        <label class="campo" for="cTexto"><span id="icTeclado"></span>
+          <textarea id="cTexto" rows="2" placeholder="Escribe aquí lo que tengas en la cabeza"></textarea>
+          <button class="ibtn limpiar" id="bLimpiar" aria-label="Empezar de nuevo" title="Empezar de nuevo"></button></label>
         <div class="detect" id="detect"></div>
         <div class="adj" id="adj"></div>
         <div class="lienzo">
@@ -375,7 +390,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
         <button class="tool" id="bAncla" aria-label="Ancla: guarda la hora"></button>
         <button class="tool" id="bFoto" aria-label="Foto"></button>
         <button class="chispa" id="bMic" aria-label="Grabar voz"></button>
-        <button class="tool" id="bLimpiar" aria-label="Empezar de nuevo"></button>
+        <button class="tool" id="bTeclado" aria-label="Escribir con el teclado"></button>
         <button class="tool guardar" id="bGuardar" aria-label="Guardar"></button>
       </div>
       <input type="file" id="inFoto" accept="image/*" capture="environment" multiple class="oculto">
@@ -442,7 +457,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.4.3";
+const VERSION = "0.4.4";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -484,6 +499,7 @@ const ICONOS = {
   nota: '<path d="M6.5 3.5h7l4 4V19a1.5 1.5 0 0 1-1.5 1.5H6.5A1.5 1.5 0 0 1 5 19V5a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M13.5 3.5v4h4M8.5 12h7M8.5 16h5"/>',
   tarea: '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.5 12.2l2.5 2.5 4.5-5"/>',
   mas: '<path d="M12 5v14M5 12h14"/>',
+  teclado: '<rect x="2.5" y="6" width="19" height="12.5" rx="2.5"/><path d="M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M6.5 13.5h.01M17.5 13.5h.01M9 14.5h6"/>',
   deshacer: '<path d="M4 9.5h10.5a5 5 0 0 1 0 10H11M4 9.5l4-4M4 9.5l4 4"/>'
 };
 const ic = (n, cls = "") => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONOS[n] || ""}</svg>`;
@@ -842,8 +858,19 @@ const CAT = {cliente: "Cliente", proveedor: "Proveedor", companero: "Compañero"
 let borrador = null, tocado = false, anclaAbierta = null, ignorar = {};
 $("#cAmbito").innerHTML = `<button data-a="trabajo">${ic("maletin")}Trabajo</button><button data-a="personal">${ic("casa")}Personal</button>`;
 $("#bAncla").innerHTML = ic("ancla"); $("#bFoto").innerHTML = ic("camara"); $("#bMic").innerHTML = ic("mic");
-$("#bLimpiar").innerHTML = ic("limpiar"); $("#bGuardar").innerHTML = ic("check");
-$("#pista").innerHTML = ic("pluma") + "<span>Escribe aquí con el dedo</span>";
+$("#bLimpiar").innerHTML = ic("limpiar"); $("#bGuardar").innerHTML = ic("check"); $("#icTeclado").outerHTML = ic("teclado");
+// Teclado: en el móvil abre el teclado; en el PC muestra u oculta la zona para escribir a mano
+function prepararTeclado(){
+  const papel = $("#papel"), b = $("#bTeclado");
+  if (esMovil()){ papel.classList.remove("sin-mano"); b.innerHTML = ic("teclado"); b.setAttribute("aria-label", "Escribir con el teclado"); b.title = "Escribir con el teclado"; b.classList.remove("on"); }
+  else { papel.classList.toggle("sin-mano", !disp.mano); b.innerHTML = ic("pluma"); b.setAttribute("aria-label", "Escribir a mano"); b.title = disp.mano ? "Ocultar la zona para escribir a mano" : "Escribir a mano"; b.classList.toggle("on", !!disp.mano);
+    $("#cTexto").placeholder = "Escribe aquí lo que tengas en la cabeza. Ctrl + Intro para guardar"; }
+}
+$("#bTeclado").onclick = () => {
+  if (esMovil()){ tocado = true; const t = $("#cTexto"); t.focus(); t.setSelectionRange(t.value.length, t.value.length); return; }
+  disp.mano = !disp.mano; lsSet("chispa.disp", disp); prepararTeclado(); requestAnimationFrame(ajustarLienzo); if (!disp.mano) $("#cTexto").focus();
+};
+$("#pista").innerHTML = ic("pluma") + "<span>O escribe aquí a mano, con el dedo</span>";
 $("#ondas").innerHTML = "<i></i>".repeat(36);
 $("#icBusca").innerHTML = ic("buscar");
 
@@ -856,7 +883,7 @@ const vacio = () => !$("#cTexto").value.trim() && !borrador.audio && !borrador.f
 function setAmbito(a){ document.querySelectorAll("#cAmbito button").forEach(b => b.classList.toggle("on", b.dataset.a === a)); }
 const ambitoSel = () => document.querySelector("#cAmbito button.on")?.dataset.a || "trabajo";
 document.querySelectorAll("#cAmbito button").forEach(b => b.onclick = () => { tocado = true; setAmbito(b.dataset.a); });
-function autoAlto(){ const t = $("#cTexto"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 220) + "px"; }
+function autoAlto(){ const t = $("#cTexto"); if ($("#papel").classList.contains("sin-mano") && !esMovil()){ t.style.height = ""; return; } t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 220) + "px"; }
 $("#cTexto").addEventListener("input", () => { tocado = true; autoAlto(); pintarDetectado(); });
 function textoBorrador(){ return [$("#cTexto").value, borrador?.transcripcion].filter(Boolean).join(" "); }
 function pintarDetectado(){
@@ -1286,7 +1313,7 @@ function ver(v){
   vista = v;
   document.querySelectorAll("#sideNav button,#tabs button").forEach(b => b.classList.toggle("activo", b.dataset.v === v || (b.closest("#tabs") && b.dataset.v === "ajustes" && (v === "estad" || v === "ayuda"))));
   document.querySelectorAll("#main>section").forEach(s => s.classList.toggle("oculto", s.dataset.v !== v));
-  if (v === "anotar") requestAnimationFrame(ajustarLienzo);
+  if (v === "anotar"){ prepararTeclado(); requestAnimationFrame(ajustarLienzo); if (!esMovil()) setTimeout(() => $("#cTexto").focus(), 50); }
   refrescar(); scrollTo(0, 0);
 }
 document.querySelectorAll("#sideNav button,#tabs button").forEach(b => b.onclick = () => ver(b.dataset.v));
@@ -1573,7 +1600,7 @@ function pintarAjustes(){
 
 function pintarAyuda(){
   $("#vAyuda").innerHTML = cab("Ayuda", `Chispa ${VERSION}`) + `
-  <h3>Anotar</h3><p>Escribe arriba, dicta con el botón amarillo o escribe con el dedo en la zona de puntos. Pulsa <b>✓</b> para guardar. Con la cámara añades fotos. Al dictar se guarda <b>el audio original</b>: si la transcripción no cuadra, escúchalo al abrir la nota.</p>
+  <h3>Anotar</h3><p>Escribe con el teclado en el recuadro de arriba (en el móvil, también con el botón del teclado), dicta con el botón amarillo o escribe a mano en la zona de puntos. En el PC, el botón del lápiz muestra u oculta la zona para escribir a mano. Pulsa <b>✓</b> para guardar. Con la cámara añades fotos. Al dictar se guarda <b>el audio original</b>: si la transcripción no cuadra, escúchalo al abrir la nota.</p>
   <p>Mientras escribes, Chispa detecta <b>fechas</b> («mañana», «el jueves», «el 25 de noviembre», «en 3 días»), <b>nombres</b> de tus listas y el <b>tipo</b> de nota, y te los muestra en etiquetas amarillas. Si alguna no es correcta, quítala con la ✕.</p>
   <h3>El ancla</h3><p>Para cuando no puedes anotar: guarda la hora y, si quieres, una palabra. En «Hoy» aparece en «Por recordar» para que lo completes.</p>
   <h3>Hoy</h3><p>Tu agenda de acciones: lo que tienes por recordar, lo vencido, lo de hoy, las ideas de anoche y los próximos días. Toca el círculo para marcar algo como hecho; toca la nota para abrirla.</p>
@@ -1587,7 +1614,7 @@ function pintarAyuda(){
   <h3>Hora y avisos</h3><p>Si escribes «a las 5» o «a las 17:30», Chispa pone la hora. Mientras Chispa esté abierta o en segundo plano, te avisa a esa hora.</p>
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
-  <h3>Novedades</h3><p><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
@@ -1616,7 +1643,7 @@ function pintarAyuda(){
   notas = (await idb.todas()) || []; ordenar();
   $("#app").classList.remove("oculto");
   ver(esMovil() ? "anotar" : "hoy");
-  addEventListener("resize", () => { ajustarLienzo(); aplicarTema(); pintarEstado(); });
+  addEventListener("resize", () => { prepararTeclado(); ajustarLienzo(); aplicarTema(); pintarEstado(); });
   nuevoBorrador(); ajustarLienzo();
   if (!disp.terminal) setTimeout(() => toast("Ponle nombre a este dispositivo en Ajustes", "movil", 4000), 900);
   if (accion === "ancla"){ anclaAbierta = null; await guardarAncla(new Date(), true); }
