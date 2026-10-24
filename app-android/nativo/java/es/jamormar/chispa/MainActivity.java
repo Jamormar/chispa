@@ -15,7 +15,11 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(ChispaNativoPlugin.class);
         super.onCreate(savedInstanceState);
-        ChispaNativoPlugin.recibir(this, getIntent());
+        // Al volver desde «Recientes» o al recrearse la pantalla, Android repite la última orden
+        // (por ejemplo, el botón Ancla del widget). Solo se atiende cuando es nueva de verdad.
+        boolean repetida = savedInstanceState != null
+                || (getIntent().getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0;
+        if (!repetida) ChispaNativoPlugin.recibir(this, getIntent());
     }
 
     @Override

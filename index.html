@@ -561,7 +561,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.7.2";
+const VERSION = "0.7.3";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -1562,7 +1562,13 @@ async function procesarEntrada(d){
   cerrarHojas();
   if (d.accion === "voz"){ ver("anotar"); if (d.quien) deLlamada(d); tocado = true; if (!rec) empezarVoz(); }
   else if (d.accion === "llamada"){ ver("anotar"); deLlamada(d); setTimeout(() => $("#cTexto").focus(), 250); }
-  else if (d.accion === "ancla"){ ver("anotar"); anclaAbierta = null; guardarAncla(new Date(), true); }
+  else if (d.accion === "ancla"){
+    ver("anotar"); anclaAbierta = null;
+    // si hay un ancla vacía de hace menos de 2 minutos, se reutiliza en vez de crear otra
+    const reciente = deNotas().filter(n => n.ancla && !n.texto && !n.titulo && Date.now() - new Date(n.creada) < 120000).at(-1);
+    if (reciente){ anclaActual = reciente; $("#aTitulo").innerHTML = ic("ancla") + `Ancla de las ${hora(reciente.creada)}`; $("#aPalabra").value = ""; abrirHoja("#hAncla"); }
+    else guardarAncla(new Date(), true);
+  }
   else if (d.accion === "anotar"){ ver("anotar"); setTimeout(() => $("#cTexto").focus(), 250); }
   else if (d.accion === "nota"){ const n = notas.find(x => x.id === d.nota); if (n){ ver("hoy"); abrirEdicion(n); } }
   else if (d.accion === "compartir"){
