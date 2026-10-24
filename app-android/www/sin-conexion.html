@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chispa sin conexión</title>
+<style>
+  :root{--bg:#F6F7FA;--text:#16213A;--muted:#66728A;--ink:#16213A;--on:#fff}
+  @media (prefers-color-scheme: dark){:root{--bg:#0D1221;--text:#E8ECF4;--muted:#94A0B8;--ink:#E8ECF4;--on:#0D1221}}
+  body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);text-align:center}
+  h1{font-size:24px;margin:8px 0 0} p{color:var(--muted);max-width:320px;margin:0;line-height:1.5}
+  button{margin-top:14px;border:0;border-radius:14px;padding:13px 22px;font:inherit;font-weight:600;background:var(--ink);color:var(--on)}
+  svg{width:56px;height:56px}
+</style>
+</head>
+<body>
+  <svg viewBox="0 0 24 24" fill="none" stroke="#F4B63E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18.5a4.5 4.5 0 0 1-.7-8.9M9 6.3A6 6 0 0 1 17.8 9a4.3 4.3 0 0 1 1.8 7.6M3 3l18 18"/></svg>
+  <h1>Chispa necesita conexión para abrirse la primera vez</h1>
+  <p>En cuanto la abras una vez con cobertura, funcionará también sin ella. Si ya la habías abierto, prueba de nuevo.</p>
+  <button onclick="location.href='https://jamormar.github.io/chispa/'">Reintentar</button>
+</body>
+</html>

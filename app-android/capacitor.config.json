@@ -1,0 +1,28 @@
+{
+  "appId": "es.jamormar.chispa",
+  "appName": "Chispa",
+  "webDir": "www",
+  "server": {
+    "url": "https://jamormar.github.io/chispa/",
+    "allowNavigation": [
+      "jamormar.github.io",
+      "login.microsoftonline.com",
+      "*.microsoftonline.com",
+      "login.live.com",
+      "*.live.com",
+      "account.microsoft.com",
+      "*.msauth.net",
+      "*.msftauth.net"
+    ],
+    "errorPath": "sin-conexion.html"
+  },
+  "android": {
+    "backgroundColor": "#16213A"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_chispa",
+      "iconColor": "#F4B63E"
+    }
+  }
+}

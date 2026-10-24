@@ -555,7 +555,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.5";
+const VERSION = "0.6";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -859,7 +859,7 @@ async function sincronizar(forzar = false){
     errorSync = e.login ? "" : (e.message || "Error de sincronización");
   } finally {
     if (errorSync){ carpetas.clear(); raizId = null; }
-    sincronizando = false; pintarEstado(); pintarBadges();
+    sincronizando = false; pintarEstado(); pintarBadges(); programarAvisos();
   }
 }
 const limpia = n => { const o = {}; for (const k in n) if (!k.startsWith("_")) o[k] = n[k]; return o; };
@@ -869,7 +869,7 @@ async function guardarNotaLocal(n, nuevosAdjuntos = []){
   n._subir = [...new Set([...(n._subir || []), ...nuevosAdjuntos])];
   await idb.poner(n);
   const k = notas.findIndex(x => x.id === n.id); if (k >= 0) notas[k] = n; else notas.push(n);
-  ordenar(); pintarEstado(); pintarBadges(); setTimeout(() => sincronizar(true), 50);
+  ordenar(); pintarEstado(); pintarBadges(); setTimeout(() => sincronizar(true), 50); programarAvisos();
 }
 addEventListener("online", () => { pintarEstado(); sincronizar(true); });
 addEventListener("offline", pintarEstado);
@@ -1530,6 +1530,63 @@ async function procesarTranscripciones(){
 }
 setInterval(() => { if (document.visibilityState === "visible") procesarTranscripciones(); }, 90000);
 
+/* ================= App Android (Capacitor) ================= */
+const CAP = window.Capacitor;
+const esApp = () => !!(CAP && CAP.isNativePlatform && CAP.isNativePlatform());
+const nativo = nombre => { try { return CAP?.Plugins?.[nombre] || (CAP?.registerPlugin ? CAP.registerPlugin(nombre) : null); } catch(e){ return null; } };
+let infoApp = null;
+async function iniciarApp(){
+  if (!esApp()) return;
+  document.documentElement.classList.add("app-nativa");
+  const nat = nativo("ChispaNativo"), ln = nativo("LocalNotifications");
+  try { infoApp = await nat.info(); } catch(e){}
+  try { await nat.addListener("entrada", d => procesarEntrada(d)); } catch(e){}
+  try { await ln.addListener("localNotificationActionPerformed", ev => { const id = ev?.notification?.extra?.nota, n = notas.find(x => x.id === id); if (n){ ver("hoy"); abrirEdicion(n); } }); } catch(e){}
+  try { const p = await ln.checkPermissions(); if (p.display !== "granted") await ln.requestPermissions(); } catch(e){}
+  programarAvisos();
+}
+// Lo que llega desde el widget, un aviso o «Compartir con Chispa»
+async function procesarEntrada(d){
+  if (!d || !d.accion) return;
+  cerrarHojas();
+  if (d.accion === "voz"){ ver("anotar"); tocado = true; if (!rec) empezarVoz(); }
+  else if (d.accion === "ancla"){ ver("anotar"); anclaAbierta = null; guardarAncla(new Date(), true); }
+  else if (d.accion === "anotar"){ ver("anotar"); setTimeout(() => $("#cTexto").focus(), 250); }
+  else if (d.accion === "nota"){ const n = notas.find(x => x.id === d.nota); if (n){ ver("hoy"); abrirEdicion(n); } }
+  else if (d.accion === "compartir"){
+    ver("anotar");
+    if (d.asunto && !$("#cTitulo").value) $("#cTitulo").value = d.asunto;
+    if (d.texto) $("#cTexto").value = ($("#cTexto").value ? $("#cTexto").value + "\n" : "") + d.texto;
+    for (const u of d.imagenes || []){ try { borrador.fotos.push(await reducirFoto(await (await fetch(u)).blob())); } catch(e){} }
+    tocado = true; autoAlto(); pintarAdjuntos(); pintarDetectado();
+    toast("Recibido. Revisa y pulsa ✓ para guardarlo", "spark", 4000);
+  }
+}
+// Avisos del sistema a la hora de cada recordatorio, aunque la app esté cerrada
+const idAviso = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h) % 2000000000; };
+let tAvisos = 0;
+function programarAvisos(){
+  if (!esApp()) return;
+  clearTimeout(tAvisos);
+  tAvisos = setTimeout(async () => {
+    const ln = nativo("LocalNotifications"); if (!ln) return;
+    try {
+      const pend = await ln.getPending();
+      if (pend?.notifications?.length) await ln.cancel({notifications: pend.notifications.map(n => ({id: n.id}))});
+      const ahora = Date.now(), lista = [];
+      for (const n of deNotas()){
+        if (n.hecha || !n.fecha || !n.hora) continue;
+        const t = new Date(`${n.fecha}T${n.hora}:00`).getTime();
+        if (!(t > ahora) || t - ahora > 60 * 864e5) continue;
+        lista.push({id: idAviso(n.id), title: tituloPlano(n), body: `${n.hora}${n.para?.nombre ? ", " + n.para.nombre : ""}`,
+          schedule: {at: new Date(t), allowWhileIdle: true}, extra: {nota: n.id}, smallIcon: "ic_stat_chispa", iconColor: "#F4B63E"});
+      }
+      lista.sort((a, b) => a.schedule.at - b.schedule.at);
+      if (lista.length) await ln.schedule({notifications: lista.slice(0, 60)});
+    } catch(e){ console.warn("No se pudieron programar los avisos", e); }
+  }, 1000);
+}
+
 /* ================= Avisos dentro de la app ================= */
 async function pedirPermisoAvisos(){ try { if ("Notification" in window && Notification.permission === "default") await Notification.requestPermission(); } catch(e){} }
 async function revisarAvisos(){
@@ -1539,7 +1596,7 @@ async function revisarAvisos(){
     avisadas[n.id] = n.fecha + n.hora; lsSet("chispa.avisadas", avisadas);
     const titulo = tituloPlano(n) || "Recordatorio de Chispa";
     toast(`${n.hora}: ${titulo}`, "campana", 8000); vibrar([80, 60, 80]);
-    try { if (Notification.permission === "granted"){ const reg = await navigator.serviceWorker?.getRegistration(); reg ? reg.showNotification("Chispa", {body: `${n.hora} · ${titulo}`, icon: "icon-192.png", tag: n.id}) : new Notification("Chispa", {body: titulo}); } } catch(e){}
+    if (!esApp()) try { if (Notification.permission === "granted"){ const reg = await navigator.serviceWorker?.getRegistration(); reg ? reg.showNotification("Chispa", {body: `${n.hora} · ${titulo}`, icon: "icon-192.png", tag: n.id}) : new Notification("Chispa", {body: titulo}); } } catch(e){}
   }
 }
 setInterval(revisarAvisos, 30000);
@@ -1801,7 +1858,7 @@ function pintarAjustes(){
     <div class="grupo"><h3>Cuenta</h3><div class="caja">
       <div class="ajuste">${ic("user")}<div class="lbl">${esc(lsGet("chispa.usuario") || "Cuenta de Microsoft")}<small>Tus datos están en OneDrive, en Aplicaciones › Chispa</small></div><button class="btn sec" id="kSalir">${ic("salir")}Salir</button></div>
     </div></div>
-    <div class="cuenta" style="text-align:center;margin:20px 0">Chispa ${VERSION}</div>`;
+    <div class="cuenta" style="text-align:center;margin:20px 0">Chispa ${VERSION}${esApp() ? ` · app Android ${esc(infoApp?.version || "")}` : ""}</div>`;
   $("#kAmb").value = disp.ambito || "trabajo"; $("#kTrans").value = disp.trans === false ? "0" : "1"; $("#kUbi").value = disp.ubi ? "1" : "0"; $("#kTema").value = disp.tema || "auto";
   document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => ver(b.dataset.ir));
   const lineas = id => [...new Set($(id).value.split("\n").map(s => s.trim()).filter(Boolean))];
@@ -1857,7 +1914,7 @@ function pintarAyuda(){
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
-  <h3>Novedades</h3><p><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
@@ -1893,6 +1950,7 @@ function pintarAyuda(){
   if (accion === "voz"){ tocado = true; empezarVoz(); }
   sincronizar(true);
   setTimeout(() => { procesarTranscripciones(); revisarAvisos(); }, 2500);
+  iniciarApp();
 })();
 </script>
 </body>
