@@ -96,18 +96,21 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(22,33,58,.08)}
 .seg button.on[data-a="trabajo"]{color:var(--work)} .seg button.on[data-a="personal"]{color:var(--home)}
 .papel{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:28px;overflow:hidden;position:relative}
-.campo{position:relative;display:flex;gap:10px;align-items:flex-start;margin:10px 10px 0;padding:14px 46px 12px 14px;border-radius:18px;background:var(--bg);border:1.5px solid var(--line);cursor:text;transition:border-color .15s,background .15s}
+.campo{flex-shrink:0;position:relative;display:flex;gap:10px;align-items:flex-start;margin:10px 10px 0;padding:14px 46px 12px 14px;border-radius:18px;background:var(--bg);border:1.5px solid var(--line);cursor:text;transition:border-color .15s,background .15s}
 .campo:focus-within{border-color:var(--work);background:var(--surface)}
 .campo>svg{color:var(--muted);margin-top:3px}
 .campo .limpiar{position:absolute;top:6px;right:6px;width:36px;height:36px}
 .campo .limpiar svg{width:18px;height:18px}
-#cTexto{flex:1;min-width:0;border:0;outline:0;resize:none;background:transparent;padding:0;font-size:19px;line-height:1.4;min-height:54px;max-height:200px;font-family:var(--body)}
+.cuerpo-campo{flex:1;min-width:0;display:flex;flex-direction:column}
+#cTitulo{border:0;outline:0;background:transparent;font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:-.01em;color:var(--text);padding:0 0 8px;margin-bottom:8px;border-bottom:1px solid var(--line);width:100%}
+#cTitulo::placeholder{color:var(--faint);font-weight:500}
+#cTexto{flex:0 0 auto;width:100%;min-width:0;border:0;outline:0;resize:none;background:transparent;padding:0;font-size:19px;line-height:1.4;min-height:54px;max-height:200px;font-family:var(--body)}
 #cTexto::placeholder{color:var(--muted)}
 .lienzo{margin-top:10px!important}
 @media (min-width:900px){
   .papel.sin-mano .lienzo{display:none}
   .papel.sin-mano .campo{flex:1;margin-bottom:10px}
-  .papel.sin-mano #cTexto{max-height:none;height:100%!important}
+  .papel.sin-mano #cTexto{max-height:none;height:auto!important;flex:1}
   .tool.on{background:var(--raise);border-color:var(--work);color:var(--work)}
 }
 #cTexto::placeholder{color:var(--faint)}
@@ -164,7 +167,9 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .chk.pop{animation:pop .3s}
 @keyframes pop{50%{transform:scale(1.25)}}
 .fila .ct{flex:1;min-width:0}
-.fila .tt{font-size:15.5px;line-height:1.35;word-wrap:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.fila .tt{font-size:15.5px;font-weight:600;line-height:1.35;word-wrap:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fila .desc{font-size:14px;color:var(--muted);line-height:1.4;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-wrap:break-word}
+.fila.hecha .desc{color:var(--faint)}
 .fila.hecha .tt{color:var(--faint);text-decoration:line-through}
 .fila .tt .vacio{color:var(--muted);font-style:italic}
 .mt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:5px;font-size:12.5px;color:var(--muted)}
@@ -219,6 +224,8 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .hinfo span,.hinfo a{display:inline-flex;align-items:center;gap:5px;color:inherit;text-decoration:none}
 .hinfo svg{width:15px;height:15px}
 #eTexto.corto{min-height:26px}
+#eTitulo{width:100%;border:0;outline:0;background:transparent;font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:-.01em;color:var(--text);padding:0}
+#eTitulo::placeholder{color:var(--faint);font-weight:500}
 #eTexto{width:100%;border:0;outline:0;resize:none;background:transparent;font-size:17px;line-height:1.5;padding:0;min-height:90px;display:block}
 .transc{border-left:3px solid var(--spark);padding:4px 0 4px 12px;color:var(--muted);font-size:14.5px;margin:6px 0 4px}
 .galeria{display:flex;gap:10px;overflow-x:auto;padding:12px 2px 4px}
@@ -438,9 +445,12 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
         <button class="sync cab-sync" data-sync></button>
       </div>
       <div class="papel" id="papel">
-        <label class="campo" for="cTexto"><span id="icTeclado"></span>
-          <textarea id="cTexto" rows="2" placeholder="Escribe aquí lo que tengas en la cabeza"></textarea>
-          <button class="ibtn limpiar" id="bLimpiar" aria-label="Empezar de nuevo" title="Empezar de nuevo"></button></label>
+        <div class="campo" id="campo"><span id="icTeclado"></span>
+          <div class="cuerpo-campo">
+            <input id="cTitulo" placeholder="Título (opcional)" autocomplete="off" enterkeyhint="next" aria-label="Título">
+            <textarea id="cTexto" rows="2" placeholder="Escribe aquí lo que tengas en la cabeza" aria-label="Texto"></textarea>
+          </div>
+          <button class="ibtn limpiar" id="bLimpiar" aria-label="Empezar de nuevo" title="Empezar de nuevo"></button></div>
         <div class="detect" id="detect"></div>
         <div class="adj" id="adj"></div>
         <div class="lienzo">
@@ -494,7 +504,11 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
   <div class="ecuerpo">
     <div class="hinfo" id="eInfo"></div>
     <section class="esec">
-      <h4><span id="eTitTexto">Texto</span><button class="enl" id="eAddLista"></button></h4>
+      <h4>Título</h4>
+      <div class="efield"><input id="eTitulo" placeholder="Ponle un título para encontrarla fácil" autocomplete="off" aria-label="Título"></div>
+    </section>
+    <section class="esec">
+      <h4><span id="eTitTexto">Descripción</span><button class="enl" id="eAddLista"></button></h4>
       <div class="efield"><textarea id="eTexto" rows="3" placeholder="Escribe la nota"></textarea></div>
       <div class="transc oculto" id="eTransc"></div>
       <div id="eTransBtn"></div>
@@ -541,7 +555,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.4.9";
+const VERSION = "0.5";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -962,17 +976,20 @@ $("#icBusca").innerHTML = ic("buscar");
 
 function nuevoBorrador(){
   borrador = {audio: null, dur: "", transcripcion: "", fotos: [], trazo: false}; ignorar = {};
-  $("#cTexto").value = ""; autoAlto(); limpiarLienzo(); pintarAdjuntos(); pintarDetectado(); setAmbito(disp.ambito || "trabajo");
+  $("#cTexto").value = ""; $("#cTitulo").value = ""; autoAlto(); limpiarLienzo(); pintarAdjuntos(); pintarDetectado(); setAmbito(disp.ambito || "trabajo");
   tocado = false; anclaAbierta = esNoche() && esMovil() ? new Date() : null;
 }
-const vacio = () => !$("#cTexto").value.trim() && !borrador.audio && !borrador.fotos.length && !borrador.trazo && !rec;
+const vacio = () => !$("#cTexto").value.trim() && !$("#cTitulo").value.trim() && !borrador.audio && !borrador.fotos.length && !borrador.trazo && !rec;
 function setAmbito(a){ document.querySelectorAll("#cAmbito button").forEach(b => b.classList.toggle("on", b.dataset.a === a)); }
 const ambitoSel = () => document.querySelector("#cAmbito button.on")?.dataset.a || "trabajo";
 document.querySelectorAll("#cAmbito button").forEach(b => b.onclick = () => { tocado = true; setAmbito(b.dataset.a); });
 function autoAlto(){ const t = $("#cTexto"); if ($("#papel").classList.contains("sin-mano") && !esMovil()){ t.style.height = ""; return; } t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 220) + "px"; }
 $("#cTexto").addEventListener("keydown", continuarLista);
+$("#cTitulo").addEventListener("keydown", e => { if (e.key === "Enter" && !e.ctrlKey && !e.metaKey){ e.preventDefault(); $("#cTexto").focus(); } });
+$("#cTitulo").addEventListener("input", () => { tocado = true; pintarDetectado(); });
+$("#campo").addEventListener("click", e => { if (!e.target.closest("input,textarea,button")) $("#cTexto").focus(); });
 $("#cTexto").addEventListener("input", () => { tocado = true; autoAlto(); pintarDetectado(); });
-function textoBorrador(){ return [$("#cTexto").value, borrador?.transcripcion].filter(Boolean).join(" "); }
+function textoBorrador(){ return [$("#cTitulo").value, $("#cTexto").value, borrador?.transcripcion].filter(Boolean).join(" "); }
 function pintarDetectado(){
   const s = sugerir(textoBorrador()), out = [];
   if (s.fecha && !ignorar.fecha) out.push(`<span class="dchip">${ic("cal")}${capital(fechaRelativa(s.fecha))}${s.hora ? " a las " + s.hora : ""}<button class="q" data-ign="fecha" aria-label="Quitar">${ic("x")}</button></span>`);
@@ -1066,6 +1083,7 @@ async function guardarCaptura(){
   if (vacio()){ toast("Escribe, dicta o dibuja algo primero", "pluma"); return; }
   const ahora = new Date(), n = notaBase(ahora), carpeta = `${ahora.getFullYear()}/${pad(ahora.getMonth()+1)}`, adj = [];
   n.texto = $("#cTexto").value.trim();
+  const tit = $("#cTitulo").value.trim(); if (tit) n.titulo = tit;
   if (borrador.transcripcion){ n.transcripcion = borrador.transcripcion; if (!n.texto) n.texto = borrador.transcripcion; }
   if (borrador.audio){ const t = borrador.audio.type || "", ext = t.includes("mp4") || t.includes("aac") ? "m4a" : t.includes("ogg") ? "ogg" : "webm";
     n.audio = `Audios/${carpeta}/${n.id}.${ext}`; await idb.ponerBlob(n.audio, borrador.audio); adj.push(n.audio); }
@@ -1086,7 +1104,7 @@ async function guardarCaptura(){
 }
 $("#bGuardar").onclick = guardarCaptura;
 document.addEventListener("keydown", e => {
-  if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && vista === "anotar") guardarCaptura();
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && vista === "anotar" && !$("#hEditar").classList.contains("on")) guardarCaptura();
   if (e.key === "Escape"){ cerrarHojas(); }
 });
 
@@ -1154,13 +1172,17 @@ function avisoListaCompleta(n, items){
   if (items.length && items.every(i => i.hecho) && !n.hecha)
     toast("Lista completa", "check", 7000, async () => { n.hecha = true; n.hechaEn = new Date().toISOString(); await guardarNotaLocal(n); refrescar(); if ($("#hEditar").classList.contains("on") && editando === n) abrirEdicion(n); }, "Marcar nota hecha");
 }
-function tituloDe(n){
-  if (n.ancla) return `Ancla de las ${hora(n.creada)}${n.texto ? ": " + esc(n.texto) : ""}`;
-  if (n.texto){ const {intro, items} = partirLista(n.texto);
-    if (items.length) return esc(intro.split("\n")[0] || `Lista de ${items.length} ${items.length === 1 ? "punto" : "puntos"}`);
-    return esc(n.texto); }
-  return `<span class="vacio">${n.audio ? "Nota de voz" : n.fotos?.length ? "Imagen" : "Nota vacía"}</span>`;
+// Título y descripción que se ven en los listados
+function partesNota(n){
+  const {intro, items} = partirLista(n.texto), lineas = intro.split("\n").map(l => l.trim()).filter(Boolean);
+  if (n.ancla) return {titulo: `Ancla de las ${hora(n.creada)}${n.titulo || n.texto ? ": " + (n.titulo || n.texto) : ""}`, desc: ""};
+  if (n.titulo) return {titulo: n.titulo, desc: lineas.join(" ")};
+  if (lineas.length) return {titulo: lineas[0], desc: lineas.slice(1).join(" ")};
+  if (items.length) return {titulo: `Lista de ${items.length} ${items.length === 1 ? "punto" : "puntos"}`, desc: ""};
+  return {titulo: "", desc: "", vacio: n.audio ? "Nota de voz" : n.fotos?.length ? "Imagen" : "Nota vacía"};
 }
+function tituloDe(n){ const p = partesNota(n); return p.titulo ? esc(p.titulo) : `<span class="vacio">${p.vacio}</span>`; }
+const tituloPlano = n => { const p = partesNota(n); return p.titulo || p.vacio; };
 function fila(n, opts = {}){
   const hoy = hoyISO(), venc = n.fecha && n.fecha < hoy && !n.hecha;
   const mt = [];
@@ -1177,7 +1199,7 @@ function fila(n, opts = {}){
   if (n._pend) mt.push(`<span class="nube" title="Pendiente de subir">${ic("nube")}</span>`);
   return `<div class="desl"><div class="fondo"></div><div class="fila ${n.hecha ? "hecha" : ""}" data-abrir="${n.id}">
     <button class="chk ${n.ambito === "personal" ? "personal" : ""}" data-hecha="${n.id}" aria-label="${n.hecha ? "Marcar pendiente" : "Marcar hecha"}">${ic("check")}</button>
-    <div class="ct"><div class="tt">${tituloDe(n)}</div>${lista.length && !n.hecha ? miniLista(n, lista) : ""}${mt.length ? `<div class="mt">${mt.join("")}</div>` : ""}
+    <div class="ct"><div class="tt">${tituloDe(n)}</div>${(() => { const d = partesNota(n).desc; return d ? `<div class="desc">${esc(d)}</div>` : ""; })()}${lista.length && !n.hecha ? miniLista(n, lista) : ""}${mt.length ? `<div class="mt">${mt.join("")}</div>` : ""}
       ${n.ancla && opts.resolver ? `<div class="resolver"><input placeholder="¿Qué era?" data-resolver="${n.id}"><button data-ok="${n.id}">Listo</button></div>` : ""}</div>
     ${n.fotos?.length ? `<img class="mini" data-mini="${n.fotos[0]}" alt="">` : ""}
   </div></div>`;
@@ -1348,8 +1370,12 @@ function abrirEdicion(n){
   eAdj = {audio: n.audio || null, fotos: [...(n.fotos || [])], nuevas: [], quitar: []};
   const pl = partirLista(n.texto); eItems = ordenarItems(pl.items.map(i => ({...i}))); verHechos = false;
   $("#eTexto").value = pl.intro; pintarListaEdicion();
-  const conLista = eItems.length > 0; $("#eTitTexto").textContent = conLista ? "Título" : "Texto";
-  $("#eTexto").placeholder = conLista ? "Título de la lista (opcional)" : "Escribe la nota"; $("#eTexto").classList.toggle("corto", conLista && !pl.intro);
+  // Título: el propio, o (en notas antiguas de lista) la línea que lo hacía de título
+  let titulo = n.titulo || "";
+  if (!titulo && eItems.length && pl.intro && !pl.intro.includes("\n")){ titulo = pl.intro; $("#eTexto").value = ""; }
+  $("#eTitulo").value = n.ancla && !n.titulo ? "" : titulo;
+  const conLista = eItems.length > 0;
+  $("#eTexto").placeholder = conLista ? "Notas sobre la lista (opcional)" : "Escribe la nota"; $("#eTexto").classList.toggle("corto", conLista && !$("#eTexto").value); $("#eTexto").rows = conLista && !$("#eTexto").value ? 1 : 3;
   $("#eCat").value = n.para?.categoria || ""; $("#eNombre").value = n.para?.nombre || ""; $("#eFecha").value = n.fecha || ""; $("#eHora").value = n.hora || "";
   $("#eTransBtn").innerHTML = n.audio && !n.transcripcion && voz() ? `<button class="btn sec" id="eTranscribir" style="margin-top:10px">${ic("mic")}${n._transcribir ? "Transcribiendo…" : "Transcribir el audio"}</button>` : "";
   if ($("#eTranscribir")) $("#eTranscribir").onclick = async () => { $("#eTranscribir").textContent = "Transcribiendo…"; const ok = await transcribirNota(n, true); if (ok){ cerrarHojas(); abrirEdicion(n); } else $("#eTranscribir").textContent = "No se pudo. Reintentar"; };
@@ -1398,10 +1424,11 @@ async function guardarEdicion(){
   const n = editando; if (!n) return;
   const nuevoPunto = $("#eNuevoItem")?.value.trim(); if (nuevoPunto) eItems.push({hecho: false, texto: nuevoPunto});
   n.texto = eItems.length ? unirLista($("#eTexto").value, eItems) : $("#eTexto").value.trim(); n.ambito = eAmbSel; n.tipo = eTipoSel;
+  const tit = $("#eTitulo").value.trim(); if (tit) n.titulo = tit; else delete n.titulo;
   n.para = {categoria: $("#eCat").value, nombre: $("#eNombre").value.trim()}; n.fecha = $("#eFecha").value || null;
   n.hora = $("#eHora").value || null; if (n.hora && !n.fecha) n.fecha = hoyISO();
   if (n.hora) pedirPermisoAvisos();
-  if (n.ancla && n.texto) n.ancla = false;
+  if (n.ancla && (n.texto || n.titulo)) n.ancla = false;
   const nuevos = [];
   for (const r of eAdj.quitar){
     if ((n._subir || []).includes(r)){ n._subir = n._subir.filter(x => x !== r); await idb.quitarBlob(r); }
@@ -1510,7 +1537,7 @@ async function revisarAvisos(){
   for (const n of deNotas()){
     if (n.hecha || n.fecha !== hoy || !n.hora || n.hora > hm || avisadas[n.id] === n.fecha + n.hora) continue;
     avisadas[n.id] = n.fecha + n.hora; lsSet("chispa.avisadas", avisadas);
-    const titulo = n.texto || "Recordatorio de Chispa";
+    const titulo = tituloPlano(n) || "Recordatorio de Chispa";
     toast(`${n.hora}: ${titulo}`, "campana", 8000); vibrar([80, 60, 80]);
     try { if (Notification.permission === "granted"){ const reg = await navigator.serviceWorker?.getRegistration(); reg ? reg.showNotification("Chispa", {body: `${n.hora} · ${titulo}`, icon: "icon-192.png", tag: n.id}) : new Notification("Chispa", {body: titulo}); } } catch(e){}
   }
@@ -1571,7 +1598,7 @@ function prepararCorreo(ambito){
   const hoy = hoyISO(), dest = ambito === "trabajo" ? config.correoTrabajo : config.correoPersonal, del = deNotas().filter(n => n.ambito === ambito);
   const vence = del.filter(n => !n.hecha && n.fecha && n.fecha <= hoy), nuevas = del.filter(n => isoDia(new Date(n.creada)) === hoy);
   if (!vence.length && !nuevas.length){ toast(`Hoy no hay nada ${ambito === "trabajo" ? "de trabajo" : "personal"} que enviar`, "mail"); return; }
-  const linea = n => `- ${n.ancla ? "(ancla de las " + hora(n.creada) + ") " + (n.texto || "") : n.texto}${n.para?.nombre ? " [" + n.para.nombre + "]" : ""}${n.fecha ? " (" + fechaCorta(n.fecha) + ")" : ""}`;
+  const linea = n => `- ${n.ancla ? "(ancla de las " + hora(n.creada) + ") " + (n.texto || "") : (n.titulo ? n.titulo + (n.texto ? ": " + n.texto : "") : n.texto)}${n.para?.nombre ? " [" + n.para.nombre + "]" : ""}${n.fecha ? " (" + fechaCorta(n.fecha) + ")" : ""}`;
   let cuerpo = `Resumen de Chispa, ${fechaLarga(hoy)}\n\n`;
   if (vence.length) cuerpo += `Para hoy y vencidas\n${vence.map(linea).join("\n")}\n\n`;
   if (nuevas.length) cuerpo += `Capturado hoy\n${nuevas.map(linea).join("\n")}\n`;
@@ -1597,7 +1624,7 @@ function pintarNotas(){
   const lista = deNotas().filter(n => {
     if (filtro.estado === "pend" && n.hecha) return false; if (filtro.estado === "hecha" && !n.hecha) return false;
     if (filtro.ambito && n.ambito !== filtro.ambito) return false; if (filtro.tipo && n.tipo !== filtro.tipo) return false; if (filtro.cat && n.para?.categoria !== filtro.cat) return false;
-    if (q.length){ const h = norm([n.texto, n.transcripcion, n.para?.nombre, CAT[n.para?.categoria], TIPOS[n.tipo]?.[0], n.terminal, fechaLarga(n.creada), n.fecha ? fechaLarga(n.fecha) : "", n.nocturna ? "noche nocturna" : "", n.ancla ? "ancla" : ""].join(" ")); if (!q.every(p => h.includes(p))) return false; }
+    if (q.length){ const h = norm([n.titulo, n.texto, n.transcripcion, n.para?.nombre, CAT[n.para?.categoria], TIPOS[n.tipo]?.[0], n.terminal, fechaLarga(n.creada), n.fecha ? fechaLarga(n.fecha) : "", n.nocturna ? "noche nocturna" : "", n.ancla ? "ancla" : ""].join(" ")); if (!q.every(p => h.includes(p))) return false; }
     return true;
   }).slice(0, 300);
   if (!lista.length){
@@ -1816,6 +1843,7 @@ function pintarAyuda(){
   $("#vAyuda").innerHTML = cab("Ayuda", `Chispa ${VERSION}`) + `
   <h3>Anotar</h3><p>Escribe con el teclado en el recuadro de arriba (en el móvil, también con el botón del teclado), dicta con el botón amarillo o escribe a mano en la zona de puntos. En el PC, el botón del lápiz muestra u oculta la zona para escribir a mano. Pulsa <b>✓</b> para guardar. Con la cámara añades fotos. Al dictar se guarda <b>el audio original</b>: si la transcripción no cuadra, escúchalo al abrir la nota.</p>
   <p>Mientras escribes, Chispa detecta <b>fechas</b> («mañana», «el jueves», «el 25 de noviembre», «en 3 días»), <b>nombres</b> de tus listas y el <b>tipo</b> de nota, y te los muestra en etiquetas amarillas. Si alguna no es correcta, quítala con la ✕.</p>
+  <h3>Título</h3><p>Cada nota tiene un título opcional, arriba del texto. Es lo que se ve destacado en «Hoy» y en «Notas». Si no le pones título, se usa la primera línea del texto.</p>
   <h3>El ancla</h3><p>Para cuando no puedes anotar: guarda la hora y, si quieres, una palabra. En «Hoy» aparece en «Por recordar» para que lo completes.</p>
   <h3>Hoy</h3><p>Tu agenda de acciones: lo que tienes por recordar, lo vencido, lo de hoy, las ideas de anoche y los próximos días. Toca el círculo para marcar algo como hecho; toca la nota para abrirla.</p>
   <h3>Notas</h3><p>Todo lo anotado, agrupado por día. Busca por texto, nombre o fecha y filtra con las etiquetas de arriba.</p>
@@ -1829,7 +1857,7 @@ function pintarAyuda(){
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
-  <h3>Novedades</h3><p><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
