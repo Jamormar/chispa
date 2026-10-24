@@ -7,15 +7,50 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#1f2a44",
-  "theme_color": "#1f2a44",
+  "background_color": "#16213A",
+  "theme_color": "#16213A",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    { "name": "Grabar voz", "short_name": "Grabar", "url": "./?accion=voz", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
-    { "name": "Ancla rápida", "short_name": "Ancla", "url": "./?accion=ancla", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
+    {
+      "name": "Grabar voz",
+      "short_name": "Grabar",
+      "url": "./?accion=voz",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Ancla rápida",
+      "short_name": "Ancla",
+      "url": "./?accion=ancla",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
   ]
 }
