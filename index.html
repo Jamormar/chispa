@@ -142,8 +142,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .seccion h3 svg{width:18px;height:18px;color:var(--muted)}
 .seccion.vencidas h3 svg{color:var(--danger)} .seccion.noche h3 svg{color:var(--work)} .seccion.anclas h3 svg{color:var(--spark-deep)}
 .lista{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:0 6px}
-.fila{display:flex;align-items:flex-start;gap:12px;padding:13px 10px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:14px}
-.fila:last-child{border-bottom:0}
+.fila{display:flex;align-items:flex-start;gap:12px;padding:13px 10px;cursor:pointer;border-radius:14px}
 @media (hover:hover){ .fila:hover{background:var(--raise)} }
 .chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--work);flex:none;display:grid;place-items:center;margin-top:-1px;color:transparent;transition:background .15s,transform .15s}
 .chk.personal{border-color:var(--home)}
@@ -276,6 +275,19 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translate(-50%,-20px);z-index:60;background:var(--ink);color:var(--on-ink);
   padding:11px 16px;border-radius:14px;font-size:14.5px;font-weight:500;display:flex;align-items:center;gap:8px;opacity:0;transition:.25s;pointer-events:none;max-width:92vw;box-shadow:var(--float)}
 .toast.ver{opacity:1;transform:translate(-50%,0)}
+.toast.accion{pointer-events:auto}
+.toast .deshacer{margin-left:6px;padding:5px 11px;border-radius:9px;background:color-mix(in srgb,var(--on-ink) 18%,transparent);color:var(--spark);font-weight:700;font-size:14px}
+.desl{position:relative;border-bottom:1px solid var(--line)}
+.desl:last-child{border-bottom:0}
+.desl .fondo{position:absolute;inset:4px 0;border-radius:14px;display:flex;align-items:center;padding:0 18px;color:#fff;font-weight:600;gap:8px;opacity:0}
+.desl .fondo svg{width:20px;height:20px}
+.desl .fondo.hecha{background:var(--home);justify-content:flex-start}
+.desl .fondo.borra{background:var(--danger);justify-content:flex-end}
+.desl .fila{position:relative;background:var(--surface);border-bottom:0;touch-action:pan-y}
+.desl .fila.volviendo{transition:transform .22s}
+.ajuste .estado-t{font-size:13px;color:var(--muted)}
+.ajuste .estado-t.ok{color:var(--home)}
+.transcribiendo{display:inline-flex;align-items:center;gap:6px;color:var(--spark-text);font-size:13px}
 .toast svg{width:18px;height:18px;color:var(--spark)}
 </style>
 </head>
@@ -359,6 +371,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
   <div class="hinfo" id="eInfo"></div>
   <textarea id="eTexto" rows="3" placeholder="Escribe la nota"></textarea>
   <div class="transc oculto" id="eTransc"></div>
+  <div id="eTransBtn"></div>
   <div id="eAudio"></div>
   <div class="galeria" id="eFotos"></div>
   <input type="file" id="eInFoto" accept="image/*" multiple class="oculto">
@@ -369,7 +382,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
       <select id="eCat"><option value="">Sin indicar</option><option value="cliente">Cliente</option><option value="proveedor">Proveedor</option><option value="companero">Compañero</option><option value="personal">Personal</option></select>
       <input type="text" id="eNombre" list="dlNombres" placeholder="Nombre"><datalist id="dlNombres"></datalist></div></div>
     <div class="prop"><span data-i="cal"></span><span class="lbl">Fecha</span><div class="val">
-      <input type="date" id="eFecha"><button class="opc" data-f="0">Hoy</button><button class="opc" data-f="1">Mañana</button><button class="opc" data-f="7">En una semana</button><button class="opc" data-f="">Sin fecha</button></div></div>
+      <input type="date" id="eFecha"><input type="time" id="eHora" aria-label="Hora (opcional)"><button class="opc" data-f="0">Hoy</button><button class="opc" data-f="1">Mañana</button><button class="opc" data-f="7">En una semana</button><button class="opc" data-f="">Sin fecha</button></div></div>
   </div>
   <div class="hpie">
     <button class="btn sec borrar" id="eBorrar"></button>
@@ -392,7 +405,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.4";
+const VERSION = "0.4.2";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -463,7 +476,12 @@ function fechaRelativa(iso){
   return fechaCorta(iso);
 }
 const capital = s => s.charAt(0).toUpperCase() + s.slice(1);
-function toast(t, icono = "check", ms = 2600){ const el = $("#toast"); el.innerHTML = ic(icono) + `<span>${esc(t)}</span>`; el.classList.add("ver"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("ver"), ms); }
+function toast(t, icono = "check", ms = 2600, deshacer = null){
+  const el = $("#toast"); el.innerHTML = ic(icono) + `<span>${esc(t)}</span>` + (deshacer ? `<button class="deshacer">Deshacer</button>` : "");
+  el.classList.toggle("accion", !!deshacer); el.classList.add("ver"); clearTimeout(toast.t);
+  if (deshacer) el.querySelector(".deshacer").onclick = () => { el.classList.remove("ver", "accion"); deshacer(); };
+  toast.t = setTimeout(() => el.classList.remove("ver", "accion"), deshacer ? Math.max(ms, 5500) : ms);
+}
 function vibrar(ms = 60){ try { navigator.vibrate && navigator.vibrate(ms); } catch(e){} }
 function nuevoId(d){ return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}-${Math.random().toString(36).slice(2,6)}`; }
 const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } };
@@ -640,13 +658,14 @@ async function sincronizar(forzar = false){
   sincronizando = true; pintarEstado();
   const fallos = [];
   try {
-    for (const n of notas.filter(x => x._borrar)){
+    for (const n of notas.filter(x => x._borrar && Date.now() - (x._borrarEn || 0) > 7000)){
       try {
-        for (const r of [`Notas/${n.id}.json`, n.audio, ...(n.fotos || [])].filter(Boolean)) await aPapelera(r);
+        if (n._etag) for (const r of [`Notas/${n.id}.json`, n.audio, ...(n.fotos || [])].filter(Boolean)) await aPapelera(r);
+        for (const r of n._subir || []) await idb.quitarBlob(r);
         await idb.quitar(n.id); notas = notas.filter(x => x !== n);
       } catch(e){ if (e.login) throw e; fallos.push(e.message); }
     }
-    for (const n of notas.filter(x => x._pend)){
+    for (const n of notas.filter(x => x._pend && !x._borrar)){
       try {
         for (const r of [...(n._quitar || [])]){
           try { await aPapelera(r); n._quitar = n._quitar.filter(x => x !== r); await idb.quitarBlob(r); cacheUrl.delete(r); }
@@ -739,7 +758,7 @@ function detectarFecha(texto, base = new Date()){
   const t = norm(texto), b = new Date(base.getFullYear(), base.getMonth(), base.getDate());
   const mas = n => { const d = new Date(b); d.setDate(d.getDate() + n); return isoDia(d); };
   if (/\bpasado manana\b/.test(t)) return mas(2);
-  if (/\bmanana\b/.test(t) && !/\bpor la manana\b/.test(t.replace(/\bmanana por la manana\b/, "manana"))) return mas(1);
+  if (/\bmanana\b/.test(t.replace(/\b(de|por) la manana\b/g, ""))) return mas(1);
   if (/\bhoy\b|\besta tarde\b|\besta noche\b/.test(t)) return mas(0);
   let m = t.match(/\b(?:en|dentro de)\s+(\d+|un|una|dos|tres|cuatro|cinco)\s+(dia|dias|semana|semanas)\b/);
   if (m){ const num = {un:1,una:1,dos:2,tres:3,cuatro:4,cinco:5}[m[1]] ?? Number(m[1]); return mas(num * (m[2].startsWith("semana") ? 7 : 1)); }
@@ -754,9 +773,22 @@ function detectarFecha(texto, base = new Date()){
   if (m){ const d = new Date(b.getFullYear(), b.getMonth(), Number(m[1])); if (d < b) d.setMonth(d.getMonth() + 1); return isoDia(d); }
   return null;
 }
+function detectarHora(texto){
+  const t = norm(texto);
+  let m = t.match(/\ba las (\d{1,2})(?:[:.h](\d{2}))?( y media| y cuarto| menos cuarto)?(?: (?:de la|por la) (manana|tarde|noche))?\b/) || t.match(/\b(\d{1,2})[:.](\d{2}) ?h\b()()/);
+  if (!m) return null;
+  let h = Number(m[1]), mi = m[2] ? Number(m[2]) : 0;
+  if (m[3] === " y media") mi = 30; else if (m[3] === " y cuarto") mi = 15; else if (m[3] === " menos cuarto"){ h -= 1; mi = 45; }
+  if ((m[4] === "tarde" || m[4] === "noche") && h < 12) h += 12;
+  else if (!m[4] && h >= 1 && h <= 7) h += 12;            // «a las 5» en horario de trabajo = 17:00
+  if (h > 23 || mi > 59) return null;
+  return `${pad(h)}:${pad(mi)}`;
+}
 function sugerir(texto, base = new Date()){
   const t = norm(texto), s = {};
   s.fecha = detectarFecha(texto, base);
+  s.hora = detectarHora(texto);
+  if (s.hora && !s.fecha){ const ahora = `${pad(base.getHours())}:${pad(base.getMinutes())}`; s.fecha = s.hora > ahora ? isoDia(base) : (() => { const d = new Date(base); d.setDate(d.getDate() + 1); return isoDia(d); })(); }
   for (const cat of ["cliente", "proveedor", "companero"]){
     for (const nom of config.contactos?.[cat] || []){ const nn = norm(nom).trim(); if (nn.length > 2 && t.includes(nn)){ s.cat = cat; s.nombre = nom; break; } }
     if (s.cat) break;
@@ -792,7 +824,7 @@ $("#cTexto").addEventListener("input", () => { tocado = true; autoAlto(); pintar
 function textoBorrador(){ return [$("#cTexto").value, borrador?.transcripcion].filter(Boolean).join(" "); }
 function pintarDetectado(){
   const s = sugerir(textoBorrador()), out = [];
-  if (s.fecha && !ignorar.fecha) out.push(`<span class="dchip">${ic("cal")}${capital(fechaRelativa(s.fecha))}<button class="q" data-ign="fecha" aria-label="Quitar">${ic("x")}</button></span>`);
+  if (s.fecha && !ignorar.fecha) out.push(`<span class="dchip">${ic("cal")}${capital(fechaRelativa(s.fecha))}${s.hora ? " a las " + s.hora : ""}<button class="q" data-ign="fecha" aria-label="Quitar">${ic("x")}</button></span>`);
   if (s.nombre && !ignorar.nombre) out.push(`<span class="dchip">${ic("user")}${esc(s.nombre)}<button class="q" data-ign="nombre" aria-label="Quitar">${ic("x")}</button></span>`);
   if (s.tipo && !ignorar.tipo) out.push(`<span class="dchip">${ic(TIPOS[s.tipo][1])}${TIPOS[s.tipo][0]}<button class="q" data-ign="tipo" aria-label="Quitar">${ic("x")}</button></span>`);
   $("#detect").innerHTML = out.join("");
@@ -855,8 +887,8 @@ async function empezarVoz(){
       paso();
     } catch(e){}
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    $("#vivo").textContent = "Te escucho…";
-    if (disp.trans !== false && SR){ try { sr = new SR(); sr.lang = "es-ES"; sr.continuous = true; sr.interimResults = true;
+    $("#vivo").textContent = esMovil() ? (voz() ? "Te escucho. El texto aparecerá al guardar." : "Te escucho. Se guarda el audio.") : "Te escucho…";
+    if (disp.trans !== false && SR && !esMovil()){ try { sr = new SR(); sr.lang = "es-ES"; sr.continuous = true; sr.interimResults = true;
       sr.onresult = e => { let parcial = ""; for (let i = e.resultIndex; i < e.results.length; i++){ if (e.results[i].isFinal) borrador.transcripcion = (borrador.transcripcion + " " + e.results[i][0].transcript).trim(); else parcial += e.results[i][0].transcript; }
         $("#vivo").textContent = (borrador.transcripcion + " " + parcial).trim() || "Te escucho…"; };
       sr.onerror = () => {}; sr.start(); } catch(e){ sr = null; } }
@@ -890,11 +922,14 @@ async function guardarCaptura(){
   for (const f of borrador.fotos){ const r = `Fotos/${carpeta}/${n.id}-${i++}.jpg`; await idb.ponerBlob(r, f); n.fotos.push(r); adj.push(r); }
   if (borrador.trazo){ const r = `Fotos/${carpeta}/${n.id}-trazo.png`; await idb.ponerBlob(r, await trazoComoImagen()); n.fotos.push(r); adj.push(r); }
   const s = sugerir(textoBorrador(), ahora);
-  if (s.fecha && !ignorar.fecha) n.fecha = s.fecha;
+  if (s.fecha && !ignorar.fecha){ n.fecha = s.fecha; if (s.hora) n.hora = s.hora; }
   if (s.tipo && !ignorar.tipo) n.tipo = s.tipo;
   if (s.cat && !ignorar.nombre) n.para = {categoria: s.cat, nombre: s.nombre};
   n.ubicacion = await ubicacion();
+  if (n.audio && !n.transcripcion && voz()) n._transcribir = true;
+  if (n.hora) pedirPermisoAvisos();
   await guardarNotaLocal(n, adj);
+  setTimeout(procesarTranscripciones, 800);
   vibrar(80); toast(n.nocturna ? "Idea nocturna guardada" : "Guardada", n.nocturna ? "luna" : "check");
   nuevoBorrador(); anclaAbierta = null;
 }
@@ -941,35 +976,69 @@ function tituloDe(n){
 function fila(n, opts = {}){
   const hoy = hoyISO(), venc = n.fecha && n.fecha < hoy && !n.hecha;
   const mt = [];
-  if (n.fecha) mt.push(`<span class="fe ${venc ? "venc" : n.fecha === hoy ? "hoy" : ""}">${ic("cal")}${fechaRelativa(n.fecha)}</span>`);
+  if (n.fecha) mt.push(`<span class="fe ${venc ? "venc" : n.fecha === hoy ? "hoy" : ""}">${ic("cal")}${fechaRelativa(n.fecha)}${n.hora ? ", " + n.hora : ""}</span>`);
   if (n.para?.nombre || n.para?.categoria) mt.push(`<span>${ic("user")}${esc(n.para.nombre || CAT[n.para.categoria])}</span>`);
   if (n.tipo === "idea") mt.push(`<span>${ic("idea")}Idea</span>`);
   if (n.audio) mt.push(`<span>${ic("mic")}</span>`);
   if (n.fotos?.length > 1) mt.push(`<span>${ic("imagen")}${n.fotos.length}</span>`);
   if (n.nocturna) mt.push(`<span>${ic("luna")}</span>`);
   if (opts.hora) mt.unshift(`<span>${hora(n.creada)}</span>`);
+  if (n._transcribir) mt.push(`<span class="transcribiendo">${ic("mic")}Transcribiendo</span>`);
   if (n._pend) mt.push(`<span class="nube" title="Pendiente de subir">${ic("nube")}</span>`);
-  return `<div class="fila ${n.hecha ? "hecha" : ""}" data-abrir="${n.id}">
+  return `<div class="desl"><div class="fondo"></div><div class="fila ${n.hecha ? "hecha" : ""}" data-abrir="${n.id}">
     <button class="chk ${n.ambito === "personal" ? "personal" : ""}" data-hecha="${n.id}" aria-label="${n.hecha ? "Marcar pendiente" : "Marcar hecha"}">${ic("check")}</button>
     <div class="ct"><div class="tt">${tituloDe(n)}</div>${mt.length ? `<div class="mt">${mt.join("")}</div>` : ""}
       ${n.ancla && opts.resolver ? `<div class="resolver"><input placeholder="¿Qué era?" data-resolver="${n.id}"><button data-ok="${n.id}">Listo</button></div>` : ""}</div>
     ${n.fotos?.length ? `<img class="mini" data-mini="${n.fotos[0]}" alt="">` : ""}
-  </div>`;
+  </div></div>`;
+}
+// Deslizar: a la derecha marca hecha, a la izquierda borra
+let ignorarClick = false;
+(() => {
+  let fila = null, fondo = null, x0 = 0, y0 = 0, dx = 0, activo = false;
+  document.addEventListener("pointerdown", e => {
+    if (e.pointerType !== "touch") return;
+    const f = e.target.closest(".desl .fila"); if (!f || e.target.closest("input,button")) return;
+    fila = f; fondo = f.previousElementSibling; x0 = e.clientX; y0 = e.clientY; dx = 0; activo = false; fila.classList.remove("volviendo");
+  }, {passive: true});
+  document.addEventListener("pointermove", e => {
+    if (!fila) return;
+    const mx = e.clientX - x0, my = e.clientY - y0;
+    if (!activo){ if (Math.abs(mx) > 12 && Math.abs(mx) > Math.abs(my) * 1.4){ activo = true; } else if (Math.abs(my) > 12){ fila = null; return; } else return; }
+    dx = mx; fila.style.transform = `translateX(${dx}px)`;
+    const n = notas.find(x => x.id === fila.dataset.abrir);
+    fondo.className = "fondo " + (dx > 0 ? "hecha" : "borra");
+    fondo.innerHTML = dx > 0 ? ic(n?.hecha ? "deshacer" : "check") + (n?.hecha ? "Pendiente" : "Hecha") : "Borrar" + ic("borrar");
+    fondo.style.opacity = Math.min(1, Math.abs(dx) / 90);
+  }, {passive: true});
+  const fin = async () => {
+    if (!fila) return; const f = fila, fd = fondo, d = dx; fila = null;
+    if (!activo) return;
+    ignorarClick = true; setTimeout(() => ignorarClick = false, 350);
+    f.classList.add("volviendo"); f.style.transform = ""; fd.style.opacity = 0;
+    const n = notas.find(x => x.id === f.dataset.abrir); if (!n) return;
+    if (d > 90){ vibrar(30); await alternarHecha(n); }
+    else if (d < -90){ vibrar(30); borrarNota(n); }
+  };
+  document.addEventListener("pointerup", fin); document.addEventListener("pointercancel", fin);
+})();
+async function alternarHecha(n){
+  n.hecha = !n.hecha; await guardarNotaLocal(n); refrescar();
+  toast(n.hecha ? "Hecha" : "Pendiente de nuevo", n.hecha ? "check" : "deshacer", 4000, async () => { n.hecha = !n.hecha; await guardarNotaLocal(n); refrescar(); });
 }
 function cargarMinis(cont){ cont.querySelectorAll("[data-mini]").forEach(img => urlAdjunto(img.dataset.mini).then(u => img.src = u).catch(() => {})); }
 document.addEventListener("click", async e => {
   const nota = id => notas.find(x => x.id === id);
   const chk = e.target.closest("[data-hecha]");
-  if (chk){ e.stopPropagation(); const n = nota(chk.dataset.hecha); n.hecha = !n.hecha; chk.classList.add("pop"); vibrar(30);
-    chk.closest(".fila")?.classList.toggle("hecha", n.hecha); await guardarNotaLocal(n); setTimeout(refrescar, 350);
-    if (n.hecha) toast("Hecha", "check"); return; }
+  if (chk){ e.stopPropagation(); const n = nota(chk.dataset.hecha); chk.classList.add("pop"); vibrar(30);
+    chk.closest(".fila")?.classList.toggle("hecha", !n.hecha); setTimeout(() => alternarHecha(n), 250); return; }
   const ok = e.target.closest("[data-ok]");
   if (ok){ e.stopPropagation(); const n = nota(ok.dataset.ok), v = document.querySelector(`[data-resolver="${ok.dataset.ok}"]`).value.trim(); if (!v) return;
-    n.texto = v; n.ancla = false; const s = sugerir(v, new Date(n.creada)); if (s.fecha) n.fecha = s.fecha; if (s.tipo) n.tipo = s.tipo; if (s.cat) n.para = {categoria: s.cat, nombre: s.nombre};
+    n.texto = v; n.ancla = false; const s = sugerir(v, new Date(n.creada)); if (s.fecha){ n.fecha = s.fecha; if (s.hora) n.hora = s.hora; } if (s.tipo) n.tipo = s.tipo; if (s.cat) n.para = {categoria: s.cat, nombre: s.nombre};
     await guardarNotaLocal(n); refrescar(); toast("Ancla resuelta"); return; }
   if (e.target.closest(".resolver")) return;
   const f = e.target.closest("[data-abrir]");
-  if (f) abrirEdicion(nota(f.dataset.abrir));
+  if (f && !ignorarClick) abrirEdicion(nota(f.dataset.abrir));
 });
 $("#visor").onclick = () => $("#visor").style.display = "none";
 function verImagen(src){ if (src){ $("#visor img").src = src; $("#visor").style.display = "flex"; } }
@@ -995,7 +1064,7 @@ $("#hEditar").addEventListener("click", e => {
   const a = e.target.closest("[data-amb]"), t = e.target.closest("[data-tipo]"), f = e.target.closest("[data-f]");
   if (a){ eAmbSel = a.dataset.amb; pintarOpciones(); }
   if (t){ eTipoSel = t.dataset.tipo; pintarOpciones(); }
-  if (f){ $("#eFecha").value = f.dataset.f === "" ? "" : masDias(Number(f.dataset.f)); pintarOpciones(); }
+  if (f){ $("#eFecha").value = f.dataset.f === "" ? "" : masDias(Number(f.dataset.f)); if (f.dataset.f === "") $("#eHora").value = ""; pintarOpciones(); }
 });
 $("#eFecha").addEventListener("input", pintarOpciones);
 $("#eCat").addEventListener("change", () => { if ($("#eCat").value === "personal"){ eAmbSel = "personal"; pintarOpciones(); } });
@@ -1004,7 +1073,9 @@ function abrirEdicion(n){
   editando = n; eTipoSel = n.tipo || "nota"; eAmbSel = n.ambito || "trabajo";
   eAdj = {audio: n.audio || null, fotos: [...(n.fotos || [])], nuevas: [], quitar: []};
   $("#eTexto").value = n.ancla && !n.texto ? "" : (n.texto || "");
-  $("#eCat").value = n.para?.categoria || ""; $("#eNombre").value = n.para?.nombre || ""; $("#eFecha").value = n.fecha || "";
+  $("#eCat").value = n.para?.categoria || ""; $("#eNombre").value = n.para?.nombre || ""; $("#eFecha").value = n.fecha || ""; $("#eHora").value = n.hora || "";
+  $("#eTransBtn").innerHTML = n.audio && !n.transcripcion && voz() ? `<button class="btn sec" id="eTranscribir" style="margin-top:10px">${ic("mic")}${n._transcribir ? "Transcribiendo…" : "Transcribir el audio"}</button>` : "";
+  if ($("#eTranscribir")) $("#eTranscribir").onclick = async () => { $("#eTranscribir").textContent = "Transcribiendo…"; const ok = await transcribirNota(n, true); if (ok){ cerrarHojas(); abrirEdicion(n); } else $("#eTranscribir").textContent = "No se pudo. Reintentar"; };
   $("#eInfo").innerHTML = `<span>${ic(n.ancla ? "ancla" : n.nocturna ? "luna" : "spark")}${capital(fechaLarga(n.creada))}, ${hora(n.creada)}</span>`
     + (n.terminal ? `<span>${ic("movil")}${esc(n.terminal)}</span>` : "")
     + (n.ubicacion ? `<a target="_blank" rel="noopener" href="https://www.google.com/maps?q=${n.ubicacion.lat},${n.ubicacion.lon}">${ic("pin")}Ver lugar</a>` : "");
@@ -1049,6 +1120,8 @@ async function guardarEdicion(){
   const n = editando; if (!n) return;
   n.texto = $("#eTexto").value.trim(); n.ambito = eAmbSel; n.tipo = eTipoSel;
   n.para = {categoria: $("#eCat").value, nombre: $("#eNombre").value.trim()}; n.fecha = $("#eFecha").value || null;
+  n.hora = $("#eHora").value || null; if (n.hora && !n.fecha) n.fecha = hoyISO();
+  if (n.hora) pedirPermisoAvisos();
   if (n.ancla && n.texto) n.ancla = false;
   const nuevos = [];
   for (const r of eAdj.quitar){
@@ -1067,11 +1140,103 @@ async function guardarEdicion(){
 }
 async function borrarNota(n){
   if (!n) return;
-  if (n._etag){ n._borrar = true; n._pend = false; await idb.poner(n); }
-  else { await idb.quitar(n.id); notas = notas.filter(x => x !== n); }
-  refrescar(); pintarEstado(); sincronizar(true); toast("Nota borrada", "borrar");
+  n._borrar = true; n._borrarEn = Date.now(); await idb.poner(n);
+  refrescar(); pintarEstado();
+  setTimeout(() => sincronizar(true), 7500);              // margen para deshacer
+  toast("Nota borrada", "borrar", 6000, async () => { n._borrar = false; delete n._borrarEn; await idb.poner(n); refrescar(); pintarEstado(); toast("Nota recuperada"); });
 }
 function guardarConfig(){ lsSet("chispa.config", config); lsSet("chispa.cfgPend", true); pintarEstado(); sincronizar(true); }
+
+/* ================= Transcripción con Azure Speech ================= */
+const voz = () => !!(config.voz?.clave && config.voz?.region);
+async function aWav16k(blob){
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  let buf; try { buf = await ctx.decodeAudioData(await blob.arrayBuffer()); } finally { try { ctx.close(); } catch(e){} }
+  const sr = 16000, len = Math.ceil(buf.duration * sr);
+  const off = new OfflineAudioContext(1, Math.max(len, 1), sr);
+  const src = off.createBufferSource(); src.buffer = buf; src.connect(off.destination); src.start();
+  const out = (await off.startRendering()).getChannelData(0);
+  const trozo = 50 * sr, wavs = [];
+  for (let i = 0; i < out.length; i += trozo) wavs.push(wavPCM(out.subarray(i, Math.min(out.length, i + trozo)), sr));
+  return wavs;
+}
+function wavPCM(muestras, sr){
+  const b = new ArrayBuffer(44 + muestras.length * 2), v = new DataView(b), w = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+  w(0, "RIFF"); v.setUint32(4, 36 + muestras.length * 2, true); w(8, "WAVE"); w(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, muestras.length * 2, true);
+  for (let i = 0; i < muestras.length; i++){ const x = Math.max(-1, Math.min(1, muestras[i])); v.setInt16(44 + i * 2, x < 0 ? x * 0x8000 : x * 0x7fff, true); }
+  return new Blob([b], {type: "audio/wav"});
+}
+async function reconocer(wav){
+  const url = `https://${config.voz.region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=es-ES&format=simple`;
+  let r;
+  try { r = await fetch(url, {method: "POST", headers: {"Ocp-Apim-Subscription-Key": config.voz.clave, "Content-Type": "audio/wav; codecs=audio/pcm; samplerate=16000", "Accept": "application/json"}, body: wav}); }
+  catch(e){ return reconocerSDK(wav); }                    // si el navegador bloquea la llamada directa, se usa el kit oficial de Microsoft
+  if (r.status === 401 || r.status === 403) throw new Error("La clave o la región no son correctas");
+  if (!r.ok) throw new Error(`Azure Speech respondió ${r.status}`);
+  const j = await r.json();
+  return j.RecognitionStatus === "Success" ? (j.DisplayText || "") : "";
+}
+async function reconocerSDK(wav){
+  if (!window.SpeechSDK) await new Promise((ok, ko) => { const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@1.40.0/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js"; s.onload = ok; s.onerror = () => ko(new Error("No se pudo conectar con Azure Speech")); document.head.appendChild(s); });
+  const S = window.SpeechSDK, cfg = S.SpeechConfig.fromSubscription(config.voz.clave, config.voz.region); cfg.speechRecognitionLanguage = "es-ES";
+  const rec = new S.SpeechRecognizer(cfg, S.AudioConfig.fromWavFileInput(new File([wav], "nota.wav", {type: "audio/wav"})));
+  return new Promise((ok, ko) => { const partes = [];
+    rec.recognized = (_, e) => { if (e.result.reason === S.ResultReason.RecognizedSpeech && e.result.text) partes.push(e.result.text); };
+    rec.canceled = (_, e) => { rec.close(); e.reason === S.CancellationReason.Error ? ko(new Error(e.errorCode === 1 || /401|403|auth/i.test(e.errorDetails) ? "La clave o la región no son correctas" : "Azure Speech: " + e.errorDetails)) : ok(partes.join(" ")); };
+    rec.sessionStopped = () => { rec.close(); ok(partes.join(" ")); };
+    rec.startContinuousRecognitionAsync(() => {}, err => ko(new Error(String(err))));
+  });
+}
+async function transcribirAudio(blob){ const partes = []; for (const w of await aWav16k(blob)) partes.push(await reconocer(w)); return partes.filter(Boolean).join(" ").trim(); }
+async function probarVoz(){
+  if (!voz()) throw new Error("Falta la clave");
+  const silencio = wavPCM(new Float32Array(16000), 16000);
+  await reconocer(silencio);
+}
+let transcribiendo = false;
+async function transcribirNota(n, forzar = false){
+  try {
+    const b = await idb.blob(n.audio) || await descargarRuta(n.audio);
+    const texto = await transcribirAudio(b);
+    n.transcripcion = texto || "(sin voz reconocible)";
+    if (texto && !n.texto){
+      n.texto = texto; const s = sugerir(texto, new Date(n.creada));
+      if (s.fecha && !n.fecha){ n.fecha = s.fecha; if (s.hora) n.hora = s.hora; }
+      if (s.tipo && n.tipo === "nota") n.tipo = s.tipo;
+      if (s.cat && !n.para?.categoria) n.para = {categoria: s.cat, nombre: s.nombre};
+    }
+    delete n._transcribir; delete n._intentosT;
+    await guardarNotaLocal(n); refrescar();
+    return true;
+  } catch(e){
+    n._intentosT = (n._intentosT || 0) + 1; if (n._intentosT >= 3 && !forzar) delete n._transcribir;
+    await idb.poner(n); if (forzar) toast(e.message, "alerta", 5000);
+    return false;
+  }
+}
+async function procesarTranscripciones(){
+  if (transcribiendo || !voz() || !navigator.onLine || !token) return;
+  transcribiendo = true;
+  try { for (const n of notas.filter(x => x._transcribir && !x._borrar)){ if (await transcribirNota(n)) toast("Nota de voz transcrita", "mic"); } }
+  finally { transcribiendo = false; }
+}
+setInterval(() => { if (document.visibilityState === "visible") procesarTranscripciones(); }, 90000);
+
+/* ================= Avisos dentro de la app ================= */
+async function pedirPermisoAvisos(){ try { if ("Notification" in window && Notification.permission === "default") await Notification.requestPermission(); } catch(e){} }
+async function revisarAvisos(){
+  const ahora = new Date(), hoy = isoDia(ahora), hm = `${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`, avisadas = lsGet("chispa.avisadas") || {};
+  for (const n of deNotas()){
+    if (n.hecha || n.fecha !== hoy || !n.hora || n.hora > hm || avisadas[n.id] === n.fecha + n.hora) continue;
+    avisadas[n.id] = n.fecha + n.hora; lsSet("chispa.avisadas", avisadas);
+    const titulo = n.texto || "Recordatorio de Chispa";
+    toast(`${n.hora}: ${titulo}`, "campana", 8000); vibrar([80, 60, 80]);
+    try { if (Notification.permission === "granted"){ const reg = await navigator.serviceWorker?.getRegistration(); reg ? reg.showNotification("Chispa", {body: `${n.hora} · ${titulo}`, icon: "icon-192.png", tag: n.id}) : new Notification("Chispa", {body: titulo}); } } catch(e){}
+  }
+}
+setInterval(revisarAvisos, 30000);
 
 /* ================= Navegación ================= */
 const VISTAS = [["anotar", "spark", "Anotar"], ["hoy", "sun", "Hoy"], ["notas", "lista", "Notas"], ["estad", "grafico", "Estadísticas"], ["ajustes", "ajustes", "Ajustes"], ["ayuda", "ayuda", "Ayuda"]];
@@ -1100,7 +1265,9 @@ function pintarHoy(){
   const todas = deNotas(), pend = todas.filter(n => !n.hecha);
   const anclas = pend.filter(n => n.ancla), vencidas = pend.filter(n => !n.ancla && n.fecha && n.fecha < hoy), deHoy = pend.filter(n => !n.ancla && n.fecha === hoy);
   const nocturnas = todas.filter(n => n.nocturna && !n.ancla && isoDia(new Date(n.creada)) >= ayer && !(n.fecha && n.fecha <= hoy));
-  const proximas = pend.filter(n => n.fecha && n.fecha > hoy && n.fecha <= en7).sort((a, b) => a.fecha.localeCompare(b.fecha));
+  const clave = n => (n.fecha || "") + (n.hora || "99");
+  const proximas = pend.filter(n => n.fecha && n.fecha > hoy && n.fecha <= en7).sort((a, b) => clave(a).localeCompare(clave(b)));
+  deHoy.sort((a, b) => clave(a).localeCompare(clave(b)));
   const capturadas = todas.filter(n => isoDia(new Date(n.creada)) === hoy && !n.ancla && !(n.fecha && n.fecha <= en7) && !n.nocturna);
   const h = new Date().getHours(), saludo = h < 14 ? "Buenos días" : h < 21 ? "Buenas tardes" : "Buenas noches";
   const nada = !anclas.length && !vencidas.length && !deHoy.length;
@@ -1214,12 +1381,16 @@ function pintarAjustes(){
       <div class="ajuste"><div class="lbl">Proveedores</div><textarea id="kPro" rows="4">${esc((cont.proveedor||[]).join("\n"))}</textarea></div>
       <div class="ajuste"><div class="lbl">Compañeros</div><textarea id="kCom" rows="4">${esc((cont.companero||[]).join("\n"))}</textarea></div>
     </div></div>
-    <button class="btn" id="kGuardar" style="width:100%;height:50px;margin-top:16px">Guardar ajustes</button>
-    <div class="grupo"><h3>Añadir un móvil</h3><div class="caja">
+    <div class="grupo"><h3>Transcripción de voz</h3><div class="caja">
+      ${esMovil() ? `<div class="ajuste">${ic("mic")}<div class="lbl">Azure Speech<small>${voz() ? "Activa: tus notas de voz se pasan a texto solas" : "Sin configurar. Se configura desde el PC"}</small></div></div>` : `
+      <div class="ajuste">${ic("mic")}<div class="lbl">Clave de Azure Speech<small>Se guarda en tu OneDrive, nunca en GitHub</small></div><input type="text" id="kVozClave" value="${esc(c.voz?.clave || "")}" placeholder="Pega aquí la clave 1" autocomplete="off" spellcheck="false"></div>
+      <div class="ajuste">${ic("pin")}<div class="lbl">Región</div><input type="text" id="kVozRegion" value="${esc(c.voz?.region || "westeurope")}" style="max-width:180px"><button class="btn sec" id="kVozProbar">Probar</button><span class="estado-t" id="kVozEstado"></span></div>`}
+    </div></div>
+    ${esMovil() ? "" : `<div class="grupo"><h3>Añadir un móvil</h3><div class="caja">
       <div class="ajuste"><div class="lbl">Abre <b>${esc(REDIRECT)}</b> en Chrome, entra con tu cuenta y elige «Añadir a pantalla de inicio». O escanea el código.</div></div>
       <div class="ajuste">${ic("movil")}<input type="text" id="kMovNom" value="Móvil profesional"><select id="kMovAmb"><option value="trabajo">Trabajo</option><option value="personal">Personal</option></select><button class="btn sec" id="kQR">Ver código QR</button></div>
       <div id="qr" style="text-align:center"></div>
-    </div></div>
+    </div></div>`}
     <div class="grupo"><h3>Cuenta</h3><div class="caja">
       <div class="ajuste">${ic("user")}<div class="lbl">${esc(lsGet("chispa.usuario") || "Cuenta de Microsoft")}<small>Tus datos están en OneDrive, en Aplicaciones › Chispa</small></div><button class="btn sec" id="kSalir">${ic("salir")}Salir</button></div>
     </div></div>
@@ -1227,20 +1398,31 @@ function pintarAjustes(){
   $("#kAmb").value = disp.ambito || "trabajo"; $("#kTrans").value = disp.trans === false ? "0" : "1"; $("#kUbi").value = disp.ubi ? "1" : "0"; $("#kTema").value = disp.tema || "auto";
   document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => ver(b.dataset.ir));
   const lineas = id => [...new Set($(id).value.split("\n").map(s => s.trim()).filter(Boolean))];
-  $("#kGuardar").onclick = () => {
+  const guardarAjustes = () => {
     Object.assign(disp, {terminal: $("#kTerm").value.trim(), ambito: $("#kAmb").value, trans: $("#kTrans").value === "1", ubi: $("#kUbi").value === "1", tema: $("#kTema").value});
     lsSet("chispa.disp", disp);
     if (disp.ubi && navigator.geolocation) navigator.geolocation.getCurrentPosition(() => {}, () => {});
     Object.assign(config, {nocheDesde: $("#kDesde").value || "23:00", nocheHasta: $("#kHasta").value || "06:00", correoTrabajo: $("#kCT").value.trim(), correoPersonal: $("#kCP").value.trim(),
       contactos: {cliente: lineas("#kCli"), proveedor: lineas("#kPro"), companero: lineas("#kCom")}});
-    guardarConfig(); aplicarTema(); setAmbito(disp.ambito); toast("Ajustes guardados");
+    if ($("#kVozClave")) config.voz = {clave: $("#kVozClave").value.trim(), region: ($("#kVozRegion").value.trim() || "westeurope").toLowerCase()};
+    guardarConfig(); aplicarTema(); setAmbito(disp.ambito); toast("Guardado", "check", 1200);
+  };
+  // los ajustes se guardan solos al cambiarlos
+  let tAj = 0;
+  document.querySelectorAll("#vAjustes input:not(#kMovNom),#vAjustes select:not(#kMovAmb),#vAjustes textarea").forEach(el => {
+    el.addEventListener(el.tagName === "SELECT" || el.type === "time" ? "change" : "input", () => { clearTimeout(tAj); tAj = setTimeout(guardarAjustes, 700); });
+  });
+  if ($("#kVozProbar")) $("#kVozProbar").onclick = async () => {
+    clearTimeout(tAj); guardarAjustes(); const el = $("#kVozEstado"); el.className = "estado-t"; el.textContent = "Probando…";
+    try { await probarVoz(); el.className = "estado-t ok"; el.textContent = "Funciona"; setTimeout(procesarTranscripciones, 300); }
+    catch(e){ el.textContent = e.message; }
   };
   $("#kSalir").onclick = () => {
     const pend = notas.filter(n => n._pend || n._borrar).length;
     if (pend && !confirm(`Hay ${pend} cambios sin subir que se perderán. ¿Salir igualmente?`)) return;
     localStorage.removeItem("chispa.token"); indexedDB.deleteDatabase("chispa3"); location.href = `${AUTH}/logout?post_logout_redirect_uri=${encodeURIComponent(REDIRECT)}`;
   };
-  $("#kQR").onclick = async () => {
+  if ($("#kQR")) $("#kQR").onclick = async () => {
     const url = REDIRECT + "?" + new URLSearchParams({t: $("#kMovNom").value.trim() || "Móvil", a: $("#kMovAmb").value});
     try {
       if (!window.qrcode) await new Promise((ok, ko) => { const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"; s.onload = ok; s.onerror = ko; document.head.appendChild(s); });
@@ -1262,7 +1444,10 @@ function pintarAyuda(){
   <h3>Modo noche</h3><p>En tu horario la pantalla del móvil se pone negra. Si abres Chispa y la cierras sin escribir, queda un ancla con la hora.</p>
   <h3>En el móvil</h3><p>Instálala desde Chrome con «Añadir a pantalla de inicio». Si mantienes pulsado el icono tienes los atajos <b>Grabar voz</b> y <b>Ancla rápida</b>.</p>
   <h3>Tus datos</h3><p>En OneDrive, dentro de Aplicaciones › Chispa: Notas (un fichero legible por nota), Audios, Fotos, Configuracion y Papelera.</p>
-  <h3>Novedades</h3><p><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Gestos</h3><p>En las listas, desliza una nota a la derecha para marcarla hecha y a la izquierda para borrarla. Siempre puedes <b>deshacer</b> desde el aviso que aparece arriba.</p>
+  <h3>Hora y avisos</h3><p>Si escribes «a las 5» o «a las 17:30», Chispa pone la hora. Mientras Chispa esté abierta o en segundo plano, te avisa a esa hora.</p>
+  <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
+  <h3>Novedades</h3><p><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
@@ -1297,6 +1482,7 @@ function pintarAyuda(){
   if (accion === "ancla"){ anclaAbierta = null; await guardarAncla(new Date(), true); }
   if (accion === "voz"){ tocado = true; empezarVoz(); }
   sincronizar(true);
+  setTimeout(() => { procesarTranscripciones(); revisarAvisos(); }, 2500);
 })();
 </script>
 </body>
