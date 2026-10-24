@@ -51,16 +51,23 @@ jobs:
         env:
           KS_B64: ${{ secrets.CHISPA_KEYSTORE_B64 }}
         run: |
-          if [ -z "$KS_B64" ]; then echo "Falta el secreto CHISPA_KEYSTORE_B64"; exit 1; fi
-          echo "$KS_B64" | base64 -d > android/app/chispa.keystore
+          if [ -z "$KS_B64" ]; then
+            echo "::warning::Falta el secreto CHISPA_KEYSTORE_B64: se firma con una llave de prueba y no se publica"
+            keytool -genkeypair -keystore android/app/chispa.keystore -alias chispa -keyalg RSA -keysize 2048 -validity 365 -storepass prueba1234 -keypass prueba1234 -dname "CN=Prueba"
+            echo "CHISPA_KS_PASS=prueba1234" >> "$GITHUB_ENV"
+            echo "PRUEBA=1" >> "$GITHUB_ENV"
+          else
+            echo "$KS_B64" | base64 -d > android/app/chispa.keystore
+          fi
 
       - name: Compilar el APK
         working-directory: app-android/android
         env:
           VERSION_CODE: ${{ github.run_number }}
           VERSION_NAME: 1.0.${{ github.run_number }}
-          CHISPA_KS_PASS: ${{ secrets.CHISPA_KS_PASS }}
+          KS_SECRETO: ${{ secrets.CHISPA_KS_PASS }}
         run: |
+          if [ -z "$PRUEBA" ]; then export CHISPA_KS_PASS="$KS_SECRETO"; fi
           chmod +x gradlew
           ./gradlew assembleRelease --no-daemon --stacktrace
           cp app/build/outputs/apk/release/app-release.apk ../Chispa.apk
@@ -72,6 +79,7 @@ jobs:
           path: app-android/Chispa.apk
 
       - name: Publicar en Releases
+        if: env.PRUEBA != '1'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
