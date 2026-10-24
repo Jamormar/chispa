@@ -11,3 +11,22 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_chispa_info" />
         </receiver>
+
+        <!-- Aviso al colgar una llamada -->
+        <receiver
+            android:name=".LlamadaReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Modo coche: Bluetooth del coche conectado o desconectado -->
+        <receiver
+            android:name=".CocheReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
+                <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
+            </intent-filter>
+        </receiver>

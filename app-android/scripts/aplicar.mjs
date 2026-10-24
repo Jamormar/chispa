@@ -42,7 +42,9 @@ const permisos = [
 ];
 const manifiesto = path.join(main, "AndroidManifest.xml");
 cambiar(manifiesto, m => {
-  const faltan = permisos.filter(p => !m.includes(`"${p}"`)).map(p => `    <uses-permission android:name="${p}" />`).join("\n");
+  // «permiso|N» limita el permiso hasta la versión N de Android (maxSdkVersion)
+  const faltan = permisos.map(p => p.split("|")).filter(([p]) => !m.includes(`"${p}"`))
+    .map(([p, max]) => `    <uses-permission android:name="${p}"${max ? ` android:maxSdkVersion="${max}"` : ""} />`).join("\n");
   m = m.replace(/(\s*)<application/, `\n${faltan}\n$1<application`);
   const compartir = `
             <intent-filter>

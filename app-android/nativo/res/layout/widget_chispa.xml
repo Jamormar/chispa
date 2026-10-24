@@ -23,6 +23,7 @@
             android:src="@drawable/ic_w_mic"
             android:contentDescription="@null" />
         <TextView
+            android:id="@+id/w_grabar_txt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"

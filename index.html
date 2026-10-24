@@ -398,6 +398,12 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 #visor img{max-width:96vw;max-height:92vh;border-radius:12px}
 .toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translate(-50%,-20px);z-index:60;background:var(--ink);color:var(--on-ink);
   padding:11px 16px;border-radius:14px;font-size:14.5px;font-weight:500;display:flex;align-items:center;gap:8px;opacity:0;transition:.25s;pointer-events:none;max-width:92vw;box-shadow:var(--float)}
+.elegir-coche{position:fixed;inset:0;z-index:70;background:rgba(8,12,24,.55);display:flex;align-items:flex-end;justify-content:center;padding:16px}
+.ec-caja{background:var(--surface,var(--raise));color:var(--text);border-radius:22px;padding:20px;width:100%;max-width:440px;max-height:80vh;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.ec-caja h3{margin:0;font-size:19px}.ec-caja p{margin:0;opacity:.75;font-size:14px}
+.ec-lista{display:flex;flex-direction:column;gap:8px}
+.ec-lista button{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:var(--raise);color:var(--text);font-size:15.5px;font-weight:600;text-align:left}
+.ec-lista svg{width:22px;height:22px;color:var(--spark-deep)}
 .toast.ver{opacity:1;transform:translate(-50%,0)}
 .toast.accion{pointer-events:auto}
 .toast .deshacer{margin-left:6px;padding:5px 11px;border-radius:9px;background:color-mix(in srgb,var(--on-ink) 18%,transparent);color:var(--spark);font-weight:700;font-size:14px}
@@ -555,7 +561,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.6";
+const VERSION = "0.7";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -600,6 +606,8 @@ const ICONOS = {
   teclado: '<rect x="2.5" y="6" width="19" height="12.5" rx="2.5"/><path d="M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M6.5 13.5h.01M17.5 13.5h.01M9 14.5h6"/>',
   agarre: '<circle cx="9" cy="6" r="1.4" fill="currentColor"/><circle cx="15" cy="6" r="1.4" fill="currentColor"/><circle cx="9" cy="12" r="1.4" fill="currentColor"/><circle cx="15" cy="12" r="1.4" fill="currentColor"/><circle cx="9" cy="18" r="1.4" fill="currentColor"/><circle cx="15" cy="18" r="1.4" fill="currentColor"/>',
   subir: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+  tel: '<path d="M5 4h3.5l1.7 4.3-2.2 1.4a11 11 0 0 0 5.3 5.3l1.4-2.2L19 14.5V18a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 3 6.2 2 2 0 0 1 5 4z"/>',
+  coche: '<path d="M4 16.5V12l2-5.2A2 2 0 0 1 7.9 5.5h8.2a2 2 0 0 1 1.9 1.3L20 12v4.5M3.5 12h17M4 16.5h16"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/>',
   deshacer: '<path d="M4 9.5h10.5a5 5 0 0 1 0 10H11M4 9.5l4-4M4 9.5l4 4"/>'
 };
 const ic = (n, cls = "") => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONOS[n] || ""}</svg>`;
@@ -1094,6 +1102,7 @@ async function guardarCaptura(){
   if (s.fecha && !ignorar.fecha){ n.fecha = s.fecha; if (s.hora) n.hora = s.hora; }
   if (s.tipo && !ignorar.tipo) n.tipo = s.tipo;
   if (s.cat && !ignorar.nombre) n.para = {categoria: s.cat, nombre: s.nombre};
+  else if (borrador.para) n.para = borrador.para;
   n.ubicacion = await ubicacion();
   if (n.audio && !n.transcripcion && voz()) n._transcribir = true;
   if (n.hora) pedirPermisoAvisos();
@@ -1544,12 +1553,15 @@ async function iniciarApp(){
   try { await ln.addListener("localNotificationActionPerformed", ev => { const id = ev?.notification?.extra?.nota, n = notas.find(x => x.id === id); if (n){ ver("hoy"); abrirEdicion(n); } }); } catch(e){}
   try { const p = await ln.checkPermissions(); if (p.display !== "granted") await ln.requestPermissions(); } catch(e){}
   programarAvisos();
+  setTimeout(buscarVersionApp, 4000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") buscarVersionApp(); });
 }
 // Lo que llega desde el widget, un aviso o «Compartir con Chispa»
 async function procesarEntrada(d){
   if (!d || !d.accion) return;
   cerrarHojas();
-  if (d.accion === "voz"){ ver("anotar"); tocado = true; if (!rec) empezarVoz(); }
+  if (d.accion === "voz"){ ver("anotar"); if (d.quien) deLlamada(d); tocado = true; if (!rec) empezarVoz(); }
+  else if (d.accion === "llamada"){ ver("anotar"); deLlamada(d); setTimeout(() => $("#cTexto").focus(), 250); }
   else if (d.accion === "ancla"){ ver("anotar"); anclaAbierta = null; guardarAncla(new Date(), true); }
   else if (d.accion === "anotar"){ ver("anotar"); setTimeout(() => $("#cTexto").focus(), 250); }
   else if (d.accion === "nota"){ const n = notas.find(x => x.id === d.nota); if (n){ ver("hoy"); abrirEdicion(n); } }
@@ -1561,6 +1573,81 @@ async function procesarEntrada(d){
     tocado = true; autoAlto(); pintarAdjuntos(); pintarDetectado();
     toast("Recibido. Revisa y pulsa ✓ para guardarlo", "spark", 4000);
   }
+}
+// Nota que nace de una llamada: título «Llamada con X» y, si X es un contacto conocido, «para quién»
+function deLlamada(d){
+  const quien = (d.quien || "").trim();
+  if (!$("#cTitulo").value) $("#cTitulo").value = quien ? `Llamada con ${quien}` : "Llamada";
+  if (quien && /[a-záéíóúñ]/i.test(quien)){
+    const cont = config.contactos || {}, cat = ["cliente","proveedor","companero"].find(c => (cont[c] || []).some(x => norm(x) === norm(quien)));
+    borrador.para = {categoria: cat || "", nombre: quien};
+  }
+  if (d.duracion) borrador.duracionLlamada = d.duracion;
+  tocado = true;
+}
+// ¿Hay una versión nueva de la app? Se mira como mucho cada 6 horas
+const DESCARGA = "https://github.com/jamormar/chispa/releases/latest/download/Chispa.apk";
+let appNueva = null;
+async function buscarVersionApp(forzar = false){
+  if (infoApp && !infoApp.codigo) infoApp.codigo = +(String(infoApp.version || "").match(/(\d+)$/) || [])[1] || 0;   // apps antiguas
+  if (!esApp() || !infoApp?.codigo || !navigator.onLine) return;
+  const ult = lsGet("chispa.versionApp") || {};
+  try {
+    if (forzar || !ult.t || Date.now() - ult.t > 6 * 36e5){
+      const r = await fetch("https://api.github.com/repos/jamormar/chispa/releases/latest", {headers: {Accept: "application/vnd.github+json"}});
+      if (!r.ok) return;
+      const j = await r.json(), num = +(String(j.tag_name || "").match(/(\d+)$/) || [])[1] || 0;
+      Object.assign(ult, {t: Date.now(), num}); lsSet("chispa.versionApp", ult);
+    }
+    appNueva = ult.num > infoApp.codigo ? ult.num : null;
+    if (appNueva && ult.avisada !== appNueva){
+      ult.avisada = appNueva; lsSet("chispa.versionApp", ult);
+      toast(`Hay una versión nueva de la app (1.0.${appNueva})`, "subir", 12000, actualizarApp, "Actualizar");
+    }
+    if (vista === "ajustes") pintarTelefono();
+  } catch(e){}
+}
+function actualizarApp(){
+  nativo("ChispaNativo")?.abrirUrl({url: DESCARGA}).catch(() => {});
+  toast("Se está descargando. Ábrela al terminar e instálala encima", "subir", 6000);
+}
+// Ajustes del teléfono: aviso al colgar, modo coche y versión de la app
+async function pintarTelefono(){
+  const caja = $("#kTelefono"); if (!caja || !esApp()) return;
+  const nat = nativo("ChispaNativo"); let a = {};
+  try { a = await nat.ajustes(); } catch(e){ caja.innerHTML = `<div class="ajuste"><div class="lbl">Instala la última versión de la app para usar estas opciones.<small>Desde el enlace de siempre</small></div><button class="btn sec" id="kBajar">${ic("subir")}Descargar</button></div>`; $("#kBajar").onclick = actualizarApp; return; }
+  caja.innerHTML = `
+    <div class="ajuste">${ic("tel")}<div class="lbl">Aviso al colgar<small>Al terminar una llamada te pregunta si quieres anotar algo</small></div><select id="kLlam"><option value="0">No</option><option value="1">Sí</option></select><button class="btn sec" id="kLlamProbar">Probar</button></div>
+    <div class="ajuste">${ic("coche")}<div class="lbl">Modo coche<small>${a.coche ? (a.enCoche ? "Ahora estás en el coche" : `Se activa al conectar con ${esc(a.cocheNombre || "el coche")}`) : "Elige el Bluetooth de tu coche"}</small></div><select id="kCoche"><option value="">Desactivado</option>${a.cocheDir ? `<option value="${esc(a.cocheDir)}">${esc(a.cocheNombre || a.cocheDir)}</option>` : ""}<option value="?">Elegir otro…</option></select>${a.coche ? `<button class="btn sec" id="kCocheProbar">${a.enCoche ? "Salir" : "Probar"}</button>` : ""}</div>
+    <div class="ajuste">${ic("movil")}<div class="lbl">App Android ${esc(infoApp?.version || "")}<small>${appNueva ? `Hay una versión nueva: 1.0.${appNueva}` : "Está al día"}</small></div>${appNueva ? `<button class="btn" id="kActualizar">${ic("subir")}Actualizar</button>` : `<button class="btn sec" id="kBuscarVer">Comprobar</button>`}</div>`;
+  $("#kLlam").value = a.llamadas ? "1" : "0"; $("#kCoche").value = a.coche ? a.cocheDir : "";
+  $("#kLlam").onchange = async () => {
+    let on = $("#kLlam").value === "1";
+    if (on && !(await nat.pedirPermiso({tipo: "llamadas"}).catch(() => ({}))).concedido){ on = false; toast("Sin el permiso de llamadas no puedo avisarte al colgar", "alerta", 4500); }
+    await nat.guardarAjustes({llamadas: on}).catch(() => {}); if (on) toast("Te preguntaré al colgar cada llamada", "tel"); pintarTelefono();
+  };
+  $("#kLlamProbar").onclick = () => nat.probarLlamada().catch(() => {});
+  $("#kCoche").onchange = async () => {
+    const v = $("#kCoche").value;
+    if (v !== "?"){ await nat.guardarAjustes({cocheDir: v, cocheNombre: v ? a.cocheNombre : ""}).catch(() => {}); pintarTelefono(); return; }
+    if (!(await nat.pedirPermiso({tipo: "bluetooth"}).catch(() => ({}))).concedido){ toast("Sin el permiso de Bluetooth no puedo saber cuándo vas en el coche", "alerta", 4500); pintarTelefono(); return; }
+    let lista = [];
+    try { lista = (await nat.dispositivos()).dispositivos || []; } catch(e){}
+    if (!lista.length){ toast("No hay dispositivos Bluetooth emparejados. Empareja antes el coche", "alerta", 4500); pintarTelefono(); return; }
+    abrirElegirCoche(lista, async d => { await nat.guardarAjustes({cocheDir: d.dir, cocheNombre: d.nombre}).catch(() => {}); toast(`Modo coche con ${d.nombre}`, "coche"); pintarTelefono(); }, pintarTelefono);
+  };
+  if ($("#kCocheProbar")) $("#kCocheProbar").onclick = async () => { await nat.probarCoche({dentro: !a.enCoche}).catch(() => {}); pintarTelefono(); };
+  if ($("#kActualizar")) $("#kActualizar").onclick = actualizarApp;
+  if ($("#kBuscarVer")) $("#kBuscarVer").onclick = async () => { await buscarVersionApp(true); if (!appNueva) toast("Tienes la última versión", "check"); };
+}
+function abrirElegirCoche(lista, elegir, cancelar){
+  const fondo = document.createElement("div"); fondo.className = "elegir-coche";
+  fondo.innerHTML = `<div class="ec-caja" role="dialog" aria-label="Elige tu coche"><h3>¿Cuál es tu coche?</h3><p>Elige el Bluetooth al que se conecta el móvil en el coche.</p>
+    <div class="ec-lista">${lista.map((d, i) => `<button data-i="${i}">${ic("coche")}<span>${esc(d.nombre)}</span></button>`).join("")}</div>
+    <button class="btn sec" data-x>Cancelar</button></div>`;
+  document.body.appendChild(fondo);
+  const cerrar = () => fondo.remove();
+  fondo.onclick = e => { const b = e.target.closest("[data-i]"); if (b){ cerrar(); elegir(lista[+b.dataset.i]); } else if (e.target === fondo || e.target.closest("[data-x]")){ cerrar(); cancelar(); } };
 }
 // Avisos del sistema a la hora de cada recordatorio, aunque la app esté cerrada
 const idAviso = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h) % 2000000000; };
@@ -1833,6 +1920,7 @@ function pintarAjustes(){
       <div class="ajuste">${ic("pin")}<div class="lbl">Guardar ubicación</div><select id="kUbi"><option value="0">No</option><option value="1">Sí</option></select></div>
       <div class="ajuste">${ic("sun")}<div class="lbl">Apariencia</div><select id="kTema"><option value="auto">Como el sistema</option><option value="claro">Clara</option><option value="oscuro">Oscura</option></select></div>
     </div></div>
+    ${esApp() ? `<div class="grupo"><h3>Teléfono y coche</h3><div class="caja" id="kTelefono"><div class="ajuste"><div class="lbl">Cargando…</div></div></div></div>` : ""}
     <div class="grupo"><h3>Modo noche</h3><div class="caja">
       <div class="ajuste">${ic("luna")}<div class="lbl">Horario<small>Pantalla negra y notas marcadas como nocturnas</small></div><input type="time" id="kDesde" value="${c.nocheDesde}"><input type="time" id="kHasta" value="${c.nocheHasta}"></div>
     </div></div>
@@ -1859,6 +1947,7 @@ function pintarAjustes(){
       <div class="ajuste">${ic("user")}<div class="lbl">${esc(lsGet("chispa.usuario") || "Cuenta de Microsoft")}<small>Tus datos están en OneDrive, en Aplicaciones › Chispa</small></div><button class="btn sec" id="kSalir">${ic("salir")}Salir</button></div>
     </div></div>
     <div class="cuenta" style="text-align:center;margin:20px 0">Chispa ${VERSION}${esApp() ? ` · app Android ${esc(infoApp?.version || "")}` : ""}</div>`;
+  pintarTelefono();
   $("#kAmb").value = disp.ambito || "trabajo"; $("#kTrans").value = disp.trans === false ? "0" : "1"; $("#kUbi").value = disp.ubi ? "1" : "0"; $("#kTema").value = disp.tema || "auto";
   document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => ver(b.dataset.ir));
   const lineas = id => [...new Set($(id).value.split("\n").map(s => s.trim()).filter(Boolean))];
