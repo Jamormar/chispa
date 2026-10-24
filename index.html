@@ -270,6 +270,43 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .ayuda p,.ayuda li{color:var(--muted)}
 .ayuda b{color:var(--text)}
 
+/* Estadísticas */
+:root{--cw:#3F63B0;--cp:#119C7C}
+:root[data-theme="dark"]{--cw:#7090E0;--cp:#1FA886}
+:root[data-theme="noche"]{--cw:#3D4C6B;--cp:#2D5A4F}
+#vEstad .filtros{margin-top:6px}
+.kpi em{display:block;font-style:normal;font-size:12.5px;color:var(--faint);margin-top:6px}
+.kpi em.sube{color:var(--home)} .kpi em.mal{color:var(--danger);font-weight:600}
+.dos{display:grid;gap:12px;grid-template-columns:1fr}
+@media (min-width:1100px){ .dos{grid-template-columns:1fr 1fr} .dos .panel{margin-top:12px} }
+.dos .panel{margin-top:12px}
+.nota-panel{color:var(--muted);font-size:13px;margin:-6px 0 12px}
+.columnas{display:flex;align-items:flex-end;gap:3px;height:170px;padding-bottom:22px;position:relative;border-bottom:1px solid var(--line)}
+.columnas .col{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;position:relative;cursor:default;min-width:3px}
+.columnas .col i{display:block;background:var(--cw);border-radius:4px 4px 0 0;min-height:0}
+.columnas .col:hover i{background:var(--spark-deep)}
+.columnas .col span{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--faint);white-space:nowrap}
+.bar .et{width:150px;display:flex;flex-direction:column;line-height:1.25}
+.bar .et small{color:var(--faint);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .et{overflow:hidden}
+.bar .v{width:52px;display:flex;flex-direction:column;align-items:flex-end;line-height:1.2}
+.bar .v small{color:var(--faint);font-size:11px}
+.reparto{display:flex;gap:2px;height:16px;border-radius:8px;overflow:hidden;margin:4px 0 12px}
+.reparto i{display:block;height:100%}
+.leyenda{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.leyenda span{display:inline-flex;align-items:center;gap:7px}
+.leyenda i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.leyenda b{color:var(--text)}
+.titular{font-family:var(--display);font-size:18px;font-weight:600;margin:-4px 0 14px;letter-spacing:-.01em}
+.calor{display:grid;grid-template-columns:40px repeat(7,1fr);gap:4px;align-items:center}
+.calor .ej{font-size:11.5px;color:var(--faint);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calor b{display:block;height:30px;border-radius:6px;background:color-mix(in srgb,var(--spark-deep) calc(var(--a)*100%),var(--raise))}
+.mini-kpi{display:flex;align-items:baseline;gap:12px;margin:10px 0}
+.mini-kpi b{font-family:var(--display);font-size:28px;font-weight:700;letter-spacing:-.02em;white-space:nowrap}
+.mini-kpi span{color:var(--muted);font-size:14px}
+.tip{position:fixed;z-index:70;background:var(--ink);color:var(--on-ink);font-size:13px;font-weight:500;padding:7px 11px;border-radius:10px;pointer-events:none;opacity:0;transition:opacity .12s;max-width:260px;box-shadow:var(--float)}
+.tip.on{opacity:1}
+@media (max-width:899px){ .bar .et{width:112px} }
 #visor{position:fixed;inset:0;background:rgba(5,8,15,.92);display:none;align-items:center;justify-content:center;z-index:50}
 #visor img{max-width:96vw;max-height:92vh;border-radius:12px}
 .toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translate(-50%,-20px);z-index:60;background:var(--ink);color:var(--on-ink);
@@ -405,7 +442,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.4.2";
+const VERSION = "0.4.3";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -1023,8 +1060,9 @@ let ignorarClick = false;
   document.addEventListener("pointerup", fin); document.addEventListener("pointercancel", fin);
 })();
 async function alternarHecha(n){
-  n.hecha = !n.hecha; await guardarNotaLocal(n); refrescar();
-  toast(n.hecha ? "Hecha" : "Pendiente de nuevo", n.hecha ? "check" : "deshacer", 4000, async () => { n.hecha = !n.hecha; await guardarNotaLocal(n); refrescar(); });
+  const marcar = v => { n.hecha = v; n.hechaEn = v ? new Date().toISOString() : null; };
+  marcar(!n.hecha); await guardarNotaLocal(n); refrescar();
+  toast(n.hecha ? "Hecha" : "Pendiente de nuevo", n.hecha ? "check" : "deshacer", 4000, async () => { marcar(!n.hecha); await guardarNotaLocal(n); refrescar(); });
 }
 function cargarMinis(cont){ cont.querySelectorAll("[data-mini]").forEach(img => urlAdjunto(img.dataset.mini).then(u => img.src = u).catch(() => {})); }
 document.addEventListener("click", async e => {
@@ -1114,7 +1152,7 @@ function pintarAdjEdicion(){
 }
 $("#eInFoto").onchange = async () => { for (const f of $("#eInFoto").files) eAdj.nuevas.push(await reducirFoto(f)); $("#eInFoto").value = ""; pintarAdjEdicion(); };
 $("#eBorrar").onclick = () => { if (confirm("¿Borrar esta nota? Irá a la Papelera de Chispa en tu OneDrive.")){ cerrarHojas(); borrarNota(editando); } };
-$("#eHecha").onclick = async () => { editando.hecha = !editando.hecha; await guardarEdicion(); toast(editando.hecha ? "Hecha" : "Pendiente de nuevo"); };
+$("#eHecha").onclick = async () => { editando.hecha = !editando.hecha; editando.hechaEn = editando.hecha ? new Date().toISOString() : null; await guardarEdicion(); toast(editando.hecha ? "Hecha" : "Pendiente de nuevo"); };
 $("#eGuardar").onclick = async () => { await guardarEdicion(); toast("Cambios guardados"); };
 async function guardarEdicion(){
   const n = editando; if (!n) return;
@@ -1336,26 +1374,127 @@ function pintarNotas(){
 }
 
 // Estadísticas
-function barras(obj, color = "var(--work)", max = 8){
-  const f = Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, max), top = f[0]?.[1] || 1;
-  return f.length ? f.map(([k, v]) => `<div class="bar"><div class="et" title="${esc(k)}">${esc(k)}</div><div class="pi"><i style="width:${v/top*100}%;background:${color}"></i></div><div class="v">${v}</div></div>`).join("") : `<div class="cuenta">Aún sin datos.</div>`;
-}
 const contar = (l, f) => { const o = {}; for (const n of l){ const k = f(n); if (k) o[k] = (o[k] || 0) + 1; } return o; };
-function pintarEstad(){
-  const ns = deNotas(), u30 = ns.filter(n => Date.now() - new Date(n.creada) < 30*864e5);
-  const meses = {}; for (let i = 5; i >= 0; i--){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i); meses[capital(d.toLocaleDateString("es-ES", {month: "long"}))] = 0; }
-  for (const n of ns){ const k = capital(new Date(n.creada).toLocaleDateString("es-ES", {month: "long"})); if (k in meses) meses[k]++; }
-  const hechas = ns.filter(n => n.hecha).length;
-  $("#vEstad").innerHTML = cab("Estadísticas", "Para quién trabajas y cuánto anotas")
-    + `<div class="kpis"><div class="kpi"><b>${ns.length}</b><span>notas en total</span></div><div class="kpi"><b>${u30.length}</b><span>en los últimos 30 días</span></div>
-      <div class="kpi"><b>${hechas}</b><span>hechas</span></div><div class="kpi"><b>${ns.filter(n => n.nocturna).length}</b><span>ideas nocturnas</span></div></div>
-    <div class="panel"><h3>Para quién</h3>${barras(contar(ns, n => n.para?.categoria ? CAT[n.para.categoria] : "Sin indicar"))}</div>
-    <div class="panel"><h3>Trabajo y personal</h3>${barras(contar(ns, n => n.ambito === "personal" ? "Personal" : "Trabajo"), "var(--home)")}</div>
-    <div class="panel"><h3>Clientes con más notas</h3>${barras(contar(ns.filter(n => n.para?.categoria === "cliente"), n => n.para.nombre))}</div>
-    <div class="panel"><h3>Proveedores</h3>${barras(contar(ns.filter(n => n.para?.categoria === "proveedor"), n => n.para.nombre))}</div>
-    <div class="panel"><h3>Compañeros</h3>${barras(contar(ns.filter(n => n.para?.categoria === "companero"), n => n.para.nombre))}</div>
-    <div class="panel"><h3>Notas por mes</h3>${barras(meses, "var(--spark)", 6)}</div>`;
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+const PERIODOS = [["7", "7 días"], ["30", "30 días"], ["90", "3 meses"], ["365", "Un año"], ["0", "Todo"]];
+let periodo = lsGet("chispa.periodo") || "30";
+function barrasLista(filas, opts = {}){
+  // filas: [{et, v, sub?}] ya ordenadas; ancho proporcional al máximo
+  if (!filas.length) return `<div class="cuenta">${opts.vacio || "Aún sin datos en este periodo."}</div>`;
+  const top = Math.max(...filas.map(f => f.v), 1), total = opts.total || 0;
+  return filas.map(f => `<div class="bar" data-tip="${esc(f.tip || `${f.et}: ${f.v} ${f.v === 1 ? "nota" : "notas"}`)}">
+    <div class="et">${esc(f.et)}${f.sub ? `<small>${esc(f.sub)}</small>` : ""}</div>
+    <div class="pi"><i style="width:${Math.max(2, f.v / top * 100)}%;background:${opts.color || "var(--cw)"}"></i></div>
+    <div class="v">${f.v}${total ? `<small>${pct(f.v, total)}%</small>` : ""}</div></div>`).join("");
 }
+function cubos(desde, dias){
+  // agrupa por día, semana o mes según la longitud del periodo, siempre en orden cronológico
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const modo = dias && dias <= 31 ? "dia" : dias && dias <= 120 ? "semana" : "mes";
+  const lunes = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
+  const clave = d => modo === "dia" ? isoDia(d) : modo === "semana" ? isoDia(lunes(d)) : `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+  const lista = [];
+  if (modo === "dia"){ for (let d = new Date(desde); d <= hoy; d.setDate(d.getDate() + 1)) lista.push({k: clave(d), et: d.toLocaleDateString("es-ES", {day: "numeric", month: "short"}).replace(".", ""), d: new Date(d)}); }
+  else if (modo === "semana"){ for (let d = lunes(desde); d <= hoy; d.setDate(d.getDate() + 7)) lista.push({k: clave(d), et: "Semana del " + d.toLocaleDateString("es-ES", {day: "numeric", month: "short"}).replace(".", ""), d: new Date(d)}); }
+  else { const ini = new Date(desde.getFullYear(), desde.getMonth(), 1); for (let d = ini; d <= hoy; d.setMonth(d.getMonth() + 1)) lista.push({k: clave(d), et: capital(d.toLocaleDateString("es-ES", {month: "long", year: "numeric"})), d: new Date(d)}); }
+  return {modo, lista, clave};
+}
+function pintarEstad(){
+  const todas = deNotas(), ahora = Date.now(), dias = Number(periodo);
+  const primera = todas.length ? new Date(todas[todas.length - 1].creada) : new Date();
+  const desde = dias ? new Date(new Date().setHours(0, 0, 0, 0) - (dias - 1) * 864e5) : new Date(primera.getFullYear(), primera.getMonth(), primera.getDate());
+  const enPer = n => new Date(n.creada) >= desde;
+  const ns = todas.filter(enPer);
+  const previas = dias ? todas.filter(n => { const t = new Date(n.creada); return t < desde && t >= new Date(desde - dias * 864e5); }) : [];
+  const hechas = ns.filter(n => n.hecha).length;
+  const pendTodas = todas.filter(n => !n.hecha && !n.ancla && (n.tipo !== "nota" || n.fecha));
+  const vencidas = pendTodas.filter(n => n.fecha && n.fecha < hoyISO()).length;
+  const delta = ns.length - previas.length;
+  const deltaTxt = !dias ? "desde tu primera nota" : !previas.length ? "sin datos del periodo anterior" : delta === 0 ? "igual que el periodo anterior" : `${delta > 0 ? "+" : ""}${delta} frente al periodo anterior`;
+
+  // Actividad en el tiempo
+  const {lista, clave} = cubos(desde, dias || Math.ceil((ahora - desde) / 864e5) + 1);
+  const anot = {}, comp = {};
+  for (const n of ns) anot[clave(new Date(n.creada))] = (anot[clave(new Date(n.creada))] || 0) + 1;
+  for (const n of todas) if (n.hecha && n.hechaEn && new Date(n.hechaEn) >= desde) comp[clave(new Date(n.hechaEn))] = (comp[clave(new Date(n.hechaEn))] || 0) + 1;
+  const maxA = Math.max(1, ...lista.map(c => anot[c.k] || 0));
+  const cada = Math.ceil(lista.length / 6);
+  const columnas = lista.map((c, i) => { const a = anot[c.k] || 0, h = comp[c.k] || 0;
+    return `<div class="col" data-tip="${esc(c.et)}: ${a} ${a === 1 ? "anotada" : "anotadas"}${h ? `, ${h} ${h === 1 ? "completada" : "completadas"}` : ""}"><i style="height:${a ? Math.max(4, a / maxA * 100) : 0}%"></i><span>${i % cada === 0 || i === lista.length - 1 ? esc(c.et.replace("Semana del ", "")) : ""}</span></div>`; }).join("");
+
+  // Para quién y con quién
+  const porCat = Object.entries(contar(ns, n => n.para?.categoria ? CAT[n.para.categoria] : "Sin indicar")).sort((a, b) => b[1] - a[1]).map(([et, v]) => ({et, v}));
+  const personas = {};
+  for (const n of ns){ const nom = n.para?.nombre; if (!nom || n.para.categoria === "personal") continue;
+    const p = personas[nom] ||= {et: nom, v: 0, pend: 0, cat: CAT[n.para.categoria] || ""}; p.v++; if (!n.hecha && n.tipo !== "nota") p.pend++; }
+  const top = Object.values(personas).sort((a, b) => b.v - a.v).slice(0, 8).map(p => ({...p, sub: [p.cat, p.pend ? `${p.pend} ${p.pend === 1 ? "pendiente" : "pendientes"}` : ""].filter(Boolean).join(", "),
+    tip: `${p.et}: ${p.v} ${p.v === 1 ? "nota" : "notas"}${p.pend ? `, ${p.pend} sin cerrar` : ""}`}));
+
+  // Trabajo y personal
+  const trab = ns.filter(n => n.ambito !== "personal").length, pers = ns.length - trab;
+
+  // Cuándo se te ocurren las cosas
+  const FRANJAS = [[0, 7, "0-7"], [7, 10, "7-10"], [10, 13, "10-13"], [13, 16, "13-16"], [16, 19, "16-19"], [19, 22, "19-22"], [22, 24, "22-24"]];
+  const DSEM = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"], DLARGO = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábados", "domingos"];
+  const mapa = DSEM.map(() => FRANJAS.map(() => 0));
+  for (const n of ns){ const d = new Date(n.creada), dia = (d.getDay() + 6) % 7, h = d.getHours(); const f = FRANJAS.findIndex(([a, b]) => h >= a && h < b); mapa[dia][f]++; }
+  const maxM = Math.max(1, ...mapa.flat());
+  let mejor = null; mapa.forEach((fila, i) => fila.forEach((v, j) => { if (v && (!mejor || v > mejor.v)) mejor = {v, i, j}; }));
+  const titular = mejor ? `Donde más anotas: los ${DLARGO[mejor.i]}${mejor.j === 0 ? " de madrugada" : `, de ${FRANJAS[mejor.j][0]} a ${FRANJAS[mejor.j][1]} h`}.` : "";
+  const calor = `<div class="calor"><span></span>${FRANJAS.map(f => `<span class="ej">${f[2]}</span>`).join("")}
+    ${mapa.map((fila, i) => `<span class="ej">${DSEM[i]}</span>` + fila.map((v, j) => `<b data-tip="${DLARGO[i].replace(/s$/, "")} ${j === 0 ? "de madrugada" : FRANJAS[j][2] + " h"}: ${v} ${v === 1 ? "nota" : "notas"}" style="--a:${v ? 0.18 + 0.82 * v / maxM : 0}"></b>`).join("")).join("")}</div>`;
+
+  // Cómo anotas
+  const formas = [
+    {et: "Voz", v: ns.filter(n => n.audio).length}, {et: "Texto", v: ns.filter(n => !n.audio && !n.ancla && n.texto && !(n.fotos || []).some(f => f.includes("trazo"))).length},
+    {et: "A mano", v: ns.filter(n => (n.fotos || []).some(f => f.includes("trazo"))).length}, {et: "Foto", v: ns.filter(n => (n.fotos || []).some(f => !f.includes("trazo"))).length},
+    {et: "Ancla", v: ns.filter(n => n.ancla).length}
+  ].filter(f => f.v).sort((a, b) => b.v - a.v);
+  const dispositivos = Object.entries(contar(ns, n => n.terminal || "Sin nombre")).sort((a, b) => b[1] - a[1]).map(([et, v]) => ({et, v}));
+
+  // Cumplimiento
+  const cerradas = todas.filter(n => n.hecha && n.hechaEn && new Date(n.hechaEn) >= desde);
+  const diasMedio = cerradas.length ? cerradas.reduce((s, n) => s + (new Date(n.hechaEn) - new Date(n.creada)), 0) / cerradas.length / 864e5 : null;
+  const conFecha = cerradas.filter(n => n.fecha), aTiempo = conFecha.filter(n => isoDia(new Date(n.hechaEn)) <= n.fecha).length;
+  const fmtDias = d => d < 1 ? (d * 24 < 1 ? "menos de 1 h" : `${Math.round(d * 24)} h`) : `${d.toFixed(d < 10 ? 1 : 0).replace(".", ",")} días`;
+
+  $("#vEstad").innerHTML = cab("Estadísticas", "Para quién trabajas y cómo anotas")
+    + `<div class="filtros" id="fPer">${PERIODOS.map(([v, t]) => `<button class="fchip ${periodo === v ? "on" : ""}" data-per="${v}">${t}</button>`).join("")}</div>`
+    + (!todas.length ? `<div class="vacio-grande"><div class="halo">${ic("grafico")}</div><b>Aún no hay datos</b><span>Cuando anotes, aquí verás para quién trabajas y cuándo se te ocurren las cosas.</span></div>` : `
+    <div class="kpis">
+      <div class="kpi"><b>${ns.length}</b><span>anotadas</span><em class="${delta > 0 ? "sube" : ""}">${deltaTxt}</em></div>
+      <div class="kpi"><b>${pct(hechas, ns.length)}%</b><span>completadas</span><em>${hechas} de ${ns.length}</em></div>
+      <div class="kpi"><b>${pendTodas.length}</b><span>pendientes ahora</span><em class="${vencidas ? "mal" : ""}">${vencidas ? `${vencidas} ${vencidas === 1 ? "vencida" : "vencidas"}` : "ninguna vencida"}</em></div>
+      <div class="kpi"><b>${ns.filter(n => n.nocturna).length}</b><span>ideas nocturnas</span><em>${pct(ns.filter(n => n.nocturna).length, ns.length)}% de lo anotado</em></div>
+    </div>
+    <div class="panel"><h3>Actividad</h3><p class="nota-panel">Notas anotadas en el periodo. Pasa el dedo o el ratón por una barra para ver el detalle.</p><div class="columnas">${columnas}</div></div>
+    <div class="dos">
+      <div class="panel"><h3>Para quién</h3>${barrasLista(porCat, {total: ns.length})}</div>
+      <div class="panel"><h3>Trabajo y personal</h3>
+        ${ns.length ? `<div class="reparto" role="img" aria-label="Trabajo ${trab}, personal ${pers}"><i style="flex:${trab || 0.0001};background:var(--cw)" data-tip="Trabajo: ${trab}"></i><i style="flex:${pers || 0.0001};background:var(--cp)" data-tip="Personal: ${pers}"></i></div>
+        <div class="leyenda"><span><i style="background:var(--cw)"></i>Trabajo <b>${trab}</b> (${pct(trab, ns.length)}%)</span><span><i style="background:var(--cp)"></i>Personal <b>${pers}</b> (${pct(pers, ns.length)}%)</span></div>` : `<div class="cuenta">Aún sin datos en este periodo.</div>`}
+        <h3 style="margin-top:22px">Cómo anotas</h3>${barrasLista(formas, {total: ns.length, color: "var(--spark)"})}
+      </div>
+    </div>
+    <div class="panel"><h3>Con quién más trabajas</h3>${barrasLista(top, {vacio: "Cuando asignes notas a clientes, proveedores o compañeros, aparecerán aquí."})}</div>
+    <div class="panel"><h3>Cuándo se te ocurren las cosas</h3>${titular ? `<p class="titular">${titular}</p>` : ""}${calor}</div>
+    <div class="dos">
+      <div class="panel"><h3>Cumplimiento</h3>${cerradas.length ? `
+        <div class="mini-kpi"><b>${fmtDias(diasMedio)}</b><span>tardas de media en cerrar una nota</span></div>
+        ${conFecha.length ? `<div class="mini-kpi"><b>${pct(aTiempo, conFecha.length)}%</b><span>de lo que tenía fecha lo cerraste a tiempo</span></div>` : ""}` : `<div class="cuenta">Se calcula con lo que marques como hecho a partir de ahora.</div>`}</div>
+      <div class="panel"><h3>Desde dónde anotas</h3>${barrasLista(dispositivos, {total: ns.length})}</div>
+    </div>`);
+  document.querySelectorAll("[data-per]").forEach(b => b.onclick = () => { periodo = b.dataset.per; lsSet("chispa.periodo", periodo); pintarEstad(); });
+}
+// Detalle al pasar por encima (o al tocar en el móvil)
+(() => {
+  const tip = document.createElement("div"); tip.className = "tip"; document.body.appendChild(tip); let t = 0;
+  const mostrar = (el, x, y) => { tip.textContent = el.dataset.tip; tip.classList.add("on");
+    const w = tip.offsetWidth; tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, x - w / 2)) + "px"; tip.style.top = (y - tip.offsetHeight - 14) + "px"; };
+  document.addEventListener("pointermove", e => { const el = e.target.closest("#vEstad [data-tip]"); if (el && e.pointerType === "mouse") mostrar(el, e.clientX, e.clientY); else if (e.pointerType === "mouse") tip.classList.remove("on"); });
+  document.addEventListener("pointerdown", e => { const el = e.target.closest("#vEstad [data-tip]"); if (el && e.pointerType !== "mouse"){ mostrar(el, e.clientX, e.clientY); clearTimeout(t); t = setTimeout(() => tip.classList.remove("on"), 2200); } });
+  addEventListener("scroll", () => tip.classList.remove("on"), {passive: true});
+})();
 
 // Ajustes
 function pintarAjustes(){
@@ -1447,7 +1586,8 @@ function pintarAyuda(){
   <h3>Gestos</h3><p>En las listas, desliza una nota a la derecha para marcarla hecha y a la izquierda para borrarla. Siempre puedes <b>deshacer</b> desde el aviso que aparece arriba.</p>
   <h3>Hora y avisos</h3><p>Si escribes «a las 5» o «a las 17:30», Chispa pone la hora. Mientras Chispa esté abierta o en segundo plano, te avisa a esa hora.</p>
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
-  <h3>Novedades</h3><p><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
+  <h3>Novedades</h3><p><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
