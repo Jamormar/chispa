@@ -42,4 +42,8 @@
             android:name=".ArchivosCompartidos"
             android:authorities="es.jamormar.chispa.archivos"
             android:exported="false"
-            android:grantUriPermissions="true" />
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/chispa_compartir" />
+        </provider>
