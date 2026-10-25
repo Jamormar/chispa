@@ -296,4 +296,35 @@ public class ChispaNativoPlugin extends Plugin {
             call.resolve(r);
         }).start();
     }
+
+    // ---------------------------------------------------------------- compartir
+
+    /** Guarda el archivo (en base64) en la caché y abre el menú «Compartir» de Android. */
+    @PluginMethod
+    public void compartirArchivo(PluginCall call) {
+        String nombre = call.getString("nombre", "Chispa.pdf").replaceAll("[\\\\/:*?\"<>|]", " ");
+        String datos = call.getString("datos", "");
+        String tipo = call.getString("tipo", "application/pdf");
+        String asunto = call.getString("asunto", "");
+        try {
+            java.io.File carpeta = new java.io.File(getContext().getCacheDir(), "compartir");
+            if (carpeta.exists()) { java.io.File[] viejos = carpeta.listFiles(); if (viejos != null) for (java.io.File f : viejos) f.delete(); }
+            else carpeta.mkdirs();
+            java.io.File archivo = new java.io.File(carpeta, nombre);
+            try (java.io.FileOutputStream out = new java.io.FileOutputStream(archivo)) { out.write(Base64.decode(datos, Base64.DEFAULT)); }
+            Uri uri = androidx.core.content.FileProvider.getUriForFile(getContext(), "es.jamormar.chispa.archivos", archivo);
+            Intent enviar = new Intent(Intent.ACTION_SEND);
+            enviar.setType(tipo);
+            enviar.putExtra(Intent.EXTRA_STREAM, uri);
+            if (!asunto.isEmpty()) { enviar.putExtra(Intent.EXTRA_SUBJECT, asunto); enviar.putExtra(Intent.EXTRA_TITLE, asunto); }
+            enviar.setClipData(android.content.ClipData.newRawUri(nombre, uri));
+            enviar.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Intent menu = Intent.createChooser(enviar, "Compartir nota");
+            menu.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            getActivity().startActivity(menu);
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("No se pudo compartir: " + e.getMessage());
+        }
+    }
 }
