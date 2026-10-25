@@ -122,6 +122,18 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .lienzo{flex:1;position:relative;min-height:120px;margin:0 10px 10px;border-radius:20px;
   background-image:radial-gradient(var(--dots) 1.3px,transparent 1.4px);background-size:22px 22px;background-color:var(--bg)}
 #lienzo{position:absolute;inset:0;width:100%;height:100%;touch-action:none;border-radius:20px}
+.herr{position:absolute;left:8px;bottom:8px;display:flex;align-items:center;gap:2px;padding:4px;border-radius:16px;background:color-mix(in srgb,var(--surface) 92%,transparent);border:1px solid var(--line);box-shadow:0 4px 14px rgba(10,16,32,.08);z-index:2}
+.hb{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--text)}
+.hb svg{width:20px;height:20px}
+.hb:disabled{opacity:.3}
+.hb.on{background:var(--spark-soft);color:var(--spark-text)}
+.hsep{width:1px;height:22px;background:var(--line);margin:0 3px}
+.punto{display:block;border-radius:50%;background:currentColor}
+.pinceles{position:absolute;left:8px;bottom:62px;z-index:3;padding:10px;border-radius:18px;background:var(--surface);border:1px solid var(--line);box-shadow:0 10px 30px rgba(10,16,32,.16);display:flex;flex-direction:column;gap:8px}
+.pfila{display:flex;gap:6px}
+.pfila button{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--raise)}
+.pfila button.on{outline:2.5px solid var(--spark);outline-offset:1px}
+.pfila .muestra{display:block;border-radius:50%}
 .pista{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--faint);pointer-events:none;font-size:14.5px}
 .pista svg{width:26px;height:26px}
 .adj{display:flex;gap:8px;padding:0 18px 10px;overflow-x:auto}
@@ -467,6 +479,19 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
         <div class="lienzo">
           <canvas id="lienzo"></canvas>
           <div class="pista" id="pista"></div>
+          <div class="herr" id="herr" role="toolbar" aria-label="Herramientas de dibujo">
+            <button class="hb" id="hDeshacer" aria-label="Deshacer el último trazo" title="Deshacer el último trazo"></button>
+            <button class="hb" id="hRehacer" aria-label="Rehacer" title="Rehacer"></button>
+            <span class="hsep"></span>
+            <button class="hb" id="hPincel" aria-label="Pincel: grosor y color" title="Pincel: grosor y color"><i class="punto" id="hPunto"></i></button>
+            <button class="hb" id="hGoma" aria-label="Goma" title="Goma: borra solo por donde pases"></button>
+            <span class="hsep"></span>
+            <button class="hb" id="hBorrar" aria-label="Borrar el dibujo" title="Borrar todo el dibujo"></button>
+          </div>
+          <div class="pinceles oculto" id="pinceles" role="dialog" aria-label="Pincel">
+            <div class="pfila" id="pGrosor"></div>
+            <div class="pfila" id="pColor"></div>
+          </div>
         </div>
         <div class="grab oculto" id="grab">
           <div class="ondas" id="ondas"></div>
@@ -566,7 +591,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.8.1";
+const VERSION = "0.9";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -613,7 +638,9 @@ const ICONOS = {
   subir: '<path d="M12 19V5M6 11l6-6 6 6"/>',
   tel: '<path d="M5 4h3.5l1.7 4.3-2.2 1.4a11 11 0 0 0 5.3 5.3l1.4-2.2L19 14.5V18a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 3 6.2 2 2 0 0 1 5 4z"/>',
   coche: '<path d="M4 16.5V12l2-5.2A2 2 0 0 1 7.9 5.5h8.2a2 2 0 0 1 1.9 1.3L20 12v4.5M3.5 12h17M4 16.5h16"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/>',
-  deshacer: '<path d="M4 9.5h10.5a5 5 0 0 1 0 10H11M4 9.5l4-4M4 9.5l4 4"/>'
+  deshacer: '<path d="M4 9.5h10.5a5 5 0 0 1 0 10H11M4 9.5l4-4M4 9.5l4 4"/>',
+  rehacer: '<path d="M20 9.5H9.5a5 5 0 0 0 0 10H13M20 9.5l-4-4M20 9.5l-4 4"/>',
+  goma: '<path d="M8.5 20H20M4.6 14.6l8.8-8.8a2 2 0 0 1 2.8 0l2.5 2.5a2 2 0 0 1 0 2.8L11 19.4a2 2 0 0 1-1.4.6H8.3a2 2 0 0 1-1.4-.6l-2.3-2.3a2 2 0 0 1 0-2.5zM9 10l5 5"/>'
 };
 const ic = (n, cls = "") => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONOS[n] || ""}</svg>`;
 
@@ -1037,21 +1064,90 @@ function ajustarLienzo(){ const r = cv.getBoundingClientRect(), k = devicePixelR
   if (cv.width !== Math.round(r.width*k) || cv.height !== Math.round(r.height*k)){
     const copia = borrador?.trazo ? cx.getImageData(0, 0, cv.width, cv.height) : null;
     cv.width = Math.round(r.width*k); cv.height = Math.round(r.height*k); if (copia) cx.putImageData(copia, 0, 0); } }
-function limpiarLienzo(){ cx.clearRect(0, 0, cv.width, cv.height); if (borrador) borrador.trazo = false; $("#pista").classList.remove("oculto"); }
+// Cada trazo se guarda aparte para poder deshacer, rehacer y borrar con goma
+const COLORES = {tinta: ["var(--text)", "#16213A"], azul: ["#3F63B0", "#3F63B0"], rojo: ["#D9483B", "#D9483B"], verde: ["#119C7C", "#119C7C"], ambar: ["#E0A21F", "#C98A0E"]};
+const GROSORES = {fino: 2.2, medio: 4.5, grueso: 9};
+let trazos = [], rehechos = [], pincel = Object.assign({color: "tinta", grosor: "medio", goma: false}, lsGet("chispa.pincel") || {});
+const colorDe = (k, exportar) => { const c = (COLORES[k] || COLORES.tinta)[exportar ? 1 : 0]; return c.startsWith("var(") ? getComputedStyle(document.documentElement).getPropertyValue(c.slice(4, -1)).trim() : c; };
+function pintarTrazo(g, t, k, exportar){
+  const pts = t.p; if (!pts.length) return;
+  g.save(); g.lineCap = g.lineJoin = "round";
+  g.globalCompositeOperation = t.goma ? "destination-out" : "source-over";
+  g.strokeStyle = g.fillStyle = t.goma ? "#000" : colorDe(t.c, exportar);
+  const ancho = (t.goma ? 22 : GROSORES[t.g] || 4.5) * k;
+  if (pts.length === 1){ g.beginPath(); g.arc(pts[0][0] * k, pts[0][1] * k, ancho / 2, 0, Math.PI * 2); g.fill(); g.restore(); return; }
+  // líneas suaves: curva por los puntos medios; con lápiz óptico, el grosor sigue la presión
+  for (let i = 1; i < pts.length; i++){
+    const [x0, y0] = i > 1 ? [(pts[i-2][0] + pts[i-1][0]) / 2, (pts[i-2][1] + pts[i-1][1]) / 2] : pts[0];
+    const [x1, y1] = [(pts[i-1][0] + pts[i][0]) / 2, (pts[i-1][1] + pts[i][1]) / 2];
+    g.lineWidth = ancho * (t.goma ? 1 : (0.55 + 0.9 * (pts[i][2] ?? 0.5)));
+    g.beginPath(); g.moveTo(x0 * k, y0 * k); g.quadraticCurveTo(pts[i-1][0] * k, pts[i-1][1] * k, x1 * k, y1 * k);
+    if (i === pts.length - 1) g.lineTo(pts[i][0] * k, pts[i][1] * k);
+    g.stroke();
+  }
+  g.restore();
+}
+function redibujar(){
+  cx.clearRect(0, 0, cv.width, cv.height);
+  const k = cv.width / (cv.getBoundingClientRect().width || 1);
+  for (const t of trazos) pintarTrazo(cx, t, k, false);
+  const hay = trazos.some(t => !t.goma);
+  if (borrador) borrador.trazo = hay;
+  $("#pista").classList.toggle("oculto", trazos.length > 0);
+  pintarHerr();
+}
+function pintarHerr(){
+  $("#hDeshacer").disabled = !trazos.length; $("#hRehacer").disabled = !rehechos.length; $("#hBorrar").disabled = !trazos.length;
+  $("#hGoma").classList.toggle("on", pincel.goma); $("#hPincel").classList.toggle("on", !pincel.goma);
+  const d = Math.round(Math.min(18, GROSORES[pincel.grosor] * 2.2 + 4));
+  $("#hPunto").style.cssText = `width:${d}px;height:${d}px;color:${colorDe(pincel.color)}`;
+}
+function limpiarLienzo(){ trazos = []; rehechos = []; redibujar(); }
+function ajustarLienzo(){ const r = cv.getBoundingClientRect(), k = devicePixelRatio || 1; if (!r.width) return;
+  if (cv.width !== Math.round(r.width*k) || cv.height !== Math.round(r.height*k)){ cv.width = Math.round(r.width*k); cv.height = Math.round(r.height*k); redibujar(); } }
 (() => {
-  let on = false;
-  const p = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
-  cv.addEventListener("pointerdown", e => { on = true; tocado = true; cv.setPointerCapture(e.pointerId); cx.beginPath(); cx.moveTo(...p(e));
-    cx.lineWidth = 5 * (devicePixelRatio || 1); cx.lineCap = cx.lineJoin = "round"; cx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--text"); });
-  cv.addEventListener("pointermove", e => { if (!on) return; cx.lineTo(...p(e)); cx.stroke(); if (!borrador.trazo){ borrador.trazo = true; $("#pista").classList.add("oculto"); } });
-  const fin = () => on = false; cv.addEventListener("pointerup", fin); cv.addEventListener("pointercancel", fin);
+  let actual = null;
+  const p = e => { const r = cv.getBoundingClientRect(); return [+(e.clientX - r.left).toFixed(1), +(e.clientY - r.top).toFixed(1), e.pointerType === "pen" && e.pressure ? +e.pressure.toFixed(2) : 0.5]; };
+  cv.addEventListener("pointerdown", e => {
+    if (actual) return;   // un solo dedo a la vez
+    cerrarPinceles(); tocado = true; cv.setPointerCapture(e.pointerId);
+    actual = {c: pincel.color, g: pincel.grosor, goma: pincel.goma, p: [p(e)], id: e.pointerId}; trazos.push(actual); rehechos = []; redibujar();
+  });
+  cv.addEventListener("pointermove", e => {
+    if (!actual || e.pointerId !== actual.id) return;
+    for (const ev of e.getCoalescedEvents ? e.getCoalescedEvents() : [e]) actual.p.push(p(ev));
+    redibujar();
+  });
+  const fin = e => { if (actual && e.pointerId === actual.id){ delete actual.id; actual = null; redibujar(); } };
+  cv.addEventListener("pointerup", fin); cv.addEventListener("pointercancel", fin);
 })();
+// Herramientas
+$("#hDeshacer").innerHTML = ic("deshacer"); $("#hRehacer").innerHTML = ic("rehacer"); $("#hGoma").innerHTML = ic("goma"); $("#hBorrar").innerHTML = ic("borrar");
+const guardarPincel = () => { lsSet("chispa.pincel", pincel); pintarHerr(); };
+$("#hDeshacer").onclick = () => { if (trazos.length){ rehechos.push(trazos.pop()); redibujar(); } };
+$("#hRehacer").onclick = () => { if (rehechos.length){ trazos.push(rehechos.pop()); redibujar(); } };
+$("#hBorrar").onclick = () => { if (!trazos.length) return; const antes = trazos; trazos = []; rehechos = []; redibujar();
+  toast("Dibujo borrado", "borrar", 5000, () => { trazos = antes; redibujar(); }); };
+$("#hGoma").onclick = () => { pincel.goma = !pincel.goma; cerrarPinceles(); guardarPincel(); };
+function cerrarPinceles(){ $("#pinceles").classList.add("oculto"); }
+function pintarPinceles(){
+  const col = colorDe(pincel.color);
+  $("#pGrosor").innerHTML = Object.entries(GROSORES).map(([k, w]) => `<button data-gr="${k}" class="${pincel.grosor === k ? "on" : ""}" aria-label="Trazo ${k}"><i class="muestra" style="width:${Math.round(w * 2.2 + 3)}px;height:${Math.round(w * 2.2 + 3)}px;background:${col}"></i></button>`).join("");
+  $("#pColor").innerHTML = Object.keys(COLORES).map(k => `<button data-co="${k}" class="${pincel.color === k ? "on" : ""}" aria-label="Color ${k}"><i class="muestra" style="width:22px;height:22px;background:${colorDe(k)}"></i></button>`).join("");
+  $("#pinceles").querySelectorAll("[data-gr]").forEach(b => b.onclick = () => { pincel.grosor = b.dataset.gr; pincel.goma = false; guardarPincel(); pintarPinceles(); });
+  $("#pinceles").querySelectorAll("[data-co]").forEach(b => b.onclick = () => { pincel.color = b.dataset.co; pincel.goma = false; guardarPincel(); pintarPinceles(); setTimeout(cerrarPinceles, 180); });
+}
+$("#hPincel").onclick = () => {
+  if (pincel.goma){ pincel.goma = false; guardarPincel(); return; }
+  const caja = $("#pinceles"); if (caja.classList.contains("oculto")){ pintarPinceles(); caja.classList.remove("oculto"); } else cerrarPinceles();
+};
 async function trazoComoImagen(){
-  const c = document.createElement("canvas"); c.width = cv.width; c.height = cv.height; const g = c.getContext("2d");
-  g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
+  const r = cv.getBoundingClientRect(), k = cv.width / (r.width || 1);
   const t = document.createElement("canvas"); t.width = cv.width; t.height = cv.height; const tc = t.getContext("2d");
-  tc.drawImage(cv, 0, 0); tc.globalCompositeOperation = "source-in"; tc.fillStyle = "#16213A"; tc.fillRect(0, 0, t.width, t.height);
-  g.drawImage(t, 0, 0); return new Promise(r => c.toBlob(r, "image/png"));
+  for (const x of trazos) pintarTrazo(tc, x, k, true);
+  const c = document.createElement("canvas"); c.width = cv.width; c.height = cv.height; const g = c.getContext("2d");
+  g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(t, 0, 0);
+  return new Promise(res => c.toBlob(res, "image/png"));
 }
 $("#bLimpiar").onclick = () => { if (vacio() || confirm("¿Descartar lo que llevas y empezar de nuevo?")){ if (rec){ descartarVoz = true; pararVoz(); } nuevoBorrador(); } };
 $("#bFoto").onclick = () => { tocado = true; $("#inFoto").click(); };
@@ -2066,7 +2162,7 @@ function pintarAjustes(){
 
 function pintarAyuda(){
   $("#vAyuda").innerHTML = cab("Ayuda", `Chispa ${VERSION}`) + `
-  <h3>Anotar</h3><p>Escribe con el teclado en el recuadro de arriba (en el móvil, también con el botón del teclado), dicta con el botón amarillo o escribe a mano en la zona de puntos. En el PC, el botón del lápiz muestra u oculta la zona para escribir a mano. Pulsa <b>✓</b> para guardar. Con la cámara añades fotos. Al dictar se guarda <b>el audio original</b>: si la transcripción no cuadra, escúchalo al abrir la nota.</p>
+  <h3>Anotar</h3><p>Escribe con el teclado en el recuadro de arriba (en el móvil, también con el botón del teclado), dicta con el botón amarillo o escribe a mano en la zona de puntos. Abajo a la izquierda tienes las herramientas: <b>deshacer</b> y <b>rehacer</b> trazo a trazo, el <b>pincel</b> (toca el punto de color para elegir grosor y color), la <b>goma</b> para borrar solo por donde pases y la <b>papelera</b> para borrar el dibujo entero (se puede deshacer). El botón ↺ de arriba descarta toda la nota y empieza de nuevo. En el PC, el botón del lápiz muestra u oculta la zona para escribir a mano. Pulsa <b>✓</b> para guardar. Con la cámara añades fotos. Al dictar se guarda <b>el audio original</b>: si la transcripción no cuadra, escúchalo al abrir la nota.</p>
   <p>Mientras escribes, Chispa detecta <b>fechas</b> («mañana», «el jueves», «el 25 de noviembre», «en 3 días»), <b>nombres</b> de tus listas y el <b>tipo</b> de nota, y te los muestra en etiquetas amarillas. Si alguna no es correcta, quítala con la ✕.</p>
   <h3>Título</h3><p>Cada nota tiene un título opcional, arriba del texto. Es lo que se ve destacado en «Hoy» y en «Notas». Si no le pones título, se usa la primera línea del texto.</p>
   <h3>El ancla</h3><p>Para cuando no puedes anotar: guarda la hora y, si quieres, una palabra. En «Hoy» aparece en «Por recordar» para que lo completes.</p>
@@ -2082,7 +2178,7 @@ function pintarAyuda(){
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
-  <h3>Novedades</h3><p><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
