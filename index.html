@@ -245,6 +245,11 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .prop>svg{color:var(--muted)}
 .prop .lbl{width:84px;color:var(--muted);font-size:14px}
 .prop .val{flex:1;display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-width:180px}
+.sugs{flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.sugs:empty{display:none}
+.sug{display:inline-flex;align-items:center;gap:6px;height:36px;line-height:1;padding:0 12px;border-radius:17px;background:var(--raise);color:var(--text);font-size:14px;font-weight:600}
+.sug small{font-weight:500;color:var(--muted);font-size:12px}
+.sug-nuevo{flex-basis:100%;font-size:12.5px;color:var(--muted);padding:2px 4px}
 .prop select,.prop input{height:38px;border-radius:11px;border:1px solid var(--line);background:var(--bg);padding:0 10px;min-width:0}
 .prop input[type=text]{flex:1}
 .opc{height:34px;padding:0 12px;border-radius:11px;background:var(--raise);font-size:13.5px;font-weight:500;color:var(--muted)}
@@ -538,7 +543,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
         <div class="prop"><span data-i="tag"></span><span class="lbl">Tipo</span><div class="val"><div class="segm" id="eTipo"></div></div></div>
         <div class="prop"><span data-i="user"></span><span class="lbl">Para quién</span><div class="val">
           <select id="eCat"><option value="">Sin indicar</option><option value="cliente">Cliente</option><option value="proveedor">Proveedor</option><option value="companero">Compañero</option><option value="personal">Personal</option></select>
-          <input type="text" id="eNombre" list="dlNombres" placeholder="Nombre"><datalist id="dlNombres"></datalist></div></div>
+          <input type="text" id="eNombre" placeholder="Nombre" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sugs" id="eSugs" role="listbox" aria-label="Contactos"></div></div></div>
         <div class="prop"><span data-i="cal"></span><span class="lbl">Fecha y hora</span><div class="val">
           <input type="date" id="eFecha" aria-label="Fecha"><input type="time" id="eHora" aria-label="Hora (opcional)">
           <div class="atajos"><button class="opc" data-f="0">Hoy</button><button class="opc" data-f="1">Mañana</button><button class="opc" data-f="7">En una semana</button><button class="opc" data-f="">Sin fecha</button></div></div></div>
@@ -561,7 +566,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.8";
+const VERSION = "0.8.1";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -1411,11 +1416,35 @@ function abrirEdicion(n){
   $("#eHecha").innerHTML = n.hecha ? ic("deshacer") + `<span class="largo">Marcar pendiente</span><span class="corto">Pendiente</span>` : ic("check") + `<span class="largo">Marcar hecha</span><span class="corto">Hecha</span>`;
   $("#eHecha").title = n.hecha ? "Volver a dejarla pendiente" : "Marcar como hecha"; $("#eHecha").classList.toggle("hecha-on", !n.hecha);
   pintarOpciones(); pintarAdjEdicion();
-  const c = config.contactos || {}, usados = notas.map(x => x.para?.nombre).filter(Boolean);
-  $("#dlNombres").innerHTML = [...new Set([...(c.cliente||[]), ...(c.proveedor||[]), ...(c.companero||[]), ...usados])].sort().map(x => `<option value="${esc(x)}">`).join("");
+  $("#eSugs").innerHTML = "";
   abrirHoja("#hEditar"); $("#hEditar").scrollTop = 0;
   requestAnimationFrame(() => { const t = $("#eTexto"); t.style.height = "auto"; t.style.height = Math.max(t.classList.contains("corto") ? 26 : 80, t.scrollHeight) + "px"; });
 }
+// Sugerencias de contactos bajo el campo (sin tapar el teclado ni el campo)
+function contactosConocidos(){
+  const m = new Map(), c = config.contactos || {};
+  for (const cat of ["cliente","proveedor","companero"]) for (const x of c[cat] || []) m.set(norm(x), {nombre: x, cat});
+  for (const n of notas) if (n.para?.nombre && !m.has(norm(n.para.nombre))) m.set(norm(n.para.nombre), {nombre: n.para.nombre, cat: n.para.categoria || ""});
+  return [...m.values()];
+}
+function pintarSugs(){
+  const q = norm($("#eNombre").value.trim()), cat = $("#eCat").value, caja = $("#eSugs");
+  let l = contactosConocidos().filter(x => !q || norm(x.nombre).includes(q));
+  if (l.some(x => norm(x.nombre) === q)) { caja.innerHTML = ""; return; }
+  const peso = x => (q && norm(x.nombre).startsWith(q) ? 0 : 2) + (cat && x.cat !== cat ? 1 : 0);
+  l = l.sort((a, b) => peso(a) - peso(b) || a.nombre.localeCompare(b.nombre)).slice(0, 8);
+  caja.innerHTML = l.map((x, i) => `<button type="button" class="sug" data-s="${i}">${esc(x.nombre)}${x.cat && x.cat !== cat ? `<small>${CAT[x.cat] || ""}</small>` : ""}</button>`).join("")
+    + (q ? `<span class="sug-nuevo">${l.length ? "o se guardará" : "Se guardará"} «${esc($("#eNombre").value.trim())}» como nuevo</span>` : "");
+  caja.querySelectorAll("[data-s]").forEach(b => {
+    b.onpointerdown = e => e.preventDefault();   // que el campo no pierda el foco antes de elegir
+    b.onclick = () => { const x = l[+b.dataset.s]; $("#eNombre").value = x.nombre; if (x.cat && !$("#eCat").value) $("#eCat").value = x.cat; caja.innerHTML = ""; $("#eNombre").blur(); };
+  });
+}
+$("#eNombre").addEventListener("focus", () => { pintarSugs(); setTimeout(() => $("#eNombre").scrollIntoView({block: "center", behavior: "smooth"}), 350); });
+$("#eNombre").addEventListener("input", pintarSugs);
+$("#eNombre").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); $("#eNombre").blur(); } });
+$("#eNombre").addEventListener("blur", () => setTimeout(() => { $("#eSugs").innerHTML = ""; }, 150));
+$("#eCat").addEventListener("change", () => { if (document.activeElement === $("#eNombre")) pintarSugs(); });
 $("#eTexto").addEventListener("keydown", continuarLista);
 $("#eTexto").addEventListener("input", function(){ this.style.height = "auto"; this.style.height = Math.max(this.classList.contains("corto") ? 26 : 80, this.scrollHeight) + "px"; });
 function pausarAudio(){ try { audioEl && audioEl.pause(); } catch(e){} }
