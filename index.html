@@ -617,7 +617,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.10";
+const VERSION = "0.10.1";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -1709,9 +1709,11 @@ async function notaEnPdf(n){
 async function compartirArchivo(blob, nombre, titulo){
   if (esApp()){
     const datos = await new Promise(r => { const f = new FileReader(); f.onload = () => r(String(f.result).split(",")[1]); f.readAsDataURL(blob); });
-    try { await nativo("ChispaNativo").compartirArchivo({nombre, datos, tipo: blob.type || "application/pdf", asunto: titulo}); return; }
-    catch(e){ if (!/not implemented|no está implementado/i.test(String(e?.message || e))) throw e;
-      toast("Para compartir PDF, actualiza la app", "subir", 8000, actualizarApp, "Actualizar"); return; }
+    const nat = nativo("ChispaNativo");
+    const pedirActualizar = () => toast("Para compartir notas, actualiza la app a la última versión", "subir", 9000, actualizarApp, "Actualizar");
+    if (typeof nat?.compartirArchivo !== "function"){ pedirActualizar(); return; }   // app anterior a la 1.0.8
+    try { await nat.compartirArchivo({nombre, datos, tipo: blob.type || "application/pdf", asunto: titulo}); return; }
+    catch(e){ if (/not implemented|not a function/i.test(String(e?.message || e))){ pedirActualizar(); return; } throw e; }
   }
   const archivo = new File([blob], nombre, {type: blob.type || "application/pdf"});
   if (navigator.canShare?.({files: [archivo]})){ try { await navigator.share({files: [archivo], title: titulo}); return; } catch(e){ if (e.name === "AbortError") return; } }
