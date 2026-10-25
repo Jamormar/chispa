@@ -210,6 +210,29 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .filtros{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 6px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
 .filtros::-webkit-scrollbar{display:none}
 .filtros .sep{width:1px;background:var(--line);flex:none;margin:6px 2px}
+.desps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:2px 0 4px}
+@media (min-width:640px){ .desps{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.desp{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:6px;align-content:center;height:52px;padding:0 10px 0 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);text-align:left;min-width:0}
+.desp .d-et{grid-column:1;grid-row:1;font-size:11.5px;color:var(--muted);line-height:1.2}
+.desp .d-val{grid-column:1;grid-row:2;font-size:14.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.desp svg{grid-column:2;grid-row:1/3;width:18px;height:18px;color:var(--muted);transition:transform .15s}
+.desp.abierto svg{transform:rotate(180deg)}
+.desp.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.desp.abierto{border-color:var(--work)}
+.desp-limpiar{grid-column:1/-1;justify-self:start;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:10px;color:var(--muted);font-size:13.5px;font-weight:500}
+.desp-limpiar svg{width:15px;height:15px}
+#vNotas{position:relative}
+.desp-panel{position:absolute;z-index:40;width:260px;max-width:calc(100% - 4px);padding:10px;border-radius:18px;background:var(--surface);border:1px solid var(--line);box-shadow:0 14px 40px rgba(10,16,32,.18);display:flex;flex-direction:column;gap:2px}
+.dp-tit{font-size:12.5px;color:var(--muted);padding:4px 8px 6px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.dp-op{display:flex;align-items:center;gap:12px;min-height:46px;padding:0 8px;border-radius:12px;font-size:15px;cursor:pointer}
+.dp-op:active{background:var(--raise)}
+.dp-op small{margin-left:auto;color:var(--faint);font-size:12.5px}
+.dp-op input{position:absolute;opacity:0;pointer-events:none}
+.caja-ck{width:22px;height:22px;border-radius:7px;border:1.8px solid var(--faint);display:grid;place-items:center;flex:none;color:transparent}
+.caja-ck svg{width:15px;height:15px}
+.dp-op input:checked+.caja-ck{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.dp-todos{border-bottom:1px solid var(--line);border-radius:12px 12px 0 0;margin-bottom:4px}
+.dp-ok{margin-top:8px}
 .fchip{height:34px;padding:0 13px;border-radius:11px;background:var(--surface);border:1px solid var(--line);font-size:13.5px;font-weight:500;color:var(--muted);white-space:nowrap;flex:none}
 .fchip.on{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
 @media (min-width:900px){ .filtros{margin:0;padding-left:2px;padding-right:2px;flex-wrap:wrap} }
@@ -513,7 +536,8 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
     <section id="vNotas" class="oculto" data-v="notas">
       <div class="cab"><div><h1>Notas</h1></div><div class="esp"></div><button class="sync cab-sync" data-sync></button></div>
       <div class="busca"><span id="icBusca"></span><input id="q" type="search" placeholder="Buscar por texto, nombre o fecha"></div>
-      <div class="filtros" id="filtros"></div>
+      <div class="desps" id="filtros"></div>
+      <div class="desp-panel oculto" id="despPanel" role="dialog"></div>
       <div id="listaNotas"></div>
     </section>
     <section id="vEstad" class="oculto" data-v="estad"></section>
@@ -591,7 +615,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.9";
+const VERSION = "0.9.1";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -639,6 +663,7 @@ const ICONOS = {
   tel: '<path d="M5 4h3.5l1.7 4.3-2.2 1.4a11 11 0 0 0 5.3 5.3l1.4-2.2L19 14.5V18a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 3 6.2 2 2 0 0 1 5 4z"/>',
   coche: '<path d="M4 16.5V12l2-5.2A2 2 0 0 1 7.9 5.5h8.2a2 2 0 0 1 1.9 1.3L20 12v4.5M3.5 12h17M4 16.5h16"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/>',
   deshacer: '<path d="M4 9.5h10.5a5 5 0 0 1 0 10H11M4 9.5l4-4M4 9.5l4 4"/>',
+  abajo: '<path d="M6 9.5l6 6 6-6"/>',
   rehacer: '<path d="M20 9.5H9.5a5 5 0 0 0 0 10H13M20 9.5l-4-4M20 9.5l-4 4"/>',
   goma: '<path d="M8.5 20H20M4.6 14.6l8.8-8.8a2 2 0 0 1 2.8 0l2.5 2.5a2 2 0 0 1 0 2.8L11 19.4a2 2 0 0 1-1.4.6H8.3a2 2 0 0 1-1.4-.6l-2.3-2.3a2 2 0 0 1 0-2.5zM9 10l5 5"/>'
 };
@@ -1921,25 +1946,65 @@ function prepararCorreo(ambito){
   location.href = `mailto:${encodeURIComponent(dest || "")}?subject=${encodeURIComponent("Chispa: " + (ambito === "trabajo" ? "trabajo" : "personal") + ", " + fechaCorta(hoy))}&body=${encodeURIComponent(cuerpo)}`;
 }
 
-// Notas: buscador y filtros
-let filtro = {estado: "pend", ambito: "", tipo: "", cat: ""};
-const FILTROS = [["estado", "pend", "Pendientes"], ["estado", "", "Todas"], ["estado", "hecha", "Hechas"], null,
-  ["ambito", "trabajo", "Trabajo"], ["ambito", "personal", "Personal"], null,
-  ["tipo", "tarea", "Tareas"], ["tipo", "idea", "Ideas"], ["tipo", "recordatorio", "Recordatorios"], null,
-  ["cat", "cliente", "Clientes"], ["cat", "proveedor", "Proveedores"], ["cat", "companero", "Compañeros"]];
+// Notas: buscador y filtros desplegables (una o varias opciones en cada uno; ninguna marcada = todas)
+const GRUPOS = [
+  {k: "estado", et: "Estado", todos: "Todas", ops: [["pend", "Pendientes"], ["hecha", "Hechas"]]},
+  {k: "ambito", et: "Ámbito", todos: "Todos", ops: [["trabajo", "Trabajo"], ["personal", "Personal"]]},
+  {k: "tipo", et: "Tipo", todos: "Todos", ops: [["nota", "Notas"], ["tarea", "Tareas"], ["idea", "Ideas"], ["recordatorio", "Recordatorios"], ["ancla", "Anclas"]]},
+  {k: "cat", et: "Para quién", todos: "Todos", ops: [["cliente", "Clientes"], ["proveedor", "Proveedores"], ["companero", "Compañeros"], ["personal", "Personal"], ["", "Sin indicar"]]}];
+let filtro = (() => { const g = lsGet("chispa.filtros"), f = {}; for (const x of GRUPOS) f[x.k] = Array.isArray(g?.[x.k]) ? g[x.k] : (x.k === "estado" ? ["pend"] : []); return f; })();
+let grupoAbierto = null;
+const resumenGrupo = g => { const sel = filtro[g.k]; if (!sel.length || sel.length === g.ops.length) return g.todos; if (sel.length === 1) return g.ops.find(o => o[0] === sel[0])?.[1] || g.todos; return g.ops.filter(o => sel.includes(o[0])).map(o => o[1]).join(", "); };
+const filtroActivo = g => filtro[g.k].length > 0 && filtro[g.k].length < g.ops.length;
 function pintarFiltros(){
-  $("#filtros").innerHTML = FILTROS.map(f => f ? `<button class="fchip ${filtro[f[0]] === f[1] ? "on" : ""}" data-fg="${f[0]}" data-fv="${f[1]}">${f[2]}</button>` : `<span class="sep"></span>`).join("");
+  const hay = GRUPOS.some(g => g.k !== "estado" ? filtroActivo(g) : !(filtro.estado.length === 1 && filtro.estado[0] === "pend"));
+  $("#filtros").innerHTML = GRUPOS.map(g => `<button class="desp ${filtroActivo(g) ? "on" : ""} ${grupoAbierto === g.k ? "abierto" : ""}" data-g="${g.k}" aria-haspopup="true" aria-expanded="${grupoAbierto === g.k}">
+      <span class="d-et">${g.et}</span><span class="d-val">${esc(resumenGrupo(g))}</span>${ic("abajo")}</button>`).join("")
+    + (hay ? `<button class="desp-limpiar" id="fLimpiar">${ic("x")}Quitar filtros</button>` : "");
+  if ($("#fLimpiar")) $("#fLimpiar").onclick = () => { for (const g of GRUPOS) filtro[g.k] = g.k === "estado" ? ["pend"] : []; guardarFiltros(); cerrarDesp(); pintarNotas(); };
 }
-$("#filtros").addEventListener("click", e => { const b = e.target.closest("[data-fg]"); if (!b) return; const g = b.dataset.fg, v = b.dataset.fv;
-  filtro[g] = g === "estado" ? v : (filtro[g] === v ? "" : v); pintarNotas(); });
+function guardarFiltros(){ lsSet("chispa.filtros", filtro); }
+function cerrarDesp(){ grupoAbierto = null; $("#despPanel").classList.add("oculto"); document.querySelectorAll(".desp.abierto").forEach(b => { b.classList.remove("abierto"); b.setAttribute("aria-expanded", "false"); }); }
+function abrirDesp(k, boton){
+  const g = GRUPOS.find(x => x.k === k), panel = $("#despPanel");
+  grupoAbierto = k; document.querySelectorAll(".desp").forEach(b => { const on = b.dataset.g === k; b.classList.toggle("abierto", on); b.setAttribute("aria-expanded", on); });
+  const sel = new Set(filtro[k]), todos = !sel.size || sel.size === g.ops.length;
+  panel.setAttribute("aria-label", g.et);
+  panel.innerHTML = `<div class="dp-tit">${g.et}</div>
+    <label class="dp-op dp-todos"><input type="checkbox" data-todos ${todos ? "checked" : ""}><span class="caja-ck">${ic("check")}</span>${g.todos}</label>
+    ${g.ops.map(([v, t]) => `<label class="dp-op"><input type="checkbox" data-v="${v}" ${!todos && sel.has(v) ? "checked" : ""}><span class="caja-ck">${ic("check")}</span>${t}<small>${contarOpcion(k, v)}</small></label>`).join("")}
+    <button class="btn dp-ok">Listo</button>`;
+  const r = boton.getBoundingClientRect(), cont = $("#vNotas").getBoundingClientRect();
+  panel.style.top = (r.bottom - cont.top + 6) + "px";
+  panel.style.left = Math.max(0, Math.min(r.left - cont.left, cont.width - 260)) + "px";
+  panel.classList.remove("oculto");
+  panel.querySelector("[data-todos]").onchange = e => { if (e.target.checked){ filtro[k] = []; panel.querySelectorAll("[data-v]").forEach(c => c.checked = false); } else e.target.checked = true; aplicar(); };
+  panel.querySelectorAll("[data-v]").forEach(c => c.onchange = () => {
+    const marcados = [...panel.querySelectorAll("[data-v]:checked")].map(x => x.dataset.v);
+    filtro[k] = marcados.length === g.ops.length ? [] : marcados;
+    panel.querySelector("[data-todos]").checked = !filtro[k].length;
+    if (!filtro[k].length) panel.querySelectorAll("[data-v]").forEach(x => x.checked = false);
+    aplicar();
+  });
+  panel.querySelector(".dp-ok").onclick = cerrarDesp;
+  function aplicar(){ guardarFiltros(); pintarNotas(); }
+}
+function contarOpcion(k, v){ return deNotas().filter(n => valorFiltro(n, k) === v).length || ""; }
+function valorFiltro(n, k){
+  if (k === "estado") return n.hecha ? "hecha" : "pend";
+  if (k === "ambito") return n.ambito || "trabajo";
+  if (k === "tipo") return n.ancla ? "ancla" : (n.tipo || "nota");
+  return n.para?.categoria || "";
+}
+$("#filtros").addEventListener("click", e => { const b = e.target.closest("[data-g]"); if (!b) return; grupoAbierto === b.dataset.g ? cerrarDesp() : abrirDesp(b.dataset.g, b); });
+document.addEventListener("pointerdown", e => { if (grupoAbierto && !e.target.closest("#despPanel,[data-g]")) cerrarDesp(); });
 $("#q").addEventListener("input", () => pintarNotas());
 function etiquetaDia(iso){ const d = isoDia(new Date(iso)); if (d === hoyISO()) return "Hoy"; if (d === masDias(-1)) return "Ayer"; return capital(fechaLarga(d)); }
 function pintarNotas(){
-  pintarFiltros();
+  if (!grupoAbierto) pintarFiltros(); else document.querySelectorAll(".desp").forEach(b => { const g = GRUPOS.find(x => x.k === b.dataset.g); b.querySelector(".d-val").textContent = resumenGrupo(g); b.classList.toggle("on", filtroActivo(g)); });
   const q = norm($("#q").value).split(/\s+/).filter(Boolean);
   const lista = deNotas().filter(n => {
-    if (filtro.estado === "pend" && n.hecha) return false; if (filtro.estado === "hecha" && !n.hecha) return false;
-    if (filtro.ambito && n.ambito !== filtro.ambito) return false; if (filtro.tipo && n.tipo !== filtro.tipo) return false; if (filtro.cat && n.para?.categoria !== filtro.cat) return false;
+    for (const g of GRUPOS) if (filtro[g.k].length && !filtro[g.k].includes(valorFiltro(n, g.k))) return false;
     if (q.length){ const h = norm([n.titulo, n.texto, n.transcripcion, n.para?.nombre, CAT[n.para?.categoria], TIPOS[n.tipo]?.[0], n.terminal, fechaLarga(n.creada), n.fecha ? fechaLarga(n.fecha) : "", n.nocturna ? "noche nocturna" : "", n.ancla ? "ancla" : ""].join(" ")); if (!q.every(p => h.includes(p))) return false; }
     return true;
   }).slice(0, 300);
