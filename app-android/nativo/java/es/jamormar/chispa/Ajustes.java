@@ -71,7 +71,7 @@ final class Ajustes {
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
-                .setTimeoutAfter(30 * 60 * 1000L)
+                .setTimeoutAfter(2 * 60 * 1000L)   // si no se toca, desaparece a los 2 minutos
                 .setContentIntent(abrir(ctx, 101, "llamada", quien, duracion))
                 .addAction(R.drawable.ic_w_pluma, "Anotar", abrir(ctx, 101, "llamada", quien, duracion))
                 .addAction(R.drawable.ic_w_mic, "Grabar", abrir(ctx, 102, "voz", quien, duracion));
