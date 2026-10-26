@@ -192,7 +192,9 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .mt .nube{color:var(--spark-text)}
 .fila .mini{width:46px;height:46px;border-radius:12px;object-fit:cover;flex:none;background:var(--raise)}
 .resolver{display:flex;gap:8px;margin-top:8px}
-.resolver input{flex:1;min-width:0;height:38px;border-radius:11px;border:1px solid var(--line);background:var(--bg);padding:0 12px}
+.resolver input,.resolver textarea{flex:1;min-width:0;min-height:38px;border-radius:11px;border:1px solid var(--line);background:var(--bg);padding:8px 12px;line-height:1.35;font:inherit;color:var(--text);outline:0}
+.resolver{align-items:flex-start}
+textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;word-break:break-word}
 .resolver button{height:38px;padding:0 14px;border-radius:11px;background:var(--ink);color:var(--on-ink);font-weight:600;font-size:14px}
 .vacio-grande{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:34px 20px;color:var(--muted)}
 .vacio-grande .halo{width:64px;height:64px;border-radius:22px;display:grid;place-items:center;background:var(--spark-soft);color:var(--spark-deep)}
@@ -365,7 +367,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 /* ===== Ancla ===== */
 .hoja.mini h3{font-family:var(--display);font-size:22px;margin:6px 0 2px;display:flex;align-items:center;gap:10px}
 .hoja.mini p{color:var(--muted);margin:0 0 14px}
-.hoja.mini input{width:100%;height:50px;border-radius:15px;border:1px solid var(--line);background:var(--bg);padding:0 16px;font-size:18px}
+.hoja.mini input,.hoja.mini textarea{width:100%;min-height:50px;border-radius:15px;border:1px solid var(--line);background:var(--bg);padding:12px 16px;font-size:18px;line-height:1.35;font-family:var(--body);color:var(--text);outline:0}
 
 /* ===== Estadísticas y ajustes ===== */
 .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
@@ -611,7 +613,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
   <div class="asa"></div>
   <h3 id="aTitulo"></h3>
   <p>Si quieres, añade una palabra para acordarte luego.</p>
-  <input id="aPalabra" placeholder="presupuesto, Pedro, cables…" autocomplete="off" enterkeyhint="done">
+  <textarea id="aPalabra" class="crece" rows="1" placeholder="presupuesto, Pedro, cables…" autocomplete="off" enterkeyhint="done"></textarea>
   <div class="hpie"><button class="btn sec" id="aSaltar">Así vale</button><div class="esp"></div><button class="btn" id="aOk">Guardar palabra</button></div>
 </div>
 
@@ -620,7 +622,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.11";
+const VERSION = "0.11.1";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -1072,6 +1074,16 @@ const ambitoSel = () => document.querySelector("#cAmbito button.on")?.dataset.a 
 document.querySelectorAll("#cAmbito button").forEach(b => b.onclick = () => { tocado = true; setAmbito(b.dataset.a); });
 function autoAlto(){ const t = $("#cTexto"); if ($("#papel").classList.contains("sin-mano") && !esMovil()){ t.style.height = ""; return; } t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 220) + "px"; }
 $("#cTexto").addEventListener("keydown", continuarLista);
+// Campos cortos que crecen hacia abajo en vez de desplazarse a la izquierda; Intro confirma (no hace salto de línea)
+textareaCrece();
+function textareaCrece(){
+  const crecer = el => { if (/\n/.test(el.value)) el.value = el.value.replace(/\s*\n\s*/g, " "); el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; };
+  document.addEventListener("input", e => { if (e.target.matches?.("textarea.crece")) crecer(e.target); });
+  document.addEventListener("keydown", e => {
+    const t = e.target; if (!t.matches?.("textarea[data-resolver]") || e.key !== "Enter") return;
+    e.preventDefault(); document.querySelector(`[data-ok="${t.dataset.resolver}"]`)?.click();
+  });
+}
 // Los títulos crecen hacia abajo al escribir (sin desplazarse a la izquierda); Intro pasa al texto
 function crecerTitulo(el){ if (!el) return; if (/\n/.test(el.value)) el.value = el.value.replace(/\s*\n\s*/g, " "); el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
 for (const [t, sig] of [["#cTitulo", "#cTexto"], ["#eTitulo", "#eTexto"]]){
@@ -1323,7 +1335,7 @@ $("#aOk").onclick = async () => {
   if (v && anclaActual){ anclaActual.texto = v; await guardarNotaLocal(anclaActual); }
   toast(`Ancla de las ${hora(anclaActual.creada)}${v ? ": " + v : ""}`, "ancla");
 };
-$("#aPalabra").addEventListener("keydown", e => { if (e.key === "Enter") $("#aOk").click(); });
+$("#aPalabra").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); $("#aOk").click(); } });
 
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "hidden"){
@@ -1400,7 +1412,7 @@ function fila(n, opts = {}){
   return `<div class="desl"><div class="fondo"></div><div class="fila ${n.hecha ? "hecha" : ""}" data-abrir="${n.id}">
     <button class="chk ${n.ambito === "personal" ? "personal" : ""}" data-hecha="${n.id}" aria-label="${n.hecha ? "Marcar pendiente" : "Marcar hecha"}">${ic("check")}</button>
     <div class="ct"><div class="tt">${tituloDe(n)}</div>${(() => { const d = partesNota(n).desc; return d ? `<div class="desc">${esc(d)}</div>` : ""; })()}${lista.length && !n.hecha ? miniLista(n, lista) : ""}${mt.length ? `<div class="mt">${mt.join("")}</div>` : ""}
-      ${n.ancla && opts.resolver ? `<div class="resolver"><input placeholder="¿Qué era?" data-resolver="${n.id}"><button data-ok="${n.id}">Listo</button></div>` : ""}</div>
+      ${n.ancla && opts.resolver ? `<div class="resolver"><textarea class="crece" rows="1" placeholder="¿Qué era?" data-resolver="${n.id}" enterkeyhint="done"></textarea><button data-ok="${n.id}">Listo</button></div>` : ""}</div>
     ${n.fotos?.length ? `<img class="mini" data-mini="${n.fotos[0]}" alt="">` : ""}
   </div></div>`;
 }
@@ -1484,7 +1496,7 @@ function pintarListaEdicion(foco = false){
   const filaItem = (it, i) => `<div class="eitem ${it.hecho ? "on" : ""}">${it.hecho ? "" : `<span class="mover" title="Arrastra para cambiar el orden" aria-hidden="true">${ic("agarre")}</span>`}<button class="ck" data-ei="${i}" aria-label="${it.hecho ? "Volver a pendiente" : "Marcar hecho"}">${ic("check")}</button><textarea rows="1" data-eit="${i}" aria-label="Punto ${i + 1}">${esc(it.texto)}</textarea><button class="ibtn" data-eix="${i}" aria-label="Quitar punto">${ic("x")}</button></div>`;
   const pend = [], hechos = []; eItems.forEach((it, i) => (it.hecho ? hechos : pend).push(filaItem(it, i)));
   $("#eLista").innerHTML = (pend.length ? pend.join("") : `<div class="todo-hecho">${ic("check")}Todo hecho</div>`)
-    + `<div class="eitem nuevo">${ic("mas")}<input id="eNuevoItem" placeholder="Añadir un punto y pulsar Intro" enterkeyhint="enter"></div>`;
+    + `<div class="eitem nuevo">${ic("mas")}<textarea id="eNuevoItem" class="crece" rows="1" placeholder="Añadir un punto y pulsar Intro" enterkeyhint="enter"></textarea></div>`;
   $("#eHechos").innerHTML = hechos.length ? `<button class="hechos-tit" id="eVerHechos">${ic(verHechos ? "x" : "check")}<span>${verHechos ? "Ocultar hechos" : `Hechos (${hechos.length})`}</span></button>${verHechos ? `<div class="elista hechos">${hechos.join("")}</div>` : ""}` : "";
   requestAnimationFrame(() => document.querySelectorAll("#eLista textarea,#eHechos textarea").forEach(crecer));
   if (foco) setTimeout(() => $("#eNuevoItem")?.focus(), 50);
