@@ -102,6 +102,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .campo .limpiar{position:absolute;top:6px;right:6px;width:36px;height:36px}
 .campo .limpiar svg{width:18px;height:18px}
 .cuerpo-campo{flex:1;min-width:0;display:flex;flex-direction:column}
+#cTitulo,#eTitulo{display:block;width:100%;resize:none;overflow:hidden;line-height:1.3;white-space:pre-wrap;word-break:break-word}
 #cTitulo{border:0;outline:0;background:transparent;font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:-.01em;color:var(--text);padding:0 0 8px;margin-bottom:8px;border-bottom:1px solid var(--line);width:100%}
 #cTitulo::placeholder{color:var(--faint);font-weight:500}
 #cTexto{flex:0 0 auto;width:100%;min-width:0;border:0;outline:0;resize:none;background:transparent;padding:0;font-size:19px;line-height:1.4;min-height:54px;max-height:200px;font-family:var(--body)}
@@ -447,7 +448,9 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .ec-lista svg{width:22px;height:22px;color:var(--spark-deep)}
 .toast.ver{opacity:1;transform:translate(-50%,0)}
 .toast.accion{pointer-events:auto}
-.toast .deshacer{margin-left:6px;padding:5px 11px;border-radius:9px;background:color-mix(in srgb,var(--on-ink) 18%,transparent);color:var(--spark);font-weight:700;font-size:14px}
+.toast{width:max-content;max-width:calc(100vw - 32px)}
+.toast span{min-width:0}
+.toast .deshacer{flex:none;white-space:nowrap;margin-left:6px;padding:5px 11px;border-radius:9px;background:color-mix(in srgb,var(--on-ink) 18%,transparent);color:var(--spark);font-weight:700;font-size:14px}
 .desl{position:relative;border-bottom:1px solid var(--line)}
 .desl:last-child{border-bottom:0}
 .desl .fondo{position:absolute;inset:4px 0;border-radius:14px;display:flex;align-items:center;padding:0 18px;color:#fff;font-weight:600;gap:8px;opacity:0}
@@ -494,7 +497,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
       <div class="papel" id="papel">
         <div class="campo" id="campo"><span id="icTeclado"></span>
           <div class="cuerpo-campo">
-            <input id="cTitulo" placeholder="Título (opcional)" autocomplete="off" enterkeyhint="next" aria-label="Título">
+            <textarea id="cTitulo" rows="1" placeholder="Título (opcional)" autocomplete="off" enterkeyhint="next" aria-label="Título"></textarea>
             <textarea id="cTexto" rows="2" placeholder="Escribe aquí lo que tengas en la cabeza" aria-label="Texto"></textarea>
           </div>
           <button class="ibtn limpiar" id="bLimpiar" aria-label="Empezar de nuevo" title="Empezar de nuevo"></button></div>
@@ -567,7 +570,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
     <div class="hinfo" id="eInfo"></div>
     <section class="esec">
       <h4>Título</h4>
-      <div class="efield"><input id="eTitulo" placeholder="Ponle un título para encontrarla fácil" autocomplete="off" aria-label="Título"></div>
+      <div class="efield"><textarea id="eTitulo" rows="1" placeholder="Ponle un título para encontrarla fácil" autocomplete="off" enterkeyhint="next" aria-label="Título"></textarea></div>
     </section>
     <section class="esec">
       <h4><span id="eTitTexto">Descripción</span><button class="enl" id="eAddLista"></button></h4>
@@ -617,7 +620,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 <script>
 "use strict";
-const VERSION = "0.10.1";
+const VERSION = "0.11";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -1059,7 +1062,8 @@ $("#icBusca").innerHTML = ic("buscar");
 
 function nuevoBorrador(){
   borrador = {audio: null, dur: "", transcripcion: "", fotos: [], trazo: false}; ignorar = {};
-  $("#cTexto").value = ""; $("#cTitulo").value = ""; autoAlto(); limpiarLienzo(); pintarAdjuntos(); pintarDetectado(); setAmbito(disp.ambito || "trabajo");
+  $("#cTexto").value = ""; $("#cTitulo").value = ""; crecerTitulo($("#cTitulo")); autoAlto(); limpiarLienzo(); pintarAdjuntos(); pintarDetectado(); setAmbito(disp.ambito || "trabajo");
+  borrarCapturaGuardada();
   tocado = false; anclaAbierta = esNoche() && esMovil() ? new Date() : null;
 }
 const vacio = () => !$("#cTexto").value.trim() && !$("#cTitulo").value.trim() && !borrador.audio && !borrador.fotos.length && !borrador.trazo && !rec;
@@ -1068,10 +1072,53 @@ const ambitoSel = () => document.querySelector("#cAmbito button.on")?.dataset.a 
 document.querySelectorAll("#cAmbito button").forEach(b => b.onclick = () => { tocado = true; setAmbito(b.dataset.a); });
 function autoAlto(){ const t = $("#cTexto"); if ($("#papel").classList.contains("sin-mano") && !esMovil()){ t.style.height = ""; return; } t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 220) + "px"; }
 $("#cTexto").addEventListener("keydown", continuarLista);
-$("#cTitulo").addEventListener("keydown", e => { if (e.key === "Enter" && !e.ctrlKey && !e.metaKey){ e.preventDefault(); $("#cTexto").focus(); } });
-$("#cTitulo").addEventListener("input", () => { tocado = true; pintarDetectado(); });
+// Los títulos crecen hacia abajo al escribir (sin desplazarse a la izquierda); Intro pasa al texto
+function crecerTitulo(el){ if (!el) return; if (/\n/.test(el.value)) el.value = el.value.replace(/\s*\n\s*/g, " "); el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
+for (const [t, sig] of [["#cTitulo", "#cTexto"], ["#eTitulo", "#eTexto"]]){
+  $(t).addEventListener("keydown", e => { if (e.key === "Enter" && !e.ctrlKey && !e.metaKey){ e.preventDefault(); $(sig).focus(); } });
+  $(t).addEventListener("input", () => crecerTitulo($(t)));
+}
+$("#cTitulo").addEventListener("input", () => { tocado = true; pintarDetectado(); guardarCapturaPronto(); });
 $("#campo").addEventListener("click", e => { if (!e.target.closest("input,textarea,button")) $("#cTexto").focus(); });
-$("#cTexto").addEventListener("input", () => { tocado = true; autoAlto(); pintarDetectado(); });
+$("#cTexto").addEventListener("input", () => { tocado = true; autoAlto(); pintarDetectado(); guardarCapturaPronto(); });
+// La nota que se está escribiendo se guarda sola en el dispositivo y se recupera si la app se cierra
+let tCaptura = 0, nFotosGuardadas = 0;
+function guardarCapturaPronto(){ clearTimeout(tCaptura); tCaptura = setTimeout(guardarCapturaLocal, 600); }
+async function guardarCapturaLocal(){
+  if (!borrador) return;
+  if (vacio() && !trazos.length){ borrarCapturaGuardada(); return; }
+  try {
+    for (let i = 0; i < borrador.fotos.length; i++) await idb.ponerBlob(`borrador/foto-${i}`, borrador.fotos[i]);
+    for (let i = borrador.fotos.length; i < nFotosGuardadas; i++) await idb.quitarBlob(`borrador/foto-${i}`);
+    nFotosGuardadas = borrador.fotos.length;
+    if (borrador.audio) await idb.ponerBlob("borrador/audio", borrador.audio); else await idb.quitarBlob("borrador/audio");
+    lsSet("chispa.captura", {titulo: $("#cTitulo").value, texto: $("#cTexto").value, ambito: ambitoSel(), trazos: trazos.filter(t => !("id" in t)),
+      fotos: borrador.fotos.length, audio: !!borrador.audio, dur: borrador.dur, transcripcion: borrador.transcripcion, t: Date.now()});
+  } catch(e){}
+}
+function borrarCapturaGuardada(){
+  clearTimeout(tCaptura);
+  if (!lsGet("chispa.captura")) return;
+  const c = lsGet("chispa.captura"); lsSet("chispa.captura", null);
+  for (let i = 0; i < Math.max(c.fotos || 0, nFotosGuardadas); i++) idb.quitarBlob(`borrador/foto-${i}`).catch(() => {});
+  idb.quitarBlob("borrador/audio").catch(() => {}); nFotosGuardadas = 0;
+}
+async function leerCapturaGuardada(){
+  const c = lsGet("chispa.captura"); if (!c) return null;
+  c.blobsFotos = []; for (let i = 0; i < (c.fotos || 0); i++){ const b = await idb.blob(`borrador/foto-${i}`).catch(() => null); if (b) c.blobsFotos.push(b); }
+  c.blobAudio = c.audio ? await idb.blob("borrador/audio").catch(() => null) : null;
+  return c;
+}
+async function recuperarCaptura(c){
+  if (!c) return;
+  $("#cTitulo").value = c.titulo || ""; $("#cTexto").value = c.texto || ""; crecerTitulo($("#cTitulo")); autoAlto();
+  if (c.ambito) setAmbito(c.ambito);
+  borrador.fotos = c.blobsFotos || []; if (c.blobAudio){ borrador.audio = c.blobAudio; borrador.dur = c.dur || ""; borrador.transcripcion = c.transcripcion || ""; }
+  trazos = c.trazos || []; rehechos = []; redibujar();
+  pintarAdjuntos(); pintarDetectado(); tocado = true;
+  await guardarCapturaLocal();
+  toast("Recuperado lo que estabas escribiendo", "deshacer", 4500);
+}
 function textoBorrador(){ return [$("#cTitulo").value, $("#cTexto").value, borrador?.transcripcion].filter(Boolean).join(" "); }
 function pintarDetectado(){
   const s = sugerir(textoBorrador()), out = [];
@@ -1146,16 +1193,16 @@ function ajustarLienzo(){ const r = cv.getBoundingClientRect(), k = devicePixelR
     for (const ev of e.getCoalescedEvents ? e.getCoalescedEvents() : [e]) actual.p.push(p(ev));
     redibujar();
   });
-  const fin = e => { if (actual && e.pointerId === actual.id){ delete actual.id; actual = null; redibujar(); } };
+  const fin = e => { if (actual && e.pointerId === actual.id){ delete actual.id; actual = null; redibujar(); guardarCapturaPronto(); } };
   cv.addEventListener("pointerup", fin); cv.addEventListener("pointercancel", fin);
 })();
 // Herramientas
 $("#hDeshacer").innerHTML = ic("deshacer"); $("#hRehacer").innerHTML = ic("rehacer"); $("#hGoma").innerHTML = ic("goma"); $("#hBorrar").innerHTML = ic("borrar");
 const guardarPincel = () => { lsSet("chispa.pincel", pincel); pintarHerr(); };
-$("#hDeshacer").onclick = () => { if (trazos.length){ rehechos.push(trazos.pop()); redibujar(); } };
-$("#hRehacer").onclick = () => { if (rehechos.length){ trazos.push(rehechos.pop()); redibujar(); } };
-$("#hBorrar").onclick = () => { if (!trazos.length) return; const antes = trazos; trazos = []; rehechos = []; redibujar();
-  toast("Dibujo borrado", "borrar", 5000, () => { trazos = antes; redibujar(); }); };
+$("#hDeshacer").onclick = () => { if (trazos.length){ rehechos.push(trazos.pop()); redibujar(); guardarCapturaPronto(); } };
+$("#hRehacer").onclick = () => { if (rehechos.length){ trazos.push(rehechos.pop()); redibujar(); guardarCapturaPronto(); } };
+$("#hBorrar").onclick = () => { if (!trazos.length) return; const antes = trazos; trazos = []; rehechos = []; redibujar(); guardarCapturaPronto();
+  toast("Dibujo borrado", "borrar", 5000, () => { trazos = antes; redibujar(); guardarCapturaPronto(); }); };
 $("#hGoma").onclick = () => { pincel.goma = !pincel.goma; cerrarPinceles(); guardarPincel(); };
 function cerrarPinceles(){ $("#pinceles").classList.add("oculto"); }
 function pintarPinceles(){
@@ -1179,7 +1226,7 @@ async function trazoComoImagen(){
 }
 $("#bLimpiar").onclick = () => { if (vacio() || confirm("¿Descartar lo que llevas y empezar de nuevo?")){ if (rec){ descartarVoz = true; pararVoz(); } nuevoBorrador(); } };
 $("#bFoto").onclick = () => { tocado = true; $("#inFoto").click(); };
-$("#inFoto").onchange = async () => { for (const f of $("#inFoto").files) borrador.fotos.push(await reducirFoto(f)); $("#inFoto").value = ""; pintarAdjuntos(); };
+$("#inFoto").onchange = async () => { for (const f of $("#inFoto").files) borrador.fotos.push(await reducirFoto(f)); $("#inFoto").value = ""; pintarAdjuntos(); guardarCapturaPronto(); };
 
 // Voz: guarda el audio original, muestra el nivel en vivo y transcribe si el móvil puede
 let rec = null, sr = null, trozos = [], t0 = 0, alParar = null, actx = null, raf = 0, descartarVoz = false;
@@ -1189,7 +1236,7 @@ async function empezarVoz(){
     trozos = []; t0 = Date.now(); descartarVoz = false; rec = new MediaRecorder(stream);
     rec.ondataavailable = e => e.data.size && trozos.push(e.data);
     rec.onstop = () => { stream.getTracks().forEach(t => t.stop()); cancelAnimationFrame(raf); try { actx && actx.close(); } catch(e){} actx = null;
-      if (!descartarVoz){ borrador.audio = new Blob(trozos, {type: rec.mimeType || trozos[0]?.type || "audio/webm"});
+      if (!descartarVoz){ borrador.audio = new Blob(trozos, {type: rec.mimeType || trozos[0]?.type || "audio/webm"}); setTimeout(guardarCapturaPronto, 300);
         const s = Math.round((Date.now() - t0) / 1000); borrador.dur = `${Math.floor(s/60)}:${pad(s%60)}`; }
       rec = null; $("#grab").classList.add("oculto"); pintarAdjuntos(); pintarDetectado();
       if (alParar){ const f = alParar; alParar = null; f(); } };
@@ -1258,7 +1305,7 @@ async function guardarCaptura(){
 $("#bGuardar").onclick = guardarCaptura;
 document.addEventListener("keydown", e => {
   if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && vista === "anotar" && !$("#hEditar").classList.contains("on")) guardarCaptura();
-  if (e.key === "Escape"){ cerrarHojas(); }
+  if (e.key === "Escape"){ cerrarSegun(); }
 });
 
 // Ancla
@@ -1420,8 +1467,9 @@ function verImagen(src){ if (src){ $("#visor img").src = src; $("#visor").style.
 /* ================= Hojas ================= */
 function abrirHoja(sel){ $("#velo").classList.add("on"); $(sel).classList.add("on"); }
 function cerrarHojas(){ $("#velo").classList.remove("on"); document.querySelectorAll(".hoja.on").forEach(h => h.classList.remove("on")); pausarAudio(); }
-$("#velo").onclick = cerrarHojas;
-document.querySelectorAll(".hoja .asa").forEach(a => a.onclick = cerrarHojas);
+const cerrarSegun = () => $("#hEditar").classList.contains("on") ? cerrarEditorGuardando() : cerrarHojas();
+$("#velo").onclick = cerrarSegun;
+document.querySelectorAll(".hoja .asa").forEach(a => a.onclick = cerrarSegun);
 
 /* ================= Editar ================= */
 let eItems = [], verHechos = false;
@@ -1502,7 +1550,10 @@ let editando = null, eAdj = null, eTipoSel = "nota", eAmbSel = "trabajo", audioE
 document.querySelectorAll("[data-i]").forEach(s => s.outerHTML = ic(s.dataset.i));
 $("#eCerrar").innerHTML = ic("x"); $("#eBorrar").innerHTML = ic("borrar") + "<span>Borrar</span>"; $("#eAddFoto").innerHTML = ic("camara") + "Añadir foto";
 $("#eAddFoto").onclick = () => $("#eInFoto").click();
-$("#eCerrar").onclick = cerrarHojas;
+$("#eCerrar").onclick = () => {
+  if (hayCambiosEdicion() && !confirm("¿Salir sin guardar los cambios?")) return;
+  olvidarEdicion(); cerrarHojas();
+};
 function pintarOpciones(){
   $("#eAmbito").innerHTML = ["trabajo", "personal"].map(a => `<button class="opc ${eAmbSel === a ? "on" : ""}" data-amb="${a}">${a === "trabajo" ? "Trabajo" : "Personal"}</button>`).join("");
   $("#eTipo").innerHTML = Object.entries(TIPOS).map(([k, [t]]) => `<button class="opc ${eTipoSel === k ? "on" : ""}" data-tipo="${k}">${t}</button>`).join("");
@@ -1517,7 +1568,30 @@ $("#hEditar").addEventListener("click", e => {
 });
 $("#eFecha").addEventListener("input", pintarOpciones);
 $("#eCat").addEventListener("change", () => { if ($("#eCat").value === "personal"){ eAmbSel = "personal"; pintarOpciones(); } });
-function abrirEdicion(n){
+let firmaInicial = "", tEdicion = 0;
+function camposEditor(){
+  const nuevo = $("#eNuevoItem")?.value.trim(), items = nuevo ? [...eItems, {hecho: false, texto: nuevo}] : eItems;
+  return {texto: items.length ? unirLista($("#eTexto").value, items) : $("#eTexto").value.trim(), titulo: $("#eTitulo").value.trim(), tipo: eTipoSel, ambito: eAmbSel,
+    para: {categoria: $("#eCat").value, nombre: $("#eNombre").value.trim()}, fecha: $("#eFecha").value || null, hora: $("#eHora").value || null};
+}
+const firmaEditor = () => JSON.stringify(camposEditor());
+const hayCambiosEdicion = () => !!editando && $("#hEditar").classList.contains("on") && (firmaEditor() !== firmaInicial || eAdj.nuevas.length > 0 || eAdj.quitar.length > 0);
+// Copia de seguridad de los cambios mientras se edita (por si la app se cierra)
+function guardarEdicionPronto(){ clearTimeout(tEdicion); tEdicion = setTimeout(() => {
+  if (!editando) return;
+  if (firmaEditor() !== firmaInicial) lsSet("chispa.edicion", {id: editando.id, campos: camposEditor(), t: Date.now()});
+  else if (lsGet("chispa.edicion")?.id === editando.id) lsSet("chispa.edicion", null);
+}, 500); }
+["input", "change", "click"].forEach(ev => $("#hEditar").addEventListener(ev, () => { if (editando) guardarEdicionPronto(); }));
+function olvidarEdicion(){ clearTimeout(tEdicion); lsSet("chispa.edicion", null); }
+function avisarEdicionPendiente(){
+  const d = lsGet("chispa.edicion"), n = d && notas.find(x => x.id === d.id && !x._borrar);
+  if (!d) return; if (!n){ lsSet("chispa.edicion", null); return; }
+  toast(`Tenías cambios sin guardar en «${(d.campos.titulo || tituloPlano(n) || "una nota").slice(0, 40)}»`, "deshacer", 9000, () => { ver("notas"); abrirEdicion(n); }, "Abrir");
+}
+// Cerrar tocando fuera o el asa: se guardan los cambios. La X pregunta antes de descartarlos.
+async function cerrarEditorGuardando(){ if (hayCambiosEdicion()){ await guardarEdicion(); toast("Cambios guardados", "check"); } else { olvidarEdicion(); cerrarHojas(); } }
+function abrirEdicion(n, original){
   if (!n) return;
   editando = n; eTipoSel = n.tipo || "nota"; eAmbSel = n.ambito || "trabajo";
   eAdj = {audio: n.audio || null, fotos: [...(n.fotos || [])], nuevas: [], quitar: []};
@@ -1526,7 +1600,7 @@ function abrirEdicion(n){
   // Título: el propio, o (en notas antiguas de lista) la línea que lo hacía de título
   let titulo = n.titulo || "";
   if (!titulo && eItems.length && pl.intro && !pl.intro.includes("\n")){ titulo = pl.intro; $("#eTexto").value = ""; }
-  $("#eTitulo").value = n.ancla && !n.titulo ? "" : titulo;
+  $("#eTitulo").value = n.ancla && !n.titulo ? "" : titulo; requestAnimationFrame(() => crecerTitulo($("#eTitulo")));
   const conLista = eItems.length > 0;
   $("#eTexto").placeholder = conLista ? "Notas sobre la lista (opcional)" : "Escribe la nota"; $("#eTexto").classList.toggle("corto", conLista && !$("#eTexto").value); $("#eTexto").rows = conLista && !$("#eTexto").value ? 1 : 3;
   $("#eCat").value = n.para?.categoria || ""; $("#eNombre").value = n.para?.nombre || ""; $("#eFecha").value = n.fecha || ""; $("#eHora").value = n.hora || "";
@@ -1542,6 +1616,14 @@ function abrirEdicion(n){
   pintarOpciones(); pintarAdjEdicion();
   $("#eSugs").innerHTML = "";
   abrirHoja("#hEditar"); $("#hEditar").scrollTop = 0;
+  if (!original){
+    firmaInicial = firmaEditor();
+    const d = lsGet("chispa.edicion");
+    if (d?.id === n.id && JSON.stringify(d.campos) !== firmaInicial){
+      const c = {...n, ...d.campos, para: d.campos.para}; if (!d.campos.titulo) delete c.titulo;
+      abrirEdicion(c, n); toast("Recuperados los cambios que no llegaste a guardar", "deshacer", 5000); return;
+    }
+  }
   requestAnimationFrame(() => { const t = $("#eTexto"); t.style.height = "auto"; t.style.height = Math.max(t.classList.contains("corto") ? 26 : 80, t.scrollHeight) + "px"; });
 }
 // Sugerencias de contactos bajo el campo (sin tapar el teclado ni el campo)
@@ -1594,7 +1676,7 @@ function pintarAdjEdicion(){
   if (!eAdj.audio && !eAdj.fotos.length && !eAdj.nuevas.length) g.innerHTML = `<div class="sin-adj">Esta nota no tiene audio ni fotos.</div>`;
 }
 $("#eInFoto").onchange = async () => { for (const f of $("#eInFoto").files) eAdj.nuevas.push(await reducirFoto(f)); $("#eInFoto").value = ""; pintarAdjEdicion(); };
-$("#eBorrar").onclick = () => { if (confirm("¿Borrar esta nota? Irá a la Papelera de Chispa en tu OneDrive.")){ cerrarHojas(); borrarNota(editando); } };
+$("#eBorrar").onclick = () => { if (confirm("¿Borrar esta nota? Irá a la Papelera de Chispa en tu OneDrive.")){ olvidarEdicion(); cerrarHojas(); borrarNota(editando); } };
 $("#eHecha").onclick = async () => { editando.hecha = !editando.hecha; editando.hechaEn = editando.hecha ? new Date().toISOString() : null; await guardarEdicion(); toast(editando.hecha ? "Hecha" : "Pendiente de nuevo"); };
 $("#eGuardar").onclick = async () => { await guardarEdicion(); toast("Cambios guardados"); };
 $("#eCompartir").innerHTML = ic("compartir") + `<span class="largo">Compartir</span>`;
@@ -1711,17 +1793,19 @@ async function compartirArchivo(blob, nombre, titulo){
     const datos = await new Promise(r => { const f = new FileReader(); f.onload = () => r(String(f.result).split(",")[1]); f.readAsDataURL(blob); });
     const nat = nativo("ChispaNativo");
     const pedirActualizar = () => toast("Para compartir notas, actualiza la app a la última versión", "subir", 9000, actualizarApp, "Actualizar");
-    if (typeof nat?.compartirArchivo !== "function"){ pedirActualizar(); return; }   // app anterior a la 1.0.8
+    if (typeof nat?.compartirArchivo !== "function" || (infoApp?.codigo && infoApp.codigo < 9)){ pedirActualizar(); return; }   // compartir funciona desde la 1.0.9
     try { await nat.compartirArchivo({nombre, datos, tipo: blob.type || "application/pdf", asunto: titulo}); return; }
-    catch(e){ if (/not implemented|not a function/i.test(String(e?.message || e))){ pedirActualizar(); return; } throw e; }
+    catch(e){ if (/not implemented|not a function|FILE_PROVIDER/i.test(String(e?.message || e))){ pedirActualizar(); return; } throw e; }
   }
   const archivo = new File([blob], nombre, {type: blob.type || "application/pdf"});
-  if (navigator.canShare?.({files: [archivo]})){ try { await navigator.share({files: [archivo], title: titulo}); return; } catch(e){ if (e.name === "AbortError") return; } }
+  // en el móvil, menú «Compartir» del sistema; en el PC se descarga directamente
+  if (esMovil() && navigator.canShare?.({files: [archivo]})){ try { await navigator.share({files: [archivo], title: titulo}); return; } catch(e){ if (e.name === "AbortError") return; } }
   const a = document.createElement("a"); a.href = URL.createObjectURL(archivo); a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 60000); toast("PDF descargado", "check");
 }
 async function guardarEdicion(){
   const n = editando; if (!n) return;
+  olvidarEdicion();
   const nuevoPunto = $("#eNuevoItem")?.value.trim(); if (nuevoPunto) eItems.push({hecho: false, texto: nuevoPunto});
   n.texto = eItems.length ? unirLista($("#eTexto").value, eItems) : $("#eTexto").value.trim(); n.ambito = eAmbSel; n.tipo = eTipoSel;
   const tit = $("#eTitulo").value.trim(); if (tit) n.titulo = tit; else delete n.titulo;
@@ -1864,7 +1948,7 @@ async function procesarEntrada(d){
   else if (d.accion === "nota"){ const n = notas.find(x => x.id === d.nota); if (n){ ver("hoy"); abrirEdicion(n); } }
   else if (d.accion === "compartir"){
     ver("anotar");
-    if (d.asunto && !$("#cTitulo").value) $("#cTitulo").value = d.asunto;
+    if (d.asunto && !$("#cTitulo").value){ $("#cTitulo").value = d.asunto; crecerTitulo($("#cTitulo")); }
     if (d.texto) $("#cTexto").value = ($("#cTexto").value ? $("#cTexto").value + "\n" : "") + d.texto;
     for (const u of d.imagenes || []){ try { borrador.fotos.push(await reducirFoto(await (await fetch(u)).blob())); } catch(e){} }
     tocado = true; autoAlto(); pintarAdjuntos(); pintarDetectado();
@@ -1874,7 +1958,7 @@ async function procesarEntrada(d){
 // Nota que nace de una llamada: título «Llamada con X» y, si X es un contacto conocido, «para quién»
 function deLlamada(d){
   const quien = (d.quien || "").trim();
-  if (!$("#cTitulo").value) $("#cTitulo").value = quien ? `Llamada con ${quien}` : "Llamada";
+  if (!$("#cTitulo").value){ $("#cTitulo").value = quien ? `Llamada con ${quien}` : "Llamada"; crecerTitulo($("#cTitulo")); }
   if (quien && /[a-záéíóúñ]/i.test(quien)){
     const cont = config.contactos || {}, cat = ["cliente","proveedor","companero"].find(c => (cont[c] || []).some(x => norm(x) === norm(quien)));
     borrador.para = {categoria: cat || "", nombre: quien};
@@ -2369,7 +2453,7 @@ function pintarAyuda(){
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
-  <h3>Novedades</h3><p><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
@@ -2402,7 +2486,10 @@ function pintarAyuda(){
   $("#app").classList.remove("oculto");
   ver(esMovil() ? "anotar" : "hoy");
   addEventListener("resize", () => { prepararTeclado(); ajustarLienzo(); aplicarTema(); pintarEstado(); });
+  const capturaPrevia = await leerCapturaGuardada();
   nuevoBorrador(); ajustarLienzo();
+  if (capturaPrevia) await recuperarCaptura(capturaPrevia);
+  avisarEdicionPendiente();
   if (!disp.terminal){ disp.terminal = esMovil() ? "Móvil" : "PC"; lsSet("chispa.disp", disp); }   // nombre por defecto, cambiable en Ajustes
   if (accion === "ancla"){ anclaAbierta = null; await guardarAncla(new Date(), true); }
   if (accion === "voz"){ tocado = true; empezarVoz(); }
