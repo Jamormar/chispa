@@ -135,6 +135,9 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .pfila button{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--raise)}
 .pfila button.on{outline:2.5px solid var(--spark);outline-offset:1px}
 .pfila .muestra{display:block;border-radius:50%}
+.pista.sobre{background:transparent;align-items:flex-end;justify-content:flex-start;padding:10px}
+.pista-lz{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;background:color-mix(in srgb,var(--surface) 88%,transparent);color:var(--text);font-weight:600;font-size:14px;box-shadow:0 4px 14px rgba(10,16,32,.1)}
+.pista-lz svg{width:18px;height:18px}
 .pista{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--faint);pointer-events:none;font-size:14.5px}
 .pista svg{width:26px;height:26px}
 .adj{display:flex;gap:8px;padding:0 18px 10px;overflow-x:auto}
@@ -271,6 +274,9 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .galeria img{width:118px;height:118px;border-radius:16px;object-fit:cover;background:var(--raise);display:block;cursor:zoom-in}
 .galeria .x{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:10px;background:rgba(10,15,28,.6);color:#fff;display:grid;place-items:center;backdrop-filter:blur(6px)}
 .galeria .x svg{width:15px;height:15px}
+.galeria .anotar{position:absolute;left:6px;bottom:6px;height:28px;padding:0 9px;border-radius:10px;background:rgba(10,15,28,.62);color:#fff;display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;backdrop-filter:blur(6px)}
+.galeria .anotar svg{width:14px;height:14px}
+.h4-b{display:inline-flex;gap:14px;margin-left:auto}
 .galeria .add{width:118px;height:118px;border-radius:16px;border:1.5px dashed var(--line);color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:13px;flex:none}
 .player{display:flex;align-items:center;gap:12px;background:var(--raise);border-radius:16px;padding:10px 12px;margin-top:10px}
 .player .pp{width:40px;height:40px;border-radius:50%;background:var(--ink);color:var(--on-ink);display:grid;place-items:center;flex:none}
@@ -465,6 +471,41 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .ajuste .estado-t.ok{color:var(--home)}
 .transcribiendo{display:inline-flex;align-items:center;gap:6px;color:var(--spark-text);font-size:13px}
 .toast svg{width:18px;height:18px;color:var(--spark)}
+/* Lienzo a pantalla completa */
+html.lz-on,html.lz-on body{overflow:hidden}
+.lz{position:fixed;inset:0;z-index:95;background:var(--bg);display:flex;flex-direction:column}
+.lz-top{display:flex;align-items:center;gap:4px;padding:calc(8px + env(safe-area-inset-top)) 10px 8px;background:var(--surface);border-bottom:1px solid var(--line)}
+.lz-tit{flex:1;font-family:var(--display);font-weight:600;font-size:17px;padding-left:6px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lz-b{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:var(--text);flex:none}
+.lz-b svg{width:21px;height:21px}
+.lz-b:disabled{opacity:.3}
+.lz-top .btn{margin-left:4px}
+.lz-zona{flex:1;position:relative;min-height:0}
+#lzCanvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+#lzCanvas[data-herr=mover]{cursor:grab}
+#lzCanvas[data-herr=texto]{cursor:text}
+.lz-bar{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px 4px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line)}
+.lz-bar::-webkit-scrollbar{display:none}
+@media (min-width:700px){ .lz-bar{justify-content:center} }
+.lz-h{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:var(--text);flex:none}
+.lz-h svg{width:22px;height:22px}
+.lz-h.on{background:var(--spark-soft);color:var(--spark-text)}
+.lz-sep{width:1px;height:26px;background:var(--line);margin:0 4px;flex:none}
+.lz-sel{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:3}
+.lz-sel .btn{height:38px;box-shadow:0 4px 14px rgba(10,16,32,.12)}
+.lz-pop{position:absolute;z-index:4;bottom:10px;left:10px;right:auto}
+.lz .pinceles{position:absolute;left:auto;right:10px;bottom:10px}
+.lz-img-menu{right:10px;left:auto;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:6px;box-shadow:0 10px 30px rgba(10,16,32,.16);display:flex;flex-direction:column;min-width:230px}
+.lz-img-menu button{display:flex;align-items:center;gap:12px;height:48px;padding:0 12px;border-radius:12px;font-size:15px;color:var(--text);text-align:left}
+.lz-img-menu button:active{background:var(--raise)}
+.lz-img-menu svg{width:20px;height:20px;color:var(--muted)}
+.lz-texto{left:10px;right:10px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px;box-shadow:0 10px 30px rgba(10,16,32,.16)}
+.lz-texto textarea{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:10px 12px;font:inherit;font-size:16px;color:var(--text);resize:none;outline:0}
+.lz-texto-b{display:flex;gap:8px;margin-top:8px;align-items:center}
+.lz-recorte{position:absolute;inset:0;z-index:6;background:#0b0f1a;display:flex;flex-direction:column}
+.lz-rec-tit{color:#e8ecf4;text-align:center;padding:calc(14px + env(safe-area-inset-top)) 16px 6px;font-size:14.5px}
+#lzRecCanvas{flex:1;width:100%;min-height:0;touch-action:none}
+.lz-rec-b{display:flex;gap:8px;align-items:center;padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
 </style>
 </head>
 <body>
@@ -509,6 +550,8 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
           <canvas id="lienzo"></canvas>
           <div class="pista" id="pista"></div>
           <div class="herr" id="herr" role="toolbar" aria-label="Herramientas de dibujo">
+            <button class="hb" id="hAmpliar" aria-label="Abrir el lienzo grande" title="Abrir el lienzo grande: zoom, imágenes, flechas y texto"></button>
+            <span class="hsep"></span>
             <button class="hb" id="hDeshacer" aria-label="Deshacer el último trazo" title="Deshacer el último trazo"></button>
             <button class="hb" id="hRehacer" aria-label="Rehacer" title="Rehacer"></button>
             <span class="hsep"></span>
@@ -587,7 +630,7 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
       <div id="eHechos"></div>
     </section>
     <section class="esec">
-      <h4>Adjuntos<button class="enl" id="eAddFoto"></button></h4>
+      <h4>Adjuntos<span class="h4-b"><button class="enl" id="eAddDibujo"></button><button class="enl" id="eAddFoto"></button></span></h4>
       <div id="eAudio"></div>
       <div class="galeria" id="eFotos"></div>
       <input type="file" id="eInFoto" accept="image/*" multiple class="oculto">
@@ -617,12 +660,46 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
   <div class="hpie"><button class="btn sec" id="aSaltar">Así vale</button><div class="esp"></div><button class="btn" id="aOk">Guardar palabra</button></div>
 </div>
 
+<!-- Lienzo a pantalla completa -->
+<div id="lz" class="lz oculto" role="dialog" aria-label="Lienzo">
+  <div class="lz-top">
+    <button class="lz-b" id="lzCancelar" aria-label="Salir sin guardar" title="Salir sin guardar"></button>
+    <div class="lz-tit" id="lzTit">Lienzo</div>
+    <button class="lz-b" id="lzDeshacer" aria-label="Deshacer" title="Deshacer (Ctrl+Z)"></button>
+    <button class="lz-b" id="lzRehacer" aria-label="Rehacer" title="Rehacer (Ctrl+Y)"></button>
+    <button class="lz-b" id="lzAjustar" aria-label="Ver todo" title="Ver todo"></button>
+    <button class="btn" id="lzListo">Listo</button>
+  </div>
+  <div class="lz-zona">
+    <canvas id="lzCanvas"></canvas>
+    <div class="lz-sel oculto" id="lzSel"><button class="btn sec" id="lzDelante">Delante</button><button class="btn sec" id="lzQuitarSel">Quitar</button></div>
+    <div class="lz-pop pinceles oculto" id="lzPinceles" role="dialog" aria-label="Grosor y color"><div class="pfila" id="lzGrosor"></div><div class="pfila" id="lzColor"></div></div>
+    <div class="lz-pop lz-img-menu oculto" id="lzImgMenu" role="menu">
+      <button data-img="camara"><span data-i="camara"></span>Hacer foto</button>
+      <button data-img="galeria"><span data-i="imagen"></span>Elegir de la galería</button>
+      <button data-img="pegar"><span data-i="pegar"></span>Pegar imagen copiada</button>
+    </div>
+    <div class="lz-pop lz-texto oculto" id="lzTexto" role="dialog" aria-label="Texto">
+      <textarea id="lzTextoIn" rows="2" placeholder="Escribe la indicación"></textarea>
+      <div class="lz-texto-b"><button class="btn sec" id="lzTextoQuitar">Quitar</button><div class="esp"></div><button class="btn sec" id="lzTextoNo">Cancelar</button><button class="btn" id="lzTextoOk">Poner</button></div>
+    </div>
+  </div>
+  <div class="lz-bar" id="lzHerr" role="toolbar" aria-label="Herramientas"></div>
+  <input type="file" id="lzInCam" accept="image/*" capture="environment" class="oculto">
+  <input type="file" id="lzInGal" accept="image/*" class="oculto">
+  <div class="lz-recorte oculto" id="lzRecorte" role="dialog" aria-label="Recortar imagen">
+    <div class="lz-rec-tit">Recorta la imagen arrastrando las esquinas</div>
+    <canvas id="lzRecCanvas"></canvas>
+    <div class="lz-rec-b"><button class="btn sec" id="lzRecNo">Cancelar</button><div class="esp"></div><button class="btn sec" id="lzRecEntera">Usar entera</button><button class="btn" id="lzRecOk">Recortar</button></div>
+  </div>
+</div>
+
 <div id="visor"><img alt=""></div>
 <div class="toast" id="toast"></div>
 
 <script>
 "use strict";
-const VERSION = "0.11.1";
+const VERSION = "0.12";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -671,6 +748,15 @@ const ICONOS = {
   coche: '<path d="M4 16.5V12l2-5.2A2 2 0 0 1 7.9 5.5h8.2a2 2 0 0 1 1.9 1.3L20 12v4.5M3.5 12h17M4 16.5h16"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/>',
   deshacer: '<path d="M4 9.5h10.5a5 5 0 0 1 0 10H11M4 9.5l4-4M4 9.5l4 4"/>',
   compartir: '<path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 12.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-6.5"/>',
+  mano: '<path d="M8 12.5V5.8a1.4 1.4 0 0 1 2.8 0V11M10.8 10.5V4.4a1.4 1.4 0 0 1 2.8 0v6.1M13.6 10.6V6a1.4 1.4 0 0 1 2.8 0v7.5a6.5 6.5 0 0 1-6.5 6.5h-.4a6 6 0 0 1-4.7-2.3l-1.9-2.5a1.4 1.4 0 0 1 2.1-1.8L8 15.2"/>',
+  rotu: '<path d="M14.5 4.5l5 5-7.2 7.2H7.3v-5zM7.3 16.7 4.5 19.5h5.3"/>',
+  flecha: '<path d="M5 19 18.5 5.5M10 5h9v9"/>',
+  rect: '<rect x="4" y="6" width="16" height="12" rx="2"/>',
+  elipse: '<ellipse cx="12" cy="12" rx="8.5" ry="6.5"/>',
+  texto: '<path d="M5 7V5h14v2M12 5v14M9.5 19h5"/>',
+  ampliar: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  ajustar: '<path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/><rect x="8.5" y="8.5" width="7" height="7" rx="1.2"/>',
+  pegar: '<rect x="6" y="4.5" width="12" height="16" rx="2"/><path d="M9.5 4.5V3h5v1.5M9 10h6M9 14h6"/>',
   abajo: '<path d="M6 9.5l6 6 6-6"/>',
   rehacer: '<path d="M20 9.5H9.5a5 5 0 0 0 0 10H13M20 9.5l-4-4M20 9.5l-4 4"/>',
   goma: '<path d="M8.5 20H20M4.6 14.6l8.8-8.8a2 2 0 0 1 2.8 0l2.5 2.5a2 2 0 0 1 0 2.8L11 19.4a2 2 0 0 1-1.4.6H8.3a2 2 0 0 1-1.4-.6l-2.3-2.3a2 2 0 0 1 0-2.5zM9 10l5 5"/>'
@@ -886,7 +972,7 @@ async function sincronizar(forzar = false){
   try {
     for (const n of notas.filter(x => x._borrar && Date.now() - (x._borrarEn || 0) > 7000)){
       try {
-        if (n._etag) for (const r of [`Notas/${n.id}.json`, n.audio, ...(n.fotos || [])].filter(Boolean)) await aPapelera(r);
+        if (n._etag) for (const r of [`Notas/${n.id}.json`, n.audio, ...(n.fotos || []), ...Object.values(n.lienzos || {})].filter(Boolean)) await aPapelera(r);
         for (const r of n._subir || []) await idb.quitarBlob(r);
         await idb.quitar(n.id); notas = notas.filter(x => x !== n);
       } catch(e){ if (e.login) throw e; fallos.push(e.message); }
@@ -1063,12 +1149,12 @@ $("#ondas").innerHTML = "<i></i>".repeat(36);
 $("#icBusca").innerHTML = ic("buscar");
 
 function nuevoBorrador(){
-  borrador = {audio: null, dur: "", transcripcion: "", fotos: [], trazo: false}; ignorar = {};
+  borrador = {audio: null, dur: "", transcripcion: "", fotos: [], trazo: false, lienzo: null}; ignorar = {};
   $("#cTexto").value = ""; $("#cTitulo").value = ""; crecerTitulo($("#cTitulo")); autoAlto(); limpiarLienzo(); pintarAdjuntos(); pintarDetectado(); setAmbito(disp.ambito || "trabajo");
   borrarCapturaGuardada();
   tocado = false; anclaAbierta = esNoche() && esMovil() ? new Date() : null;
 }
-const vacio = () => !$("#cTexto").value.trim() && !$("#cTitulo").value.trim() && !borrador.audio && !borrador.fotos.length && !borrador.trazo && !rec;
+const vacio = () => !$("#cTexto").value.trim() && !$("#cTitulo").value.trim() && !borrador.audio && !borrador.fotos.length && !borrador.trazo && !borrador.lienzo && !rec;
 function setAmbito(a){ document.querySelectorAll("#cAmbito button").forEach(b => b.classList.toggle("on", b.dataset.a === a)); }
 const ambitoSel = () => document.querySelector("#cAmbito button.on")?.dataset.a || "trabajo";
 document.querySelectorAll("#cAmbito button").forEach(b => b.onclick = () => { tocado = true; setAmbito(b.dataset.a); });
@@ -1098,14 +1184,15 @@ let tCaptura = 0, nFotosGuardadas = 0;
 function guardarCapturaPronto(){ clearTimeout(tCaptura); tCaptura = setTimeout(guardarCapturaLocal, 600); }
 async function guardarCapturaLocal(){
   if (!borrador) return;
-  if (vacio() && !trazos.length){ borrarCapturaGuardada(); return; }
+  if (vacio() && !trazos.length && !borrador.lienzo){ borrarCapturaGuardada(); return; }
   try {
     for (let i = 0; i < borrador.fotos.length; i++) await idb.ponerBlob(`borrador/foto-${i}`, borrador.fotos[i]);
     for (let i = borrador.fotos.length; i < nFotosGuardadas; i++) await idb.quitarBlob(`borrador/foto-${i}`);
     nFotosGuardadas = borrador.fotos.length;
     if (borrador.audio) await idb.ponerBlob("borrador/audio", borrador.audio); else await idb.quitarBlob("borrador/audio");
+    if (borrador.lienzo) await idb.ponerBlob("borrador/lienzo", new Blob([JSON.stringify(docLimpio(borrador.lienzo))], {type: "application/json"})); else await idb.quitarBlob("borrador/lienzo");
     lsSet("chispa.captura", {titulo: $("#cTitulo").value, texto: $("#cTexto").value, ambito: ambitoSel(), trazos: trazos.filter(t => !("id" in t)),
-      fotos: borrador.fotos.length, audio: !!borrador.audio, dur: borrador.dur, transcripcion: borrador.transcripcion, t: Date.now()});
+      fotos: borrador.fotos.length, audio: !!borrador.audio, lienzo: !!borrador.lienzo, dur: borrador.dur, transcripcion: borrador.transcripcion, t: Date.now()});
   } catch(e){}
 }
 function borrarCapturaGuardada(){
@@ -1113,12 +1200,13 @@ function borrarCapturaGuardada(){
   if (!lsGet("chispa.captura")) return;
   const c = lsGet("chispa.captura"); lsSet("chispa.captura", null);
   for (let i = 0; i < Math.max(c.fotos || 0, nFotosGuardadas); i++) idb.quitarBlob(`borrador/foto-${i}`).catch(() => {});
-  idb.quitarBlob("borrador/audio").catch(() => {}); nFotosGuardadas = 0;
+  idb.quitarBlob("borrador/audio").catch(() => {}); idb.quitarBlob("borrador/lienzo").catch(() => {}); nFotosGuardadas = 0;
 }
 async function leerCapturaGuardada(){
   const c = lsGet("chispa.captura"); if (!c) return null;
   c.blobsFotos = []; for (let i = 0; i < (c.fotos || 0); i++){ const b = await idb.blob(`borrador/foto-${i}`).catch(() => null); if (b) c.blobsFotos.push(b); }
   c.blobAudio = c.audio ? await idb.blob("borrador/audio").catch(() => null) : null;
+  if (c.lienzo) try { c.doc = JSON.parse(await (await idb.blob("borrador/lienzo")).text()); } catch(e){}
   return c;
 }
 async function recuperarCaptura(c){
@@ -1126,7 +1214,7 @@ async function recuperarCaptura(c){
   $("#cTitulo").value = c.titulo || ""; $("#cTexto").value = c.texto || ""; crecerTitulo($("#cTitulo")); autoAlto();
   if (c.ambito) setAmbito(c.ambito);
   borrador.fotos = c.blobsFotos || []; if (c.blobAudio){ borrador.audio = c.blobAudio; borrador.dur = c.dur || ""; borrador.transcripcion = c.transcripcion || ""; }
-  trazos = c.trazos || []; rehechos = []; redibujar();
+  trazos = c.trazos || []; rehechos = []; if (c.doc) borrador.lienzo = c.doc; redibujar();
   pintarAdjuntos(); pintarDetectado(); tocado = true;
   await guardarCapturaLocal();
   toast("Recuperado lo que estabas escribiendo", "deshacer", 4500);
@@ -1176,6 +1264,12 @@ function pintarTrazo(g, t, k, exportar){
 }
 function redibujar(){
   cx.clearRect(0, 0, cv.width, cv.height);
+  if (borrador?.lienzo){   // ya hay un lienzo grande: aquí solo se ve en pequeño
+    borrador.trazo = true; previaLienzo(cv, borrador.lienzo); cargarImgsDoc(borrador.lienzo).then(() => { if (borrador?.lienzo) previaLienzo(cv, borrador.lienzo); });
+    $("#pista").innerHTML = `<span class="pista-lz">${ic("ampliar")}Toca para seguir en el lienzo</span>`; $("#pista").classList.remove("oculto"); $("#pista").classList.add("sobre");
+    pintarHerr(); return;
+  }
+  $("#pista").classList.remove("sobre"); if ($("#pista .pista-lz")) $("#pista").innerHTML = ic("pluma") + "<span>O escribe aquí a mano, con el dedo</span>";
   const k = cv.width / (cv.getBoundingClientRect().width || 1);
   for (const t of trazos) pintarTrazo(cx, t, k, false);
   const hay = trazos.some(t => !t.goma);
@@ -1184,7 +1278,10 @@ function redibujar(){
   pintarHerr();
 }
 function pintarHerr(){
-  $("#hDeshacer").disabled = !trazos.length; $("#hRehacer").disabled = !rehechos.length; $("#hBorrar").disabled = !trazos.length;
+  const conLz = !!borrador?.lienzo;
+  for (const id of ["#hDeshacer", "#hRehacer", "#hPincel", "#hGoma"]) $(id).classList.toggle("oculto", conLz);
+  document.querySelectorAll("#herr .hsep").forEach((x, i) => x.classList.toggle("oculto", conLz && i > 0));
+  $("#hDeshacer").disabled = !trazos.length; $("#hRehacer").disabled = !rehechos.length; $("#hBorrar").disabled = !trazos.length && !conLz;
   $("#hGoma").classList.toggle("on", pincel.goma); $("#hPincel").classList.toggle("on", !pincel.goma);
   const d = Math.round(Math.min(18, GROSORES[pincel.grosor] * 2.2 + 4));
   $("#hPunto").style.cssText = `width:${d}px;height:${d}px;color:${colorDe(pincel.color)}`;
@@ -1196,6 +1293,7 @@ function ajustarLienzo(){ const r = cv.getBoundingClientRect(), k = devicePixelR
   let actual = null;
   const p = e => { const r = cv.getBoundingClientRect(); return [+(e.clientX - r.left).toFixed(1), +(e.clientY - r.top).toFixed(1), e.pointerType === "pen" && e.pressure ? +e.pressure.toFixed(2) : 0.5]; };
   cv.addEventListener("pointerdown", e => {
+    if (borrador?.lienzo){ abrirLienzoCaptura(); return; }
     if (actual) return;   // un solo dedo a la vez
     cerrarPinceles(); tocado = true; cv.setPointerCapture(e.pointerId);
     actual = {c: pincel.color, g: pincel.grosor, goma: pincel.goma, p: [p(e)], id: e.pointerId}; trazos.push(actual); rehechos = []; redibujar();
@@ -1209,11 +1307,26 @@ function ajustarLienzo(){ const r = cv.getBoundingClientRect(), k = devicePixelR
   cv.addEventListener("pointerup", fin); cv.addEventListener("pointercancel", fin);
 })();
 // Herramientas
+$("#hAmpliar").innerHTML = ic("ampliar"); $("#hAmpliar").onclick = () => abrirLienzoCaptura();
+// La zona de puntos se pasa al lienzo grande (con lo ya dibujado) y vuelve como vista previa
+function abrirLienzoCaptura(){
+  cerrarPinceles();
+  const r = cv.getBoundingClientRect();
+  const d = borrador.lienzo || {v: 1, imgs: {}, objs: trazos.map(t => ({t: "trazo", modo: t.goma ? "goma" : "pincel", c: t.c, g: t.goma ? 22 : (GROSORES[t.g] || 4.5), p: t.p}))};
+  abrirLienzo(d, {titulo: "Lienzo", alListo: doc => {
+    borrador.lienzo = doc; trazos = []; rehechos = []; tocado = true; redibujar(); guardarCapturaPronto();
+  }});
+  if (!borrador.lienzo && !trazos.length){ LZ.vista = {s: 1, x: 0, y: 0}; lzRender(); }
+  else if (!borrador.lienzo){ const c = $("#lzCanvas").getBoundingClientRect(), s = Math.min(c.width / r.width, c.height / r.height, 2); LZ.vista = {s, x: (c.width - r.width * s) / 2, y: (c.height - r.height * s) / 2}; lzRender(); }
+}
 $("#hDeshacer").innerHTML = ic("deshacer"); $("#hRehacer").innerHTML = ic("rehacer"); $("#hGoma").innerHTML = ic("goma"); $("#hBorrar").innerHTML = ic("borrar");
 const guardarPincel = () => { lsSet("chispa.pincel", pincel); pintarHerr(); };
 $("#hDeshacer").onclick = () => { if (trazos.length){ rehechos.push(trazos.pop()); redibujar(); guardarCapturaPronto(); } };
 $("#hRehacer").onclick = () => { if (rehechos.length){ trazos.push(rehechos.pop()); redibujar(); guardarCapturaPronto(); } };
-$("#hBorrar").onclick = () => { if (!trazos.length) return; const antes = trazos; trazos = []; rehechos = []; redibujar(); guardarCapturaPronto();
+$("#hBorrar").onclick = () => {
+  if (borrador?.lienzo){ const antes = borrador.lienzo; borrador.lienzo = null; redibujar(); guardarCapturaPronto();
+    toast("Lienzo borrado", "borrar", 5000, () => { borrador.lienzo = antes; redibujar(); guardarCapturaPronto(); }); return; }
+  if (!trazos.length) return; const antes = trazos; trazos = []; rehechos = []; redibujar(); guardarCapturaPronto();
   toast("Dibujo borrado", "borrar", 5000, () => { trazos = antes; redibujar(); guardarCapturaPronto(); }); };
 $("#hGoma").onclick = () => { pincel.goma = !pincel.goma; cerrarPinceles(); guardarPincel(); };
 function cerrarPinceles(){ $("#pinceles").classList.add("oculto"); }
@@ -1236,6 +1349,387 @@ async function trazoComoImagen(){
   g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(t, 0, 0);
   return new Promise(res => c.toBlob(res, "image/png"));
 }
+/* ================= Lienzo a pantalla completa ================= */
+// Documento: {v:1, objs:[...], imgs:{id: dataURL}}. Coordenadas «de mundo»; la vista (zoom y desplazamiento) no se guarda.
+// Las imágenes siempre quedan debajo; encima van trazos, formas y textos (la goma solo borra lo pintado, nunca la foto).
+const LZ = {abierto: false, doc: null, hist: [], reh: [], herr: "pincel", vista: {s: 1, x: 0, y: 0}, sel: null, alListo: null, cambios: false, raf: 0};
+const LZIMG = new Map();   // id → Image (caché compartida)
+const cssV = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const LZ_HERR = [["mover", "mano", "Mover y zoom"], ["pincel", "pluma", "Pincel"], ["rotu", "rotu", "Rotulador"], ["goma", "goma", "Goma"],
+  ["flecha", "flecha", "Flecha"], ["rect", "rect", "Rectángulo"], ["elipse", "elipse", "Círculo"], ["texto", "texto", "Texto"]];
+const LZ_ANCHO = {pincel: {fino: 2.2, medio: 4.5, grueso: 9}, rotu: {fino: 10, medio: 16, grueso: 26}, goma: {fino: 14, medio: 24, grueso: 42},
+  forma: {fino: 2.5, medio: 4, grueso: 7}, texto: {fino: 16, medio: 22, grueso: 32}};
+const docVacio = () => ({v: 1, objs: [], imgs: {}});
+const lzSinNada = d => !d || !d.objs.some(o => !(o.t === "trazo" && o.modo === "goma"));
+
+function cargarImgLz(id, src){
+  if (LZIMG.has(id)) return LZIMG.get(id).listo;
+  const im = new Image(); im.listo = new Promise(ok => { im.onload = () => { ok(); if (LZ.abierto) lzRender(); }; im.onerror = () => ok(); }); im.src = src;
+  LZIMG.set(id, im); return im.listo;
+}
+const cargarImgsDoc = d => Promise.all(Object.entries(d?.imgs || {}).map(([id, src]) => cargarImgLz(id, src)));
+
+// ---------- Dibujo
+function dibujarObj(k, o, exportar){
+  k.save(); k.lineCap = k.lineJoin = "round";
+  const col = colorDe(o.c, exportar);
+  k.strokeStyle = k.fillStyle = col; k.lineWidth = o.g;
+  if (o.t === "trazo"){
+    const p = o.p;
+    if (o.modo === "goma"){ k.globalCompositeOperation = "destination-out"; k.strokeStyle = k.fillStyle = "#000"; }
+    if (o.modo === "rotu") k.globalAlpha = .36;
+    if (p.length === 1){ k.beginPath(); k.arc(p[0][0], p[0][1], o.g / 2, 0, Math.PI * 2); k.fill(); }
+    else if (o.modo === "pincel" && p.some(q => q[2] !== 0.5)){
+      for (let i = 1; i < p.length; i++){
+        const [x0, y0] = i > 1 ? [(p[i-2][0] + p[i-1][0]) / 2, (p[i-2][1] + p[i-1][1]) / 2] : p[0], [x1, y1] = [(p[i-1][0] + p[i][0]) / 2, (p[i-1][1] + p[i][1]) / 2];
+        k.lineWidth = o.g * (0.55 + 0.9 * (p[i][2] ?? 0.5)); k.beginPath(); k.moveTo(x0, y0); k.quadraticCurveTo(p[i-1][0], p[i-1][1], x1, y1);
+        if (i === p.length - 1) k.lineTo(p[i][0], p[i][1]); k.stroke();
+      }
+    } else {
+      k.beginPath(); k.moveTo(p[0][0], p[0][1]);
+      for (let i = 1; i < p.length - 1; i++) k.quadraticCurveTo(p[i][0], p[i][1], (p[i][0] + p[i+1][0]) / 2, (p[i][1] + p[i+1][1]) / 2);
+      k.lineTo(p.at(-1)[0], p.at(-1)[1]); k.stroke();
+    }
+  } else if (o.t === "flecha"){
+    const ang = Math.atan2(o.y2 - o.y1, o.x2 - o.x1), L = Math.hypot(o.x2 - o.x1, o.y2 - o.y1), cab = Math.min(L * .45, Math.max(o.g * 4.2, 12));
+    k.beginPath(); k.moveTo(o.x1, o.y1); k.lineTo(o.x2 - Math.cos(ang) * cab * .6, o.y2 - Math.sin(ang) * cab * .6); k.stroke();
+    k.beginPath(); k.moveTo(o.x2, o.y2);
+    k.lineTo(o.x2 - cab * Math.cos(ang - .45), o.y2 - cab * Math.sin(ang - .45)); k.lineTo(o.x2 - cab * Math.cos(ang + .45), o.y2 - cab * Math.sin(ang + .45)); k.closePath(); k.fill();
+  } else if (o.t === "rect"){
+    const x = Math.min(o.x1, o.x2), y = Math.min(o.y1, o.y2), w = Math.abs(o.x2 - o.x1), h = Math.abs(o.y2 - o.y1), r = Math.min(o.g * 1.5, w / 2, h / 2);
+    k.beginPath(); k.roundRect ? k.roundRect(x, y, w, h, r) : k.rect(x, y, w, h); k.stroke();
+  } else if (o.t === "elipse"){
+    k.beginPath(); k.ellipse((o.x1 + o.x2) / 2, (o.y1 + o.y2) / 2, Math.abs(o.x2 - o.x1) / 2 || .1, Math.abs(o.y2 - o.y1) / 2 || .1, 0, 0, Math.PI * 2); k.stroke();
+  } else if (o.t === "texto"){
+    k.font = `600 ${o.tam}px Figtree, system-ui, sans-serif`; k.textBaseline = "top";
+    k.lineWidth = o.tam * .24; k.strokeStyle = exportar ? "rgba(255,255,255,.92)" : cssV("--surface");
+    String(o.s).split("\n").forEach((l, i) => { const y = o.y + i * o.tam * 1.25; k.strokeText(l, o.x, y); k.fillText(l, o.x, y); });
+  }
+  k.restore();
+}
+let capaLz = null;
+function dibujarDoc(g, d, exportar, mat){
+  const W = g.canvas.width, H = g.canvas.height;
+  g.save(); g.setTransform(...mat);
+  for (const o of d.objs) if (o.t === "img"){ const im = LZIMG.get(o.id); if (im?.complete && im.naturalWidth) g.drawImage(im, o.x, o.y, o.w, o.h); }
+  g.restore();
+  capaLz = capaLz || document.createElement("canvas"); if (capaLz.width !== W || capaLz.height !== H){ capaLz.width = W; capaLz.height = H; }
+  const k = capaLz.getContext("2d"); k.setTransform(1, 0, 0, 1, 0, 0); k.clearRect(0, 0, W, H); k.setTransform(...mat);
+  for (const o of d.objs) if (o.t !== "img") dibujarObj(k, o, exportar);
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(capaLz, 0, 0); g.restore();
+}
+const medirLz = document.createElement("canvas").getContext("2d");
+function cajaObj(o){
+  if (o.t === "img") return {x: o.x, y: o.y, w: o.w, h: o.h};
+  if (o.t === "trazo"){ let a = Infinity, b = Infinity, c = -Infinity, d = -Infinity; for (const [x, y] of o.p){ a = Math.min(a, x); b = Math.min(b, y); c = Math.max(c, x); d = Math.max(d, y); }
+    const m = o.g / 2; return {x: a - m, y: b - m, w: c - a + o.g, h: d - b + o.g}; }
+  if (o.t === "texto"){ medirLz.font = `600 ${o.tam}px Figtree, system-ui, sans-serif`; const l = String(o.s).split("\n");
+    return {x: o.x, y: o.y, w: Math.max(...l.map(t => medirLz.measureText(t).width), o.tam), h: l.length * o.tam * 1.25}; }
+  const m = o.t === "flecha" ? o.g * 4.5 : o.g; return {x: Math.min(o.x1, o.x2) - m, y: Math.min(o.y1, o.y2) - m, w: Math.abs(o.x2 - o.x1) + 2 * m, h: Math.abs(o.y2 - o.y1) + 2 * m};
+}
+function cajaDoc(d){
+  let a = Infinity, b = Infinity, c = -Infinity, e = -Infinity;
+  for (const o of d.objs){ if (o.t === "trazo" && o.modo === "goma") continue; const r = cajaObj(o); a = Math.min(a, r.x); b = Math.min(b, r.y); c = Math.max(c, r.x + r.w); e = Math.max(e, r.y + r.h); }
+  return a === Infinity ? null : {x: a, y: b, w: c - a, h: e - b};
+}
+// Imagen final (para la nota, la miniatura y el PDF): solo la zona con contenido, sobre blanco
+async function exportarLienzo(d){
+  if (lzSinNada(d)) return null;
+  await cargarImgsDoc(d);
+  const r = cajaDoc(d), pad = 24, bw = r.w + 2 * pad, bh = r.h + 2 * pad, k = Math.min(2.5, 2000 / Math.max(bw, bh));
+  const c = document.createElement("canvas"); c.width = Math.max(1, Math.round(bw * k)); c.height = Math.max(1, Math.round(bh * k));
+  const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
+  dibujarDoc(g, d, true, [k, 0, 0, k, (pad - r.x) * k, (pad - r.y) * k]);
+  const conFotos = d.objs.some(o => o.t === "img"), ext = conFotos ? "jpg" : "png";
+  const blob = await new Promise(ok => c.toBlob(ok, conFotos ? "image/jpeg" : "image/png", .9));
+  return {blob, ext};
+}
+function docLimpio(d){
+  const usadas = new Set(d.objs.filter(o => o.t === "img").map(o => o.id)), imgs = {};
+  for (const id of usadas) if (d.imgs[id]) imgs[id] = d.imgs[id];
+  return {v: 1, objs: d.objs, imgs};
+}
+// Vista previa dentro de otro lienzo (la zona de puntos de Anotar)
+function previaLienzo(canvas, d){
+  const g = canvas.getContext("2d"); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, canvas.width, canvas.height);
+  const r = cajaDoc(d); if (!r) return;
+  const pad = 14 * (devicePixelRatio || 1), k = Math.min((canvas.width - 2 * pad) / r.w, (canvas.height - 2 * pad) / r.h, 2 * (devicePixelRatio || 1));
+  dibujarDoc(g, d, false, [k, 0, 0, k, (canvas.width - r.w * k) / 2 - r.x * k, (canvas.height - r.h * k) / 2 - r.y * k]);
+}
+
+// ---------- Abrir y cerrar
+function abrirLienzo(doc, {alListo, titulo = "Lienzo", herr} = {}){
+  LZ.doc = doc ? JSON.parse(JSON.stringify(doc)) : docVacio(); LZ.doc.imgs = LZ.doc.imgs || {};
+  cargarImgsDoc(LZ.doc);
+  Object.assign(LZ, {hist: [], reh: [], sel: null, alListo, cambios: false, abierto: true});
+  LZ.herr = herr || (LZ.herr === "mover" ? "pincel" : LZ.herr);
+  $("#lzTit").textContent = titulo;
+  $("#lz").classList.remove("oculto"); document.documentElement.classList.add("lz-on");
+  cerrarMenusLz(); lzTam(); lzAjustar(); lzBarra();
+}
+async function lzTerminar(guardar){
+  if (!guardar && LZ.cambios && !confirm("¿Salir del lienzo sin guardar los cambios?")) return;
+  const d = docLimpio(LZ.doc), cb = LZ.alListo;
+  LZ.abierto = false; $("#lz").classList.add("oculto"); document.documentElement.classList.remove("lz-on"); cerrarMenusLz();
+  if (guardar && cb) await cb(lzSinNada(d) ? null : d);
+}
+function lzTam(){ const c = $("#lzCanvas"), r = c.getBoundingClientRect(), k = devicePixelRatio || 1; c.width = Math.round(r.width * k); c.height = Math.round(r.height * k); lzRender(); }
+function lzAjustar(){
+  const c = $("#lzCanvas").getBoundingClientRect(), r = cajaDoc(LZ.doc);
+  if (!r){ LZ.vista = {s: 1, x: 0, y: 0}; lzRender(); return; }
+  const pad = 28, s = Math.min((c.width - 2 * pad) / r.w, (c.height - 2 * pad) / r.h, 3);
+  LZ.vista = {s, x: (c.width - r.w * s) / 2 - r.x * s, y: (c.height - r.h * s) / 2 - r.y * s}; lzRender();
+}
+const lzRender = () => { if (!LZ.abierto) return; cancelAnimationFrame(LZ.raf); LZ.raf = requestAnimationFrame(lzPintar); };
+function lzPintar(){
+  const c = $("#lzCanvas"), g = c.getContext("2d"), d = devicePixelRatio || 1, v = LZ.vista;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = cssV("--bg"); g.fillRect(0, 0, c.width, c.height);
+  // puntos de fondo (cada 24 unidades), solo si no hay demasiados
+  const paso = 24 * v.s * d;
+  if (paso > 9){ g.fillStyle = cssV("--dots") || "#cfd6e2"; const ox = ((v.x * d) % paso + paso) % paso, oy = ((v.y * d) % paso + paso) % paso, t = 1.6 * d;
+    for (let x = ox; x < c.width; x += paso) for (let y = oy; y < c.height; y += paso) g.fillRect(x - t / 2, y - t / 2, t, t); }
+  dibujarDoc(g, LZ.doc, false, [d * v.s, 0, 0, d * v.s, d * v.x, d * v.y]);
+  // selección
+  const o = LZ.sel;
+  if (o && LZ.herr === "mover" && LZ.doc.objs.includes(o)){
+    const r = cajaObj(o), x = (r.x * v.s + v.x) * d, y = (r.y * v.s + v.y) * d, w = r.w * v.s * d, h = r.h * v.s * d;
+    g.save(); g.setLineDash([6 * d, 5 * d]); g.lineWidth = 1.6 * d; g.strokeStyle = "#3F63B0"; g.strokeRect(x - 4 * d, y - 4 * d, w + 8 * d, h + 8 * d); g.restore();
+    if (o.t === "img"){ g.fillStyle = "#3F63B0"; g.beginPath(); g.arc(x + w, y + h, 9 * d, 0, Math.PI * 2); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.arc(x + w, y + h, 4 * d, 0, Math.PI * 2); g.fill(); }
+  }
+  $("#lzSel").classList.toggle("oculto", !(o && LZ.herr === "mover"));
+}
+
+// ---------- Herramientas y menús
+function lzBarra(){
+  $("#lzHerr").innerHTML = LZ_HERR.map(([k, icono, t]) => `<button class="lz-h ${LZ.herr === k ? "on" : ""}" data-lzh="${k}" aria-label="${t}" title="${t}">${ic(icono)}</button>`).join("")
+    + `<span class="lz-sep"></span><button class="lz-h" id="lzPincelB" aria-label="Grosor y color" title="Grosor y color"><i class="punto" id="lzPunto"></i></button>`
+    + `<button class="lz-h" id="lzImgB" aria-label="Añadir imagen" title="Añadir imagen">${ic("imagen")}</button>`;
+  const dd = Math.round(Math.min(18, ({fino: 2.2, medio: 4.5, grueso: 9})[pincel.grosor] * 2.2 + 4));
+  $("#lzPunto").style.cssText = `width:${dd}px;height:${dd}px;color:${colorDe(pincel.color)}`;
+  $("#lzDeshacer").disabled = !LZ.hist.length; $("#lzRehacer").disabled = !LZ.reh.length;
+  $("#lzCanvas").dataset.herr = LZ.herr;
+}
+function cerrarMenusLz(){ ["#lzPinceles", "#lzImgMenu", "#lzTexto"].forEach(s => $(s).classList.add("oculto")); }
+$("#lzHerr").addEventListener("click", e => {
+  const b = e.target.closest("[data-lzh]");
+  if (b){ LZ.herr = b.dataset.lzh; if (LZ.herr !== "mover") LZ.sel = null; cerrarMenusLz(); lzBarra(); lzRender();
+    if (LZ.herr === "mover") toast("Arrastra para mover el lienzo o lo que toques. En las imágenes, la esquina azul cambia el tamaño", "mano", 4500);
+    if (LZ.herr === "texto") toast("Toca donde quieras poner el texto", "texto", 2500); return; }
+  if (e.target.closest("#lzPincelB")){ const p = $("#lzPinceles"), abierto = !p.classList.contains("oculto"); cerrarMenusLz(); if (!abierto){ pintarPincelesLz(); p.classList.remove("oculto"); } return; }
+  if (e.target.closest("#lzImgB")){ const m = $("#lzImgMenu"), abierto = !m.classList.contains("oculto"); cerrarMenusLz(); if (!abierto) m.classList.remove("oculto"); }
+});
+function pintarPincelesLz(){
+  const col = colorDe(pincel.color);
+  $("#lzGrosor").innerHTML = Object.entries({fino: 2.2, medio: 4.5, grueso: 9}).map(([k, w]) => `<button data-gr="${k}" class="${pincel.grosor === k ? "on" : ""}" aria-label="Grosor ${k}"><i class="muestra" style="width:${Math.round(w * 2.2 + 3)}px;height:${Math.round(w * 2.2 + 3)}px;background:${col}"></i></button>`).join("");
+  $("#lzColor").innerHTML = Object.keys(COLORES).map(k => `<button data-co="${k}" class="${pincel.color === k ? "on" : ""}" aria-label="Color ${k}"><i class="muestra" style="width:22px;height:22px;background:${colorDe(k)}"></i></button>`).join("");
+  $("#lzPinceles").querySelectorAll("[data-gr]").forEach(b => b.onclick = () => { pincel.grosor = b.dataset.gr; guardarPincel(); pintarPincelesLz(); lzBarra(); });
+  $("#lzPinceles").querySelectorAll("[data-co]").forEach(b => b.onclick = () => { pincel.color = b.dataset.co; guardarPincel();
+    if (LZ.sel && LZ.sel.t !== "img"){ lzFoto(); LZ.sel.c = pincel.color; lzRender(); }   // cambia el color de lo seleccionado
+    pintarPincelesLz(); lzBarra(); setTimeout(cerrarMenusLz, 180); });
+}
+function lzFoto(){ LZ.hist.push(JSON.stringify(LZ.doc.objs)); if (LZ.hist.length > 80) LZ.hist.shift(); LZ.reh = []; LZ.cambios = true; }
+function lzDeshacer(){ if (!LZ.hist.length) return; LZ.reh.push(JSON.stringify(LZ.doc.objs)); LZ.doc.objs = JSON.parse(LZ.hist.pop()); LZ.sel = null; LZ.cambios = true; lzBarra(); lzRender(); }
+function lzRehacer(){ if (!LZ.reh.length) return; LZ.hist.push(JSON.stringify(LZ.doc.objs)); LZ.doc.objs = JSON.parse(LZ.reh.pop()); LZ.sel = null; LZ.cambios = true; lzBarra(); lzRender(); }
+$("#lzCancelar").innerHTML = ic("x"); $("#lzDeshacer").innerHTML = ic("deshacer"); $("#lzRehacer").innerHTML = ic("rehacer"); $("#lzAjustar").innerHTML = ic("ajustar");
+$("#lzDeshacer").onclick = lzDeshacer; $("#lzRehacer").onclick = lzRehacer;
+$("#lzAjustar").onclick = lzAjustar;
+$("#lzCancelar").onclick = () => lzTerminar(false);
+$("#lzListo").onclick = () => lzTerminar(true);
+$("#lzQuitarSel").onclick = () => { if (!LZ.sel) return; lzFoto(); LZ.doc.objs = LZ.doc.objs.filter(o => o !== LZ.sel); LZ.sel = null; lzBarra(); lzRender(); };
+$("#lzDelante").onclick = () => { const o = LZ.sel; if (!o) return; lzFoto(); LZ.doc.objs = [...LZ.doc.objs.filter(x => x !== o), o]; lzRender(); };
+addEventListener("resize", () => { if (LZ.abierto) lzTam(); });
+
+// ---------- Gestos: un dedo usa la herramienta; dos dedos, zoom y desplazamiento; rueda del ratón, zoom
+const aMundo = p => ({x: (p.x - LZ.vista.x) / LZ.vista.s, y: (p.y - LZ.vista.y) / LZ.vista.s});
+function zoomEn(p, f){ const v = LZ.vista, s = Math.min(12, Math.max(.08, v.s * f)), w = aMundo(p); LZ.vista = {s, x: p.x - w.x * s, y: p.y - w.y * s}; lzRender(); }
+function tocaObj(w){
+  const tol = 12 / LZ.vista.s;
+  for (let i = LZ.doc.objs.length - 1; i >= 0; i--){
+    const o = LZ.doc.objs[i]; if (o.t === "trazo" && o.modo === "goma") continue;
+    const r = cajaObj(o); if (w.x < r.x - tol || w.x > r.x + r.w + tol || w.y < r.y - tol || w.y > r.y + r.h + tol) continue;
+    if (o.t === "trazo" && !o.p.some(([x, y]) => Math.hypot(x - w.x, y - w.y) < tol + o.g)) continue;
+    return o;
+  }
+  return null;
+}
+function moverObj(o, c, dx, dy){
+  if (o.t === "img" || o.t === "texto"){ o.x = c.x + dx; o.y = c.y + dy; }
+  else if (o.t === "trazo") o.p = c.p.map(q => [q[0] + dx, q[1] + dy, q[2]]);
+  else { o.x1 = c.x1 + dx; o.x2 = c.x2 + dx; o.y1 = c.y1 + dy; o.y2 = c.y2 + dy; }
+}
+(() => {
+  const c = $("#lzCanvas"), P = new Map(); let accion = null, gesto = null, espacio = false;
+  const pos = e => { const r = c.getBoundingClientRect(); return {x: e.clientX - r.left, y: e.clientY - r.top}; };
+  const empezarGesto = () => { const [a, b] = [...P.values()]; gesto = {d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, m0: {x: (a.x + b.x) / 2, y: (a.y + b.y) / 2}, v0: {...LZ.vista}}; };
+  c.addEventListener("pointerdown", e => {
+    c.setPointerCapture(e.pointerId); const p = pos(e); P.set(e.pointerId, p); cerrarMenusLz();
+    if (P.size === 2){
+      // el segundo dedo convierte el gesto en zoom: si se acababa de empezar un trazo, se descarta
+      if (accion?.obj && accion.nuevo && (accion.obj.p ? accion.obj.p.length < 10 : true)){ LZ.doc.objs = LZ.doc.objs.filter(o => o !== accion.obj); LZ.hist.pop(); }
+      accion = null; empezarGesto(); lzRender(); return;
+    }
+    if (P.size > 2) return;
+    const w = aMundo(p), v = LZ.vista, base = k => (LZ_ANCHO[k] || LZ_ANCHO.pincel)[pincel.grosor] / v.s;
+    if (e.button === 1 || e.button === 2 || espacio){ accion = {tipo: "pan", id: e.pointerId, p0: p, v0: {...v}}; return; }
+    const h = LZ.herr;
+    if (h === "mover"){
+      const o = tocaObj(w);
+      if (LZ.sel?.t === "img"){ const r = cajaObj(LZ.sel), sx = (r.x + r.w) * v.s + v.x, sy = (r.y + r.h) * v.s + v.y;
+        if (Math.hypot(p.x - sx, p.y - sy) < 26){ lzFoto(); accion = {tipo: "escala", id: e.pointerId, obj: LZ.sel, ratio: r.h / r.w}; return; } }
+      if (o){ LZ.sel = o; lzFoto(); accion = {tipo: "arrastre", id: e.pointerId, obj: o, w0: w, c: JSON.parse(JSON.stringify(o)), movido: false}; lzRender(); return; }
+      LZ.sel = null; accion = {tipo: "pan", id: e.pointerId, p0: p, v0: {...v}}; lzRender(); return;
+    }
+    if (h === "texto"){ const o = tocaObj(w); editarTextoLz(o?.t === "texto" ? o : null, w); return; }
+    lzFoto();
+    if (h === "pincel" || h === "rotu" || h === "goma"){
+      const obj = {t: "trazo", modo: h, c: pincel.color, g: base(h), p: [[w.x, w.y, e.pointerType === "pen" && e.pressure ? +e.pressure.toFixed(2) : 0.5]]};
+      LZ.doc.objs.push(obj); accion = {tipo: "dibujo", id: e.pointerId, obj, nuevo: true};
+    } else {
+      const obj = {t: h, c: pincel.color, g: base("forma"), x1: w.x, y1: w.y, x2: w.x, y2: w.y};
+      LZ.doc.objs.push(obj); accion = {tipo: "forma", id: e.pointerId, obj, nuevo: true};
+    }
+    lzRender();
+  });
+  c.addEventListener("pointermove", e => {
+    if (!P.has(e.pointerId)) return;
+    const p = pos(e); P.set(e.pointerId, p);
+    if (gesto && P.size >= 2){
+      const [a, b] = [...P.values()], d = Math.hypot(a.x - b.x, a.y - b.y) || 1, m = {x: (a.x + b.x) / 2, y: (a.y + b.y) / 2}, v0 = gesto.v0;
+      const s = Math.min(12, Math.max(.08, v0.s * d / gesto.d0)), w0 = {x: (gesto.m0.x - v0.x) / v0.s, y: (gesto.m0.y - v0.y) / v0.s};
+      LZ.vista = {s, x: m.x - w0.x * s, y: m.y - w0.y * s}; lzRender(); return;
+    }
+    if (!accion || accion.id !== e.pointerId) return;
+    if (accion.tipo === "pan"){ LZ.vista = {...accion.v0, x: accion.v0.x + p.x - accion.p0.x, y: accion.v0.y + p.y - accion.p0.y}; lzRender(); return; }
+    const w = aMundo(p);
+    if (accion.tipo === "dibujo"){
+      for (const ev of e.getCoalescedEvents ? e.getCoalescedEvents() : [e]){ const q = aMundo(pos(ev)); accion.obj.p.push([+q.x.toFixed(1), +q.y.toFixed(1), ev.pointerType === "pen" && ev.pressure ? +ev.pressure.toFixed(2) : 0.5]); }
+    } else if (accion.tipo === "forma"){ accion.obj.x2 = w.x; accion.obj.y2 = w.y; }
+    else if (accion.tipo === "arrastre"){ accion.movido = true; moverObj(accion.obj, accion.c, w.x - accion.w0.x, w.y - accion.w0.y); }
+    else if (accion.tipo === "escala"){ const o = accion.obj; o.w = Math.max(24 / LZ.vista.s, w.x - o.x); o.h = o.w * accion.ratio; }
+    lzRender();
+  });
+  const fin = e => {
+    P.delete(e.pointerId); if (P.size < 2) gesto = null;
+    if (!accion || accion.id !== e.pointerId) return;
+    const o = accion.obj;
+    if (accion.tipo === "forma" && Math.hypot(o.x2 - o.x1, o.y2 - o.y1) < 6 / LZ.vista.s){ LZ.doc.objs = LZ.doc.objs.filter(x => x !== o); LZ.hist.pop(); }
+    if (accion.tipo === "arrastre" && !accion.movido) LZ.hist.pop();
+    accion = null; lzBarra(); lzRender();
+  };
+  c.addEventListener("pointerup", fin); c.addEventListener("pointercancel", fin);
+  c.addEventListener("contextmenu", e => e.preventDefault());
+  c.addEventListener("wheel", e => { e.preventDefault(); zoomEn(pos(e), Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0015))); }, {passive: false});
+  addEventListener("keydown", e => {
+    if (!LZ.abierto || e.target.matches?.("input,textarea")) return;
+    if (e.key === " "){ espacio = true; c.style.cursor = "grab"; e.preventDefault(); }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z"){ e.preventDefault(); e.shiftKey ? lzRehacer() : lzDeshacer(); }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y"){ e.preventDefault(); lzRehacer(); }
+    if ((e.key === "Delete" || e.key === "Backspace") && LZ.sel){ e.preventDefault(); $("#lzQuitarSel").click(); }
+  });
+  addEventListener("keyup", e => { if (e.key === " "){ espacio = false; c.style.cursor = ""; } });
+})();
+
+// ---------- Texto
+let textoLz = null;
+function editarTextoLz(o, w){
+  textoLz = {o, w}; const p = $("#lzTexto");
+  $("#lzTextoIn").value = o ? o.s : ""; $("#lzTextoQuitar").classList.toggle("oculto", !o);
+  cerrarMenusLz(); p.classList.remove("oculto"); setTimeout(() => $("#lzTextoIn").focus(), 60);
+}
+$("#lzTextoOk").onclick = () => {
+  const v = $("#lzTextoIn").value.replace(/\s+$/, ""), t = textoLz; cerrarMenusLz(); if (!t) return;
+  if (t.o){ if (v === t.o.s) return; lzFoto(); if (v) t.o.s = v; else LZ.doc.objs = LZ.doc.objs.filter(x => x !== t.o); }
+  else if (v){ lzFoto(); LZ.doc.objs.push({t: "texto", s: v, x: t.w.x, y: t.w.y, tam: LZ_ANCHO.texto[pincel.grosor] / LZ.vista.s, c: pincel.color}); }
+  textoLz = null; lzBarra(); lzRender();
+};
+$("#lzTextoNo").onclick = () => { textoLz = null; cerrarMenusLz(); };
+$("#lzTextoQuitar").onclick = () => { const t = textoLz; cerrarMenusLz(); if (t?.o){ lzFoto(); LZ.doc.objs = LZ.doc.objs.filter(x => x !== t.o); } textoLz = null; lzBarra(); lzRender(); };
+$("#lzTextoIn").addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) $("#lzTextoOk").click(); });
+
+// ---------- Imágenes: cámara, galería o pegar; antes de ponerla se puede recortar
+$("#lzImgMenu").addEventListener("click", async e => {
+  const b = e.target.closest("[data-img]"); if (!b) return; cerrarMenusLz();
+  if (b.dataset.img === "camara") $("#lzInCam").click();
+  else if (b.dataset.img === "galeria") $("#lzInGal").click();
+  else if (b.dataset.img === "pegar"){
+    try {
+      const items = await navigator.clipboard.read();
+      for (const it of items){ const t = it.types.find(x => x.startsWith("image/")); if (t){ recortarImagen(await it.getType(t)); return; } }
+      toast("No hay ninguna imagen copiada", "alerta");
+    } catch(x){ toast(esMovil() ? "No se puede leer lo copiado. Guarda la imagen y elígela desde la galería" : "Pulsa Ctrl + V para pegar la imagen", "alerta", 4500); }
+  }
+});
+for (const id of ["#lzInCam", "#lzInGal"]) $(id).onchange = () => { const f = $(id).files[0]; $(id).value = ""; if (f) recortarImagen(f); };
+document.addEventListener("paste", e => {
+  if (!LZ.abierto || e.target.matches?.("input,textarea")) return;
+  const it = [...(e.clipboardData?.items || [])].find(x => x.type.startsWith("image/"));
+  if (it){ e.preventDefault(); recortarImagen(it.getAsFile()); }
+});
+async function blobADataUrl(blob, max = 1600){
+  const bmp = await createImageBitmap(blob), k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(bmp, 0, 0, c.width, c.height);
+  return {src: c.toDataURL("image/jpeg", .86), w: c.width, h: c.height, canvas: c};
+}
+function ponerImagenLz({src, w, h}){
+  const id = "i" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); LZ.doc.imgs[id] = src; cargarImgLz(id, src);
+  const r = $("#lzCanvas").getBoundingClientRect(), v = LZ.vista, vw = r.width / v.s, vh = r.height / v.s;
+  const k = Math.min(vw * .8 / w, vh * .7 / h), ow = w * k, oh = h * k, cx = (r.width / 2 - v.x) / v.s, cy = (r.height / 2 - v.y) / v.s;
+  lzFoto(); const o = {t: "img", id, x: cx - ow / 2, y: cy - oh / 2, w: ow, h: oh}; LZ.doc.objs.push(o);
+  LZ.herr = "mover"; LZ.sel = o; lzBarra(); lzRender();
+  toast("Muévela o cambia su tamaño con la esquina azul. Luego elige el pincel para pintar encima", "imagen", 5000);
+}
+// Recorte: un rectángulo con esquinas que se arrastran
+async function recortarImagen(blob){
+  let im; try { im = await blobADataUrl(blob, 2400); } catch(e){ toast("No se pudo abrir la imagen", "alerta"); return; }
+  const panel = $("#lzRecorte"), c = $("#lzRecCanvas"); panel.classList.remove("oculto");
+  const k = devicePixelRatio || 1, R = () => c.getBoundingClientRect();
+  let caja = {x: 0, y: 0, w: im.w, h: im.h}, esc = 1, ox = 0, oy = 0, arr = null;
+  const tam = () => { const r = R(); c.width = r.width * k; c.height = r.height * k; esc = Math.min((r.width - 40) / im.w, (r.height - 40) / im.h); ox = (r.width - im.w * esc) / 2; oy = (r.height - im.h * esc) / 2; pinta(); };
+  const pinta = () => {
+    const g = c.getContext("2d"); g.setTransform(k, 0, 0, k, 0, 0); g.clearRect(0, 0, c.width, c.height);
+    g.drawImage(im.canvas, ox, oy, im.w * esc, im.h * esc);
+    const x = ox + caja.x * esc, y = oy + caja.y * esc, w = caja.w * esc, h = caja.h * esc;
+    g.fillStyle = "rgba(8,12,24,.55)"; g.beginPath(); g.rect(ox, oy, im.w * esc, im.h * esc); g.rect(x, y, w, h); g.fill("evenodd");
+    g.strokeStyle = "#fff"; g.lineWidth = 2; g.strokeRect(x, y, w, h);
+    g.fillStyle = "#F4B63E"; for (const [a, b] of [[x, y], [x + w, y], [x, y + h], [x + w, y + h]]){ g.beginPath(); g.arc(a, b, 9, 0, Math.PI * 2); g.fill(); }
+  };
+  const aImg = e => { const r = R(); return {x: (e.clientX - r.left - ox) / esc, y: (e.clientY - r.top - oy) / esc}; };
+  c.onpointerdown = e => {
+    c.setPointerCapture(e.pointerId); const p = aImg(e), t = 28 / esc;
+    const esq = [["nw", caja.x, caja.y], ["ne", caja.x + caja.w, caja.y], ["sw", caja.x, caja.y + caja.h], ["se", caja.x + caja.w, caja.y + caja.h]].find(([, a, b]) => Math.hypot(p.x - a, p.y - b) < t);
+    arr = esq ? {tipo: esq[0], c0: {...caja}, p0: p} : (p.x > caja.x && p.x < caja.x + caja.w && p.y > caja.y && p.y < caja.y + caja.h) ? {tipo: "mover", c0: {...caja}, p0: p} : null;
+  };
+  c.onpointermove = e => {
+    if (!arr) return; const p = aImg(e), dx = p.x - arr.p0.x, dy = p.y - arr.p0.y, c0 = arr.c0, min = 20 / esc;
+    let {x, y, w, h} = c0;
+    if (arr.tipo === "mover"){ x = Math.min(Math.max(0, c0.x + dx), im.w - w); y = Math.min(Math.max(0, c0.y + dy), im.h - h); }
+    else {
+      if (arr.tipo.includes("w")){ x = Math.min(Math.max(0, c0.x + dx), c0.x + c0.w - min); w = c0.x + c0.w - x; }
+      if (arr.tipo.includes("e")) w = Math.min(Math.max(min, c0.w + dx), im.w - c0.x);
+      if (arr.tipo.includes("n")){ y = Math.min(Math.max(0, c0.y + dy), c0.y + c0.h - min); h = c0.y + c0.h - y; }
+      if (arr.tipo.includes("s")) h = Math.min(Math.max(min, c0.h + dy), im.h - c0.y);
+    }
+    caja = {x, y, w, h}; pinta();
+  };
+  c.onpointerup = c.onpointercancel = () => { arr = null; };
+  const terminar = usar => {
+    panel.classList.add("oculto"); removeEventListener("resize", tam);
+    if (!usar) return;
+    if (usar === "entera") return ponerImagenLz(im);
+    const o = document.createElement("canvas"); o.width = Math.round(caja.w); o.height = Math.round(caja.h);
+    o.getContext("2d").drawImage(im.canvas, caja.x, caja.y, caja.w, caja.h, 0, 0, o.width, o.height);
+    ponerImagenLz({src: o.toDataURL("image/jpeg", .86), w: o.width, h: o.height});
+  };
+  $("#lzRecNo").onclick = () => terminar(false); $("#lzRecEntera").onclick = () => terminar("entera"); $("#lzRecOk").onclick = () => terminar("recorte");
+  addEventListener("resize", tam); requestAnimationFrame(tam);
+}
+// Una foto de la nota como fondo para anotar encima
+async function docDesdeFoto(blob){
+  const im = await blobADataUrl(blob, 1800), id = "i" + Date.now().toString(36);
+  return {v: 1, objs: [{t: "img", id, x: 0, y: 0, w: im.w, h: im.h}], imgs: {[id]: im.src}};
+}
+
 $("#bLimpiar").onclick = () => { if (vacio() || confirm("¿Descartar lo que llevas y empezar de nuevo?")){ if (rec){ descartarVoz = true; pararVoz(); } nuevoBorrador(); } };
 $("#bFoto").onclick = () => { tocado = true; $("#inFoto").click(); };
 $("#inFoto").onchange = async () => { for (const f of $("#inFoto").files) borrador.fotos.push(await reducirFoto(f)); $("#inFoto").value = ""; pintarAdjuntos(); guardarCapturaPronto(); };
@@ -1300,7 +1794,12 @@ async function guardarCaptura(){
     n.audio = `Audios/${carpeta}/${n.id}.${ext}`; await idb.ponerBlob(n.audio, borrador.audio); adj.push(n.audio); }
   let i = 1;
   for (const f of borrador.fotos){ const r = `Fotos/${carpeta}/${n.id}-${i++}.jpg`; await idb.ponerBlob(r, f); n.fotos.push(r); adj.push(r); }
-  if (borrador.trazo){ const r = `Fotos/${carpeta}/${n.id}-trazo.png`; await idb.ponerBlob(r, await trazoComoImagen()); n.fotos.push(r); adj.push(r); }
+  if (borrador.lienzo){
+    const ex = await exportarLienzo(borrador.lienzo);
+    if (ex){ const r = `Fotos/${carpeta}/${n.id}-trazo.${ex.ext}`, j = `Fotos/${carpeta}/${n.id}-trazo.json`;
+      await idb.ponerBlob(r, ex.blob); await idb.ponerBlob(j, new Blob([JSON.stringify(docLimpio(borrador.lienzo))], {type: "application/json"}));
+      n.fotos.push(r); n.lienzos = {[r]: j}; adj.push(r, j); }
+  } else if (borrador.trazo){ const r = `Fotos/${carpeta}/${n.id}-trazo.png`; await idb.ponerBlob(r, await trazoComoImagen()); n.fotos.push(r); adj.push(r); }
   const s = sugerir(textoBorrador(), ahora);
   if (s.fecha && !ignorar.fecha){ n.fecha = s.fecha; if (s.hora) n.hora = s.hora; }
   if (s.tipo && !ignorar.tipo) n.tipo = s.tipo;
@@ -1562,6 +2061,30 @@ let editando = null, eAdj = null, eTipoSel = "nota", eAmbSel = "trabajo", audioE
 document.querySelectorAll("[data-i]").forEach(s => s.outerHTML = ic(s.dataset.i));
 $("#eCerrar").innerHTML = ic("x"); $("#eBorrar").innerHTML = ic("borrar") + "<span>Borrar</span>"; $("#eAddFoto").innerHTML = ic("camara") + "Añadir foto";
 $("#eAddFoto").onclick = () => $("#eInFoto").click();
+$("#eAddDibujo").innerHTML = ic("pluma") + "Dibujo"; $("#eAddDibujo").title = "Dibujar o anotar en un lienzo nuevo";
+$("#eAddDibujo").onclick = () => abrirLienzo(null, {titulo: "Dibujo nuevo", alListo: async doc => { if (doc) await lienzoAEdicion(doc); }});
+// Guarda el lienzo como imagen nueva de la nota (con su copia editable); «reemplaza» quita la versión anterior
+async function lienzoAEdicion(doc, reemplaza){
+  const ex = await exportarLienzo(doc); if (!ex) return;
+  const item = {png: ex.blob, ext: ex.ext, doc: docLimpio(doc)};
+  if (reemplaza?.nueva) eAdj.nuevas[eAdj.nuevas.indexOf(reemplaza.nueva)] = item;
+  else { if (reemplaza?.ruta){ eAdj.quitar.push(reemplaza.ruta); eAdj.fotos = eAdj.fotos.filter(x => x !== reemplaza.ruta); } eAdj.nuevas.push(item); }
+  pintarAdjEdicion(); guardarEdicionPronto(); toast("Dibujo añadido a la nota. Pulsa Guardar para conservarlo", "pluma", 4000);
+}
+async function anotarFoto({ruta, nueva}){
+  try {
+    let doc;
+    if (nueva) doc = nueva instanceof Blob ? await docDesdeFoto(nueva) : nueva.doc;
+    else if (eAdj.lienzos[ruta]){ const j = await idb.blob(eAdj.lienzos[ruta]) || await descargarRuta(eAdj.lienzos[ruta]); doc = JSON.parse(await j.text()); }
+    else doc = await docDesdeFoto(await idb.blob(ruta) || await descargarRuta(ruta));
+    const editable = nueva ? !(nueva instanceof Blob) : !!eAdj.lienzos[ruta];
+    abrirLienzo(doc, {titulo: editable ? "Editar dibujo" : "Anotar sobre la foto", herr: "pincel", alListo: async d => {
+      if (!d) return;
+      if (editable) await lienzoAEdicion(d, nueva ? {nueva} : {ruta});
+      else await lienzoAEdicion(d, nueva instanceof Blob ? null : null);   // la foto original se conserva
+    }});
+  } catch(e){ toast("No se pudo abrir la imagen" + (navigator.onLine ? "" : " sin conexión"), "alerta"); }
+}
 $("#eCerrar").onclick = () => {
   if (hayCambiosEdicion() && !confirm("¿Salir sin guardar los cambios?")) return;
   olvidarEdicion(); cerrarHojas();
@@ -1606,7 +2129,7 @@ async function cerrarEditorGuardando(){ if (hayCambiosEdicion()){ await guardarE
 function abrirEdicion(n, original){
   if (!n) return;
   editando = n; eTipoSel = n.tipo || "nota"; eAmbSel = n.ambito || "trabajo";
-  eAdj = {audio: n.audio || null, fotos: [...(n.fotos || [])], nuevas: [], quitar: []};
+  eAdj = {audio: n.audio || null, fotos: [...(n.fotos || [])], nuevas: [], quitar: [], lienzos: {...(n.lienzos || {})}};
   const pl = partirLista(n.texto); eItems = ordenarItems(pl.items.map(i => ({...i}))); verHechos = false;
   $("#eTexto").value = pl.intro; pintarListaEdicion();
   // Título: el propio, o (en notas antiguas de lista) la línea que lo hacía de título
@@ -1681,10 +2204,13 @@ function pintarAdjEdicion(){
     $("#pQuitar").onclick = () => { if (confirm("¿Quitar el audio de esta nota?")){ eAdj.quitar.push(eAdj.audio); eAdj.audio = null; pintarAdjEdicion(); } };
   }
   const g = $("#eFotos"); g.innerHTML = "";
-  const tarjetaFoto = (src, quitar) => { const d = document.createElement("div"); d.className = "ft"; d.innerHTML = `<img alt=""><button class="x" aria-label="Quitar">${ic("x")}</button>`;
-    const img = d.querySelector("img"); src(img); img.onclick = () => verImagen(img.src); d.querySelector(".x").onclick = quitar; g.appendChild(d); };
-  eAdj.fotos.forEach(r => tarjetaFoto(img => urlAdjunto(r).then(u => img.src = u).catch(() => {}), () => { eAdj.quitar.push(r); eAdj.fotos = eAdj.fotos.filter(x => x !== r); pintarAdjEdicion(); }));
-  eAdj.nuevas.forEach((b, i) => tarjetaFoto(img => img.src = URL.createObjectURL(b), () => { eAdj.nuevas.splice(i, 1); pintarAdjEdicion(); }));
+  const tarjetaFoto = (src, quitar, anotar, editable) => { const d = document.createElement("div"); d.className = "ft";
+    d.innerHTML = `<img alt=""><button class="x" aria-label="Quitar">${ic("x")}</button><button class="anotar" aria-label="${editable ? "Editar el dibujo" : "Anotar sobre la foto"}">${ic("pluma")}<span>${editable ? "Editar" : "Anotar"}</span></button>`;
+    const img = d.querySelector("img"); src(img); img.onclick = () => verImagen(img.src); d.querySelector(".x").onclick = quitar; d.querySelector(".anotar").onclick = anotar; g.appendChild(d); };
+  eAdj.fotos.forEach(r => tarjetaFoto(img => urlAdjunto(r).then(u => img.src = u).catch(() => {}), () => { eAdj.quitar.push(r); eAdj.fotos = eAdj.fotos.filter(x => x !== r); pintarAdjEdicion(); },
+    () => anotarFoto({ruta: r}), !!eAdj.lienzos[r]));
+  eAdj.nuevas.forEach((b, i) => tarjetaFoto(img => img.src = URL.createObjectURL(b instanceof Blob ? b : b.png), () => { eAdj.nuevas.splice(i, 1); pintarAdjEdicion(); },
+    () => anotarFoto({nueva: b}), !(b instanceof Blob)));
   if (!eAdj.audio && !eAdj.fotos.length && !eAdj.nuevas.length) g.innerHTML = `<div class="sin-adj">Esta nota no tiene audio ni fotos.</div>`;
 }
 $("#eInFoto").onchange = async () => { for (const f of $("#eInFoto").files) eAdj.nuevas.push(await reducirFoto(f)); $("#eInFoto").value = ""; pintarAdjEdicion(); };
@@ -1706,7 +2232,7 @@ function notaDelEditor(){
   const n = {...editando, texto: items.length ? unirLista($("#eTexto").value, items) : $("#eTexto").value.trim(), tipo: eTipoSel, ambito: eAmbSel,
     para: {categoria: $("#eCat").value, nombre: $("#eNombre").value.trim()}, fecha: $("#eFecha").value || null, hora: $("#eHora").value || null};
   const t = $("#eTitulo").value.trim(); if (t) n.titulo = t; else delete n.titulo;
-  n._imagenes = [...eAdj.fotos.map(r => ({ruta: r, dibujo: r.includes("trazo")})), ...eAdj.nuevas.map(b => ({blob: b}))];
+  n._imagenes = [...eAdj.fotos.map(r => ({ruta: r, dibujo: r.includes("trazo")})), ...eAdj.nuevas.map(b => b instanceof Blob ? {blob: b} : {blob: b.png, dibujo: true})];
   return n;
 }
 const nombrePdf = n => `Chispa - ${(tituloPlano(n) || "Nota").replace(/[\\/:*?"<>|\n\r]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 60)} - ${isoDia(new Date(n.creada))}.pdf`;
@@ -1826,13 +2352,22 @@ async function guardarEdicion(){
   if (n.hora) pedirPermisoAvisos();
   if (n.ancla && (n.texto || n.titulo)) n.ancla = false;
   const nuevos = [];
-  for (const r of eAdj.quitar){
+  const lienzos = {...eAdj.lienzos};
+  for (const r0 of eAdj.quitar) for (const r of [r0, lienzos[r0]].filter(Boolean)){
     if ((n._subir || []).includes(r)){ n._subir = n._subir.filter(x => x !== r); await idb.quitarBlob(r); }
     else n._quitar = [...new Set([...(n._quitar || []), r])];
   }
+  for (const r0 of eAdj.quitar) delete lienzos[r0];
   n.audio = eAdj.audio; n.fotos = [...eAdj.fotos];
   const d = new Date(n.creada), carpeta = `${d.getFullYear()}/${pad(d.getMonth()+1)}`;
-  for (const b of eAdj.nuevas){ const r = `Fotos/${carpeta}/${n.id}-${Date.now().toString(36)}${Math.random().toString(36).slice(2,4)}.jpg`; await idb.ponerBlob(r, b); n.fotos.push(r); nuevos.push(r); }
+  for (const b of eAdj.nuevas){
+    const base = `Fotos/${carpeta}/${n.id}-${b instanceof Blob ? "" : "trazo-"}${Date.now().toString(36)}${Math.random().toString(36).slice(2,4)}`;
+    if (b instanceof Blob){ const r = base + ".jpg"; await idb.ponerBlob(r, b); n.fotos.push(r); nuevos.push(r); }
+    else { const r = `${base}.${b.ext}`, j = base + ".json"; await idb.ponerBlob(r, b.png); await idb.ponerBlob(j, new Blob([JSON.stringify(b.doc)], {type: "application/json"}));
+      n.fotos.push(r); lienzos[r] = j; nuevos.push(r, j); }
+  }
+  for (const r of Object.keys(lienzos)) if (!n.fotos.includes(r)) delete lienzos[r];
+  if (Object.keys(lienzos).length) n.lienzos = lienzos; else delete n.lienzos;
   const cat = n.para.categoria;
   if (n.para.nombre && ["cliente","proveedor","companero"].includes(cat)){
     config.contactos[cat] = config.contactos[cat] || [];
@@ -2465,7 +3000,7 @@ function pintarAyuda(){
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
-  <h3>Novedades</h3><p><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
