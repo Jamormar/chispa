@@ -459,12 +459,37 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .toast{width:max-content;max-width:calc(100vw - 32px)}
 .toast span{min-width:0}
 .toast .deshacer{flex:none;white-space:nowrap;margin-left:6px;padding:5px 11px;border-radius:9px;background:color-mix(in srgb,var(--on-ink) 18%,transparent);color:var(--spark);font-weight:700;font-size:14px}
+.buzones{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:6px 0 4px}
+@media (min-width:700px){ .buzones{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (min-width:1100px){ .buzones{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.buzon{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto auto;align-items:center;column-gap:10px;text-align:left;padding:14px 14px 12px;border-radius:18px;background:var(--surface);border:1px solid var(--line);min-height:96px;min-width:0}
+.buzon svg{width:22px;height:22px;grid-row:1;grid-column:1;color:var(--muted)}
+.buzon .bz-t{grid-row:1;grid-column:2;font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.buzon b{grid-row:2;grid-column:1/-1;font-family:var(--display);font-size:28px;font-weight:700;line-height:1.1;margin-top:8px}
+.buzon small{grid-row:3;grid-column:1/-1;color:var(--muted);font-size:12.5px;line-height:1.3;margin-top:2px}
+.buzon:active{transform:scale(.98)}
+.bz-importantes svg{color:#E0A21F}.bz-importantes{background:var(--spark-soft);border-color:transparent}
+.bz-entrada svg{color:var(--cw)}.bz-porhacer svg{color:var(--danger,#D9483B)}.bz-ideas svg{color:#E0A21F}.bz-completadas svg{color:var(--cp)}
+.bz-carpeta svg{color:var(--cw)}
+.bz-nuevo{border-style:dashed;background:transparent}.bz-nuevo .bz-t{white-space:normal}.bz-nuevo b{display:none}.bz-nuevo small{grid-row:2}
+.bz-cab{display:flex;align-items:center;gap:6px;margin:4px 0 8px}
+.bz-tit{flex:1;display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;font-size:20px;min-width:0}
+.bz-tit span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bz-tit svg{width:22px;height:22px;color:var(--muted);flex:none}
+.dia.venc{color:var(--danger,#D9483B)}
+.estr{display:inline-flex;vertical-align:-3px;margin-right:6px;color:#E0A21F}.estr svg{width:17px;height:17px;fill:currentColor}
+.mt .carp svg{color:var(--cw)}
+#eImportante{width:42px;padding:0;justify-content:center}
+#eImportante.estrella-on{background:var(--spark-soft);color:#C98A0E}#eImportante.estrella-on svg{fill:currentColor}
+#eArchivar.on{background:var(--ink);color:var(--on-ink)}
+#eArchivar svg{width:16px;height:16px;margin-right:6px;vertical-align:-3px}
 .desl{position:relative;border-bottom:1px solid var(--line)}
 .desl:last-child{border-bottom:0}
 .desl .fondo{position:absolute;inset:4px 0;border-radius:14px;display:flex;align-items:center;padding:0 18px;color:#fff;font-weight:600;gap:8px;opacity:0}
 .desl .fondo svg{width:20px;height:20px}
 .desl .fondo.hecha{background:var(--home);justify-content:flex-start}
 .desl .fondo.borra{background:var(--danger);justify-content:flex-end}
+.desl .fondo.archiva{background:#5C6880;justify-content:flex-end}
 .desl .fila{position:relative;background:var(--surface);border-bottom:0;touch-action:pan-y}
 .desl .fila.volviendo{transition:transform .22s}
 .ajuste .estado-t{font-size:13px;color:var(--muted)}
@@ -585,6 +610,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
     <section id="vNotas" class="oculto" data-v="notas">
       <div class="cab"><div><h1>Notas</h1></div><div class="esp"></div><button class="sync cab-sync" data-sync></button></div>
       <div class="busca"><span id="icBusca"></span><input id="q" type="search" placeholder="Buscar por texto, nombre o fecha"></div>
+      <div id="buzonCab"></div>
       <div class="desps" id="filtros"></div>
       <div class="desp-panel oculto" id="despPanel" role="dialog"></div>
       <div id="listaNotas"></div>
@@ -607,6 +633,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
       <div class="esp"></div>
       <button class="accion borrar" id="eBorrar" title="Borrar la nota"></button>
       <button class="accion" id="eCompartir" title="Enviar la nota como PDF"></button>
+      <button class="accion" id="eImportante" title="Marcar como importante" aria-pressed="false"></button>
       <button class="accion" id="eHecha"></button>
       <button class="btn" id="eGuardar">Guardar</button>
     </div>
@@ -643,6 +670,8 @@ html.lz-on,html.lz-on body{overflow:hidden}
         <div class="prop"><span data-i="user"></span><span class="lbl">Para quién</span><div class="val">
           <select id="eCat"><option value="">Sin indicar</option><option value="cliente">Cliente</option><option value="proveedor">Proveedor</option><option value="companero">Compañero</option><option value="personal">Personal</option></select>
           <input type="text" id="eNombre" placeholder="Nombre" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sugs" id="eSugs" role="listbox" aria-label="Contactos"></div></div></div>
+        <div class="prop"><span data-i="carpeta"></span><span class="lbl">Archivador</span><div class="val">
+          <select id="eCarpeta" aria-label="Archivador"></select><button class="opc" id="eArchivar" type="button"></button></div></div>
         <div class="prop"><span data-i="cal"></span><span class="lbl">Fecha y hora</span><div class="val">
           <input type="date" id="eFecha" aria-label="Fecha"><input type="time" id="eHora" aria-label="Hora (opcional)">
           <div class="atajos"><button class="opc" data-f="0">Hoy</button><button class="opc" data-f="1">Mañana</button><button class="opc" data-f="7">En una semana</button><button class="opc" data-f="">Sin fecha</button></div></div></div>
@@ -699,7 +728,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.12";
+const VERSION = "0.13";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -757,6 +786,12 @@ const ICONOS = {
   ampliar: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
   ajustar: '<path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/><rect x="8.5" y="8.5" width="7" height="7" rx="1.2"/>',
   pegar: '<rect x="6" y="4.5" width="12" height="16" rx="2"/><path d="M9.5 4.5V3h5v1.5M9 10h6M9 14h6"/>',
+  estrella: '<path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>',
+  bandeja: '<path d="M4 13.5 6.4 6a1.5 1.5 0 0 1 1.4-1h8.4a1.5 1.5 0 0 1 1.4 1L20 13.5V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18zM4 13.5h4.5a3.5 3.5 0 0 0 7 0H20"/>',
+  archivo: '<rect x="3.5" y="4.5" width="17" height="4.5" rx="1.2"/><path d="M5 9v9a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 18V9M10 13h4"/>',
+  carpeta: '<path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2.2h8A1.5 1.5 0 0 1 20.5 9.7V17.5A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5z"/>',
+  atras: '<path d="M14.5 5.5 8 12l6.5 6.5"/>',
+  puntos: '<circle cx="5.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18.5" cy="12" r="1.3"/>',
   abajo: '<path d="M6 9.5l6 6 6-6"/>',
   rehacer: '<path d="M20 9.5H9.5a5 5 0 0 0 0 10H13M20 9.5l-4-4M20 9.5l-4 4"/>',
   goma: '<path d="M8.5 20H20M4.6 14.6l8.8-8.8a2 2 0 0 1 2.8 0l2.5 2.5a2 2 0 0 1 0 2.8L11 19.4a2 2 0 0 1-1.4.6H8.3a2 2 0 0 1-1.4-.6l-2.3-2.3a2 2 0 0 1 0-2.5zM9 10l5 5"/>'
@@ -1902,6 +1937,8 @@ function fila(n, opts = {}){
   const lista = partirLista(n.texto).items;
   if (lista.length){ const h = lista.filter(i => i.hecho).length; mt.push(`<span class="prog ${h === lista.length ? "completa" : ""}">${ic("tarea")}${h} de ${lista.length}</span>`); }
   if (n.tipo === "idea") mt.push(`<span>${ic("idea")}Idea</span>`);
+  const cp = !opts.sinCarpeta && carpetaDe(n); if (cp) mt.push(`<span class="carp">${ic("carpeta")}${esc(cp.nombre)}</span>`);
+  if (n.archivada) mt.push(`<span>${ic("archivo")}Archivada</span>`);
   if (n.audio) mt.push(`<span>${ic("mic")}</span>`);
   if (n.fotos?.length > 1) mt.push(`<span>${ic("imagen")}${n.fotos.length}</span>`);
   if (n.nocturna) mt.push(`<span>${ic("luna")}</span>`);
@@ -1910,7 +1947,7 @@ function fila(n, opts = {}){
   if (n._pend) mt.push(`<span class="nube" title="Pendiente de subir">${ic("nube")}</span>`);
   return `<div class="desl"><div class="fondo"></div><div class="fila ${n.hecha ? "hecha" : ""}" data-abrir="${n.id}">
     <button class="chk ${n.ambito === "personal" ? "personal" : ""}" data-hecha="${n.id}" aria-label="${n.hecha ? "Marcar pendiente" : "Marcar hecha"}">${ic("check")}</button>
-    <div class="ct"><div class="tt">${tituloDe(n)}</div>${(() => { const d = partesNota(n).desc; return d ? `<div class="desc">${esc(d)}</div>` : ""; })()}${lista.length && !n.hecha ? miniLista(n, lista) : ""}${mt.length ? `<div class="mt">${mt.join("")}</div>` : ""}
+    <div class="ct"><div class="tt">${n.importante ? `<span class="estr" title="Importante">${ic("estrella")}</span>` : ""}${tituloDe(n)}</div>${(() => { const d = partesNota(n).desc; return d ? `<div class="desc">${esc(d)}</div>` : ""; })()}${lista.length && !n.hecha ? miniLista(n, lista) : ""}${mt.length ? `<div class="mt">${mt.join("")}</div>` : ""}
       ${n.ancla && opts.resolver ? `<div class="resolver"><textarea class="crece" rows="1" placeholder="¿Qué era?" data-resolver="${n.id}" enterkeyhint="done"></textarea><button data-ok="${n.id}">Listo</button></div>` : ""}</div>
     ${n.fotos?.length ? `<img class="mini" data-mini="${n.fotos[0]}" alt="">` : ""}
   </div></div>`;
@@ -1935,8 +1972,8 @@ let ignorarClick = false;
     if (!activo){ if (Math.abs(mx) > 12 && Math.abs(mx) > Math.abs(my) * 1.4){ activo = true; } else if (Math.abs(my) > 12){ fila = null; return; } else return; }
     dx = mx; fila.style.transform = `translateX(${dx}px)`;
     const n = notas.find(x => x.id === fila.dataset.abrir);
-    fondo.className = "fondo " + (dx > 0 ? "hecha" : "borra");
-    fondo.innerHTML = dx > 0 ? ic(n?.hecha ? "deshacer" : "check") + (n?.hecha ? "Pendiente" : "Hecha") : "Borrar" + ic("borrar");
+    fondo.className = "fondo " + (dx > 0 ? "hecha" : "archiva");
+    fondo.innerHTML = dx > 0 ? ic(n?.hecha ? "deshacer" : "check") + (n?.hecha ? "Pendiente" : "Hecha") : (n && enArchivo(n) ? "Sacar del archivo" : "Archivar") + ic("archivo");
     fondo.style.opacity = Math.min(1, Math.abs(dx) / 90);
   }, {passive: true});
   const fin = async () => {
@@ -1946,10 +1983,17 @@ let ignorarClick = false;
     f.classList.add("volviendo"); f.style.transform = ""; fd.style.opacity = 0;
     const n = notas.find(x => x.id === f.dataset.abrir); if (!n) return;
     if (d > 90){ vibrar(30); await alternarHecha(n); }
-    else if (d < -90){ vibrar(30); borrarNota(n); }
+    else if (d < -90){ vibrar(30); await alternarArchivo(n); }
   };
   document.addEventListener("pointerup", fin); document.addEventListener("pointercancel", fin);
 })();
+async function alternarArchivo(n){
+  const antes = {archivada: n.archivada, hecha: n.hecha, hechaEn: n.hechaEn};
+  if (enArchivo(n)){ delete n.archivada; if (n.hecha && hechaHace(n) > DIAS_ARCHIVO * 864e5){ n.hecha = false; n.hechaEn = null; } }
+  else n.archivada = true;
+  await guardarNotaLocal(n); refrescar();
+  toast(n.archivada ? "Archivada" : "Fuera del archivo", "archivo", 4500, async () => { Object.assign(n, antes); if (!antes.archivada) delete n.archivada; await guardarNotaLocal(n); refrescar(); });
+}
 async function alternarHecha(n){
   const marcar = v => { n.hecha = v; n.hechaEn = v ? new Date().toISOString() : null; };
   marcar(!n.hecha); await guardarNotaLocal(n); refrescar();
@@ -2103,11 +2147,27 @@ $("#hEditar").addEventListener("click", e => {
 });
 $("#eFecha").addEventListener("input", pintarOpciones);
 $("#eCat").addEventListener("change", () => { if ($("#eCat").value === "personal"){ eAmbSel = "personal"; pintarOpciones(); } });
-let firmaInicial = "", tEdicion = 0;
+let firmaInicial = "", tEdicion = 0, eImp = false, eArch = false;
+function pintarCarpetaEdicion(sel){
+  $("#eCarpeta").innerHTML = `<option value="">Ninguno</option>${archivadores().map(c => `<option value="${esc(c.id)}">${esc(c.nombre)}</option>`).join("")}<option value="+">＋ Nuevo archivador…</option>`;
+  $("#eCarpeta").value = archivadores().some(c => c.id === sel) ? sel : "";
+}
+function pintarMarcasEdicion(){
+  $("#eImportante").innerHTML = ic("estrella"); $("#eImportante").classList.toggle("estrella-on", eImp); $("#eImportante").setAttribute("aria-pressed", eImp);
+  $("#eImportante").title = eImp ? "Quitar de importantes" : "Marcar como importante";
+  $("#eArchivar").innerHTML = ic("archivo") + (eArch ? "Archivada · sacar" : "Archivar"); $("#eArchivar").classList.toggle("on", eArch);
+}
+$("#eImportante").onclick = () => { eImp = !eImp; pintarMarcasEdicion(); guardarEdicionPronto(); };
+$("#eArchivar").onclick = () => { eArch = !eArch; pintarMarcasEdicion(); guardarEdicionPronto(); };
+$("#eCarpeta").onchange = async () => {
+  if ($("#eCarpeta").value !== "+") return;
+  const c = await nuevaCarpeta(); pintarCarpetaEdicion(c ? c.id : ""); guardarEdicionPronto();
+};
 function camposEditor(){
   const nuevo = $("#eNuevoItem")?.value.trim(), items = nuevo ? [...eItems, {hecho: false, texto: nuevo}] : eItems;
   return {texto: items.length ? unirLista($("#eTexto").value, items) : $("#eTexto").value.trim(), titulo: $("#eTitulo").value.trim(), tipo: eTipoSel, ambito: eAmbSel,
-    para: {categoria: $("#eCat").value, nombre: $("#eNombre").value.trim()}, fecha: $("#eFecha").value || null, hora: $("#eHora").value || null};
+    para: {categoria: $("#eCat").value, nombre: $("#eNombre").value.trim()}, fecha: $("#eFecha").value || null, hora: $("#eHora").value || null,
+    importante: eImp, archivada: eArch, carpeta: $("#eCarpeta").value.replace("+", "")};
 }
 const firmaEditor = () => JSON.stringify(camposEditor());
 const hayCambiosEdicion = () => !!editando && $("#hEditar").classList.contains("on") && (firmaEditor() !== firmaInicial || eAdj.nuevas.length > 0 || eAdj.quitar.length > 0);
@@ -2129,6 +2189,7 @@ async function cerrarEditorGuardando(){ if (hayCambiosEdicion()){ await guardarE
 function abrirEdicion(n, original){
   if (!n) return;
   editando = n; eTipoSel = n.tipo || "nota"; eAmbSel = n.ambito || "trabajo";
+  eImp = !!n.importante; eArch = enArchivo(n); pintarCarpetaEdicion(n.carpeta || ""); pintarMarcasEdicion();
   eAdj = {audio: n.audio || null, fotos: [...(n.fotos || [])], nuevas: [], quitar: [], lienzos: {...(n.lienzos || {})}};
   const pl = partirLista(n.texto); eItems = ordenarItems(pl.items.map(i => ({...i}))); verHechos = false;
   $("#eTexto").value = pl.intro; pintarListaEdicion();
@@ -2349,6 +2410,10 @@ async function guardarEdicion(){
   const tit = $("#eTitulo").value.trim(); if (tit) n.titulo = tit; else delete n.titulo;
   n.para = {categoria: $("#eCat").value, nombre: $("#eNombre").value.trim()}; n.fecha = $("#eFecha").value || null;
   n.hora = $("#eHora").value || null; if (n.hora && !n.fecha) n.fecha = hoyISO();
+  if (eImp) n.importante = true; else delete n.importante;
+  if (eArch){ if (!enArchivo(n)) n.archivada = true; }
+  else { delete n.archivada; if (n.hecha && hechaHace(n) > DIAS_ARCHIVO * 864e5) n.hechaEn = new Date().toISOString(); }   // sale del archivo: vuelve a «Completadas»
+  const cpe = $("#eCarpeta").value.replace("+", ""); if (cpe) n.carpeta = cpe; else delete n.carpeta;
   if (n.hora) pedirPermisoAvisos();
   if (n.ancla && (n.texto || n.titulo)) n.ancla = false;
   const nuevos = [];
@@ -2714,8 +2779,9 @@ let grupoAbierto = null;
 const resumenGrupo = g => { const sel = filtro[g.k]; if (!sel.length || sel.length === g.ops.length) return g.todos; if (sel.length === 1) return g.ops.find(o => o[0] === sel[0])?.[1] || g.todos; return g.ops.filter(o => sel.includes(o[0])).map(o => o[1]).join(", "); };
 const filtroActivo = g => filtro[g.k].length > 0 && filtro[g.k].length < g.ops.length;
 function pintarFiltros(){
-  const hay = GRUPOS.some(g => g.k !== "estado" ? filtroActivo(g) : !(filtro.estado.length === 1 && filtro.estado[0] === "pend"));
-  $("#filtros").innerHTML = GRUPOS.map(g => `<button class="desp ${filtroActivo(g) ? "on" : ""} ${grupoAbierto === g.k ? "abierto" : ""}" data-g="${g.k}" aria-haspopup="true" aria-expanded="${grupoAbierto === g.k}">
+  const hay = GRUPOS.some(g => g.k !== "estado" ? filtroActivo(g) : (norm($("#q").value).trim() || buzon === "todas") && !(filtro.estado.length === 1 && filtro.estado[0] === "pend"));
+  const usarEstado = norm($("#q").value).trim() || buzon === "todas";
+  $("#filtros").innerHTML = GRUPOS.filter(g => g.k !== "estado" || usarEstado).map(g => `<button class="desp ${filtroActivo(g) ? "on" : ""} ${grupoAbierto === g.k ? "abierto" : ""}" data-g="${g.k}" aria-haspopup="true" aria-expanded="${grupoAbierto === g.k}">
       <span class="d-et">${g.et}</span><span class="d-val">${esc(resumenGrupo(g))}</span>${ic("abajo")}</button>`).join("")
     + (hay ? `<button class="desp-limpiar" id="fLimpiar">${ic("x")}Quitar filtros</button>` : "");
   if ($("#fLimpiar")) $("#fLimpiar").onclick = () => { for (const g of GRUPOS) filtro[g.k] = g.k === "estado" ? ["pend"] : []; guardarFiltros(); cerrarDesp(); pintarNotas(); };
@@ -2757,26 +2823,102 @@ $("#filtros").addEventListener("click", e => { const b = e.target.closest("[data
 document.addEventListener("pointerdown", e => { if (grupoAbierto && !e.target.closest("#despPanel,[data-g]")) cerrarDesp(); });
 $("#q").addEventListener("input", () => pintarNotas());
 function etiquetaDia(iso){ const d = isoDia(new Date(iso)); if (d === hoyISO()) return "Hoy"; if (d === masDias(-1)) return "Ayer"; return capital(fechaLarga(d)); }
+// Buzones: dónde está cada nota (la estrella y los archivadores propios son aparte)
+const DIAS_ARCHIVO = 7;
+const hechaHace = n => Date.now() - new Date(n.hechaEn || n.actualizada || n.creada).getTime();
+const enArchivo = n => !!n.archivada || (n.hecha && hechaHace(n) > DIAS_ARCHIVO * 864e5);
+const conPlazo = n => !!n.fecha || n.tipo === "tarea" || n.tipo === "recordatorio";
+const BUZONES = [
+  {k: "importantes", t: "Importantes", ic: "estrella", d: "Las que marcas con estrella", f: n => n.importante && !enArchivo(n)},
+  {k: "entrada", t: "Entrada", ic: "bandeja", d: "Anotado y aún sin clasificar", f: n => !n.hecha && !enArchivo(n) && !n.carpeta && !conPlazo(n) && n.tipo !== "idea"},
+  {k: "porhacer", t: "Por hacer", ic: "tarea", d: "Tareas y notas con fecha", f: n => !n.hecha && !enArchivo(n) && conPlazo(n)},
+  {k: "ideas", t: "Ideas", ic: "idea", d: "Para pensarlas con calma", f: n => !n.hecha && !enArchivo(n) && n.tipo === "idea" && !n.fecha},
+  {k: "completadas", t: "Completadas", ic: "check", d: `Hechas en los últimos ${DIAS_ARCHIVO} días`, f: n => n.hecha && !enArchivo(n)},
+  {k: "archivo", t: "Archivo", ic: "archivo", d: "Lo antiguo, por meses", f: enArchivo},
+  {k: "todas", t: "Todas", ic: "lista", d: "Con todos los filtros", f: () => true}];
+const archivadores = () => config.carpetas || [];
+const carpetaDe = n => n.carpeta && archivadores().find(c => c.id === n.carpeta);
+let buzon = lsGet("chispa.buzon") || null;   // null = ver los buzones
+function abrirBuzon(k){ buzon = k; lsSet("chispa.buzon", k); cerrarDesp(); pintarNotas(); scrollTo(0, 0); }
+function buzonDeNota(n){ if (enArchivo(n)) return "Archivo"; const c = carpetaDe(n); if (c && !n.hecha) return c.nombre; const b = BUZONES.find(x => x.k !== "importantes" && x.k !== "todas" && x.f(n)); return b?.t || ""; }
 function pintarNotas(){
-  if (!grupoAbierto) pintarFiltros(); else document.querySelectorAll(".desp").forEach(b => { const g = GRUPOS.find(x => x.k === b.dataset.g); b.querySelector(".d-val").textContent = resumenGrupo(g); b.classList.toggle("on", filtroActivo(g)); });
   const q = norm($("#q").value).split(/\s+/).filter(Boolean);
-  const lista = deNotas().filter(n => {
-    for (const g of GRUPOS) if (filtro[g.k].length && !filtro[g.k].includes(valorFiltro(n, g.k))) return false;
-    if (q.length){ const h = norm([n.titulo, n.texto, n.transcripcion, n.para?.nombre, CAT[n.para?.categoria], TIPOS[n.tipo]?.[0], n.terminal, fechaLarga(n.creada), n.fecha ? fechaLarga(n.fecha) : "", n.nocturna ? "noche nocturna" : "", n.ancla ? "ancla" : ""].join(" ")); if (!q.every(p => h.includes(p))) return false; }
-    return true;
-  }).slice(0, 300);
-  if (!lista.length){
-    $("#listaNotas").innerHTML = `<div class="vacio-grande"><div class="halo">${ic(q.length ? "buscar" : "lista")}</div><b>${q.length ? "No hay notas con eso" : "Aquí aparecerán tus notas"}</b><span>${q.length ? "Prueba con otra palabra o quita algún filtro." : "Todo lo que anotes en el móvil o en el PC se reúne aquí."}</span></div>`;
+  const car = buzon?.startsWith("c:") ? archivadores().find(c => "c:" + c.id === buzon) : null;
+  if (buzon?.startsWith("c:") && !car) buzon = null;
+  const bz = BUZONES.find(x => x.k === buzon);
+  // --- portada: los buzones y los archivadores
+  if (!q.length && !bz && !car){
+    $("#filtros").classList.add("oculto"); $("#buzonCab").innerHTML = "";
+    const ns = deNotas(), hoy = hoyISO();
+    const tarjeta = (k, icono, t, n, sub, cls = "") => `<button class="buzon ${cls}" data-buzon="${k}">${ic(icono)}<span class="bz-t">${esc(t)}</span><b>${n}</b>${sub ? `<small>${sub}</small>` : ""}</button>`;
+    const html = BUZONES.map(b => { const l = ns.filter(b.f); let sub = "";
+        if (b.k === "porhacer"){ const at = l.filter(n => n.fecha && n.fecha < hoy).length, h = l.filter(n => n.fecha === hoy).length; sub = [at && `${at} atrasada${at > 1 ? "s" : ""}`, h && `${h} para hoy`].filter(Boolean).join(" · "); }
+        if (b.k === "entrada" && l.length) sub = "Clasifícalas o márcalas hechas";
+        return tarjeta(b.k, b.ic, b.t, b.k === "todas" ? ns.length : l.length, sub, "bz-" + b.k); }).join("");
+    const cs = archivadores().map(c => { const l = ns.filter(n => n.carpeta === c.id && !enArchivo(n)); const p = l.filter(n => !n.hecha).length;
+      return tarjeta("c:" + c.id, "carpeta", c.nombre, p, l.length - p ? `${l.length - p} hecha${l.length - p > 1 ? "s" : ""}` : "", "bz-carpeta"); }).join("");
+    $("#listaNotas").innerHTML = `<div class="buzones">${html}</div>
+      <div class="dia">Mis archivadores</div>
+      <div class="buzones">${cs}<button class="buzon bz-nuevo" id="bzNuevo">${ic("mas")}<span class="bz-t">Nuevo archivador</span><small>Por asunto, cliente u obra</small></button></div>`;
+    $("#bzNuevo").onclick = async () => { const c = await nuevaCarpeta(); if (c) abrirBuzon("c:" + c.id); };
     return;
   }
-  let html = `<div class="cuenta">${lista.length} ${lista.length === 1 ? "nota" : "notas"}</div>`, grupo = null, abierto = false;
+  // --- dentro de un buzón (o buscando en todos)
+  $("#filtros").classList.remove("oculto");
+  if (!grupoAbierto) pintarFiltros(); else document.querySelectorAll(".desp").forEach(b => { const g = GRUPOS.find(x => x.k === b.dataset.g); b.querySelector(".d-val").textContent = resumenGrupo(g); b.classList.toggle("on", filtroActivo(g)); });
+  const titulo = q.length ? "Resultados en todas las notas" : car ? car.nombre : bz.t;
+  $("#buzonCab").innerHTML = `<div class="bz-cab"><button class="ibtn" id="bzVolver" aria-label="Volver a los buzones">${ic("atras")}</button>
+    <div class="bz-tit">${ic(q.length ? "buscar" : car ? "carpeta" : bz.ic)}<span>${esc(titulo)}</span></div>
+    ${car ? `<button class="ibtn" id="bzMenu" aria-label="Opciones del archivador">${ic("puntos")}</button>` : ""}</div>`;
+  $("#bzVolver").onclick = () => { $("#q").value = ""; abrirBuzon(null); };
+  if ($("#bzMenu")) $("#bzMenu").onclick = () => menuCarpeta(car);
+  const usarEstado = q.length || bz?.k === "todas";
+  let lista = deNotas().filter(n => {
+    if (!q.length){ if (car ? n.carpeta !== car.id : !bz.f(n)) return false; }
+    for (const g of GRUPOS){ if (g.k === "estado" && !usarEstado) continue; if (filtro[g.k].length && !filtro[g.k].includes(valorFiltro(n, g.k))) return false; }
+    if (q.length){ const h = norm([n.titulo, n.texto, n.transcripcion, n.para?.nombre, CAT[n.para?.categoria], TIPOS[n.tipo]?.[0], n.terminal, fechaLarga(n.creada), n.fecha ? fechaLarga(n.fecha) : "", n.nocturna ? "noche nocturna" : "", n.ancla ? "ancla" : "", carpetaDe(n)?.nombre, n.importante ? "importante estrella" : ""].join(" ")); if (!q.every(p => h.includes(p))) return false; }
+    return true;
+  });
+  if (!lista.length){
+    $("#listaNotas").innerHTML = `<div class="vacio-grande"><div class="halo">${ic(q.length ? "buscar" : car ? "carpeta" : bz.ic)}</div><b>${q.length ? "No hay notas con eso" : car ? "Archivador vacío" : "Nada por aquí"}</b><span>${q.length ? "Prueba con otra palabra o quita algún filtro." : car ? "Desde una nota, en Detalles › Archivador, elige este archivador." : bz.d + "."}</span></div>`;
+    return;
+  }
+  // agrupación según el buzón
+  const hoy = hoyISO(), manana = masDias(1), semana = masDias(7), mes = iso => capital(new Date(iso).toLocaleDateString("es-ES", {month: "long", year: "numeric"}));
+  let grupoDe = n => etiquetaDia(n.creada), opciones = {hora: true};
+  if (bz?.k === "porhacer"){
+    lista.sort((a, b) => ((a.fecha || "9999") + (a.hora || "99")).localeCompare((b.fecha || "9999") + (b.hora || "99")));
+    grupoDe = n => !n.fecha ? "Sin fecha" : n.fecha < hoy ? "Atrasadas" : n.fecha === hoy ? "Hoy" : n.fecha === manana ? "Mañana" : n.fecha <= semana ? "Esta semana" : "Más adelante"; opciones = {};
+  } else if (bz?.k === "archivo"){ lista.sort((a, b) => (b.hechaEn || b.creada).localeCompare(a.hechaEn || a.creada)); grupoDe = n => mes(n.hechaEn || n.creada); }
+  else if (bz?.k === "completadas"){ lista.sort((a, b) => (b.hechaEn || b.creada).localeCompare(a.hechaEn || a.creada)); grupoDe = n => "Hechas " + etiquetaDia(n.hechaEn || n.creada).toLowerCase(); }
+  else if (car){ const orden = n => enArchivo(n) ? 2 : n.hecha ? 1 : 0; lista.sort((a, b) => orden(a) - orden(b) || b.creada.localeCompare(a.creada)); grupoDe = n => ["Pendientes", "Hechas", "Archivadas"][orden(n)]; }
+  else if (q.length){ grupoDe = n => buzonDeNota(n) || "Otras"; const pos = t => { const i = BUZONES.findIndex(b => b.t === t); return i < 0 ? 50 : i; }; lista.sort((a, b) => pos(buzonDeNota(a)) - pos(buzonDeNota(b)) || b.creada.localeCompare(a.creada)); }
+  lista = lista.slice(0, 400);
+  let html = `<div class="cuenta">${lista.length} ${lista.length === 1 ? "nota" : "notas"}${bz && !q.length ? ` · ${bz.d.toLowerCase()}` : ""}</div>`, grupo = null, abierto = false;
   for (const n of lista){
-    const g = etiquetaDia(n.creada);
-    if (g !== grupo){ if (abierto) html += "</div>"; html += `<div class="dia">${g}</div><div class="lista">`; grupo = g; abierto = true; }
-    html += fila(n, {hora: true});
+    const g = grupoDe(n);
+    if (g !== grupo){ if (abierto) html += "</div>"; html += `<div class="dia ${g === "Atrasadas" ? "venc" : ""}">${esc(g)}</div><div class="lista">`; grupo = g; abierto = true; }
+    html += fila(n, {...opciones, sinCarpeta: !!car});
   }
   $("#listaNotas").innerHTML = html + (abierto ? "</div>" : "");
   cargarMinis($("#listaNotas"));
+}
+$("#listaNotas").addEventListener("click", e => { const b = e.target.closest("[data-buzon]"); if (b) abrirBuzon(b.dataset.buzon); });
+async function nuevaCarpeta(){
+  const nombre = (prompt("Nombre del archivador (por ejemplo, Casa nueva o un cliente):") || "").trim(); if (!nombre) return null;
+  const ya = archivadores().find(c => norm(c.nombre) === norm(nombre)); if (ya) return ya;
+  const c = {id: "c" + Date.now().toString(36), nombre}; config.carpetas = [...archivadores(), c]; guardarConfig(); toast(`Archivador «${nombre}» creado`, "carpeta"); return c;
+}
+function menuCarpeta(c){
+  const op = prompt(`Archivador «${c.nombre}»\n\nEscribe un nombre nuevo para renombrarlo, o escribe BORRAR para eliminarlo (las notas no se borran, solo salen del archivador).`, c.nombre);
+  if (op === null) return;
+  const v = op.trim();
+  if (v.toUpperCase() === "BORRAR"){
+    config.carpetas = archivadores().filter(x => x.id !== c.id); guardarConfig();
+    for (const n of notas.filter(x => x.carpeta === c.id)){ delete n.carpeta; guardarNotaLocal(n); }
+    toast(`Archivador «${c.nombre}» eliminado`, "borrar"); abrirBuzon(null); return;
+  }
+  if (v && v !== c.nombre){ c.nombre = v; config.carpetas = [...archivadores()]; guardarConfig(); pintarNotas(); toast("Nombre cambiado", "check"); }
 }
 
 // Estadísticas
@@ -2995,12 +3137,12 @@ function pintarAyuda(){
   <h3>Modo noche</h3><p>En tu horario la pantalla del móvil se pone negra. Si abres Chispa y la cierras sin escribir, queda un ancla con la hora.</p>
   <h3>En el móvil</h3><p>Instálala desde Chrome con «Añadir a pantalla de inicio». Si mantienes pulsado el icono tienes los atajos <b>Grabar voz</b> y <b>Ancla rápida</b>.</p>
   <h3>Tus datos</h3><p>En OneDrive, dentro de Aplicaciones › Chispa: Notas (un fichero legible por nota), Audios, Fotos, Configuracion y Papelera.</p>
-  <h3>Gestos</h3><p>En las listas, desliza una nota a la derecha para marcarla hecha y a la izquierda para borrarla. Siempre puedes <b>deshacer</b> desde el aviso que aparece arriba.</p>
+  <h3>Gestos</h3><p>En las listas, desliza una nota a la derecha para marcarla hecha y a la izquierda para archivarla (o sacarla del archivo). Para borrar, ábrela y pulsa la papelera. Siempre puedes <b>deshacer</b> desde el aviso que aparece arriba.</p>
   <h3>Hora y avisos</h3><p>Si escribes «a las 5» o «a las 17:30», Chispa pone la hora. Mientras Chispa esté abierta o en segundo plano, te avisa a esa hora.</p>
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
-  <h3>Novedades</h3><p><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y archivadores propios. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
