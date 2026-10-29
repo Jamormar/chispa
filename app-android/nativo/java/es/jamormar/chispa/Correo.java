@@ -136,7 +136,15 @@ final class Correo {
      * Envía el resumen si ya es la hora y nadie lo ha enviado hoy.
      * Con prueba=true se envía ya, aunque no haya nada, sin marcar el día.
      */
+    /** Igual que comprobar(), pero deja anotado el resultado de cada intento (se ve en Ajustes). */
     static String enviarSiToca(Context ctx, boolean prueba) {
+        String r = comprobar(ctx, prueba);
+        if (!r.startsWith("Enviado") && !r.startsWith("Error"))   // los envíos y errores ya se anotan dentro
+            Ajustes.prefs(ctx).edit().putString(P_ULTIMO, new SimpleDateFormat("d MMM HH:mm", ES).format(new Date()) + " · " + r).apply();
+        return r;
+    }
+
+    private static String comprobar(Context ctx, boolean prueba) {
         if (!conectado(ctx)) return "El correo no está conectado";
         try {
             String acceso = acceso(ctx);

@@ -728,7 +728,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.13";
+const VERSION = "0.13.1";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -854,18 +854,19 @@ const idb = {
 /* ================= Inicio de sesión (OAuth con PKCE) ================= */
 let token = lsGet("chispa.token");
 let necesitaLogin = false;
+const scopes = () => SCOPES + (lsGet("chispa.permCorreo") ? " Mail.Send" : "");
 async function irALogin(silencioso = false){
   const verifier = aleatorio(48), state = aleatorio(16);
   const challenge = b64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)));
   lsSet("chispa.pkce", {verifier, state, silencioso});
   const p = new URLSearchParams({ client_id: CLIENT_ID, response_type: "code", redirect_uri: REDIRECT, response_mode: "query",
-    scope: SCOPES, state, code_challenge: challenge, code_challenge_method: "S256" });
+    scope: scopes(), state, code_challenge: challenge, code_challenge_method: "S256" });
   if (silencioso){ p.set("prompt", "none"); const u = lsGet("chispa.usuario"); if (u) p.set("login_hint", u); }
   location.href = `${AUTH}/authorize?${p}`;
 }
 async function pedirToken(datos){
   const r = await fetch(`${AUTH}/token`, { method: "POST", headers: {"Content-Type": "application/x-www-form-urlencoded"},
-    body: new URLSearchParams({client_id: CLIENT_ID, scope: SCOPES, redirect_uri: REDIRECT, ...datos}) });
+    body: new URLSearchParams({client_id: CLIENT_ID, scope: scopes(), redirect_uri: REDIRECT, ...datos}) });
   const j = await r.json();
   if (!r.ok) throw Object.assign(new Error(j.error_description || j.error || "Error de inicio de sesión"), {codigo: j.error});
   token = { access: j.access_token, refresh: j.refresh_token || token?.refresh, exp: Date.now() + (j.expires_in - 120) * 1000 };
@@ -1049,6 +1050,7 @@ async function sincronizar(forzar = false){
     }
     ordenar(); errorSync = fallos[0] || ""; ultimaSync = Date.now();
     if (!fallos.length) await subirAgenda().catch(e => console.warn("Agenda", e));
+    if (!fallos.length) setTimeout(resumenSiToca, 1500);
     if (porBajar.length || quitadas) refrescar();
   } catch(e){
     errorSync = e.login ? "" : (e.message || "Error de sincronización");
@@ -2635,6 +2637,96 @@ async function pintarTelefono(){
   if ($("#kActualizar")) $("#kActualizar").onclick = actualizarApp;
   if ($("#kBuscarVer")) $("#kBuscarVer").onclick = async () => { await buscarVersionApp(true); if (!appNueva) toast("Tienes la última versión", "check"); };
 }
+// Resumen diario también desde la web (PC o al abrir la app): mismo correo y la misma marca diaria que el móvil
+function seccionesResumen(ns, ambito){
+  const ahora = new Date(), hoy = isoDia(ahora), ayer = masDias(-1), semana = masDias(7);
+  const s = {hoy: [], atrasado: [], proximos: [], ayer: [], anclas: [], sinFecha: 0};
+  for (const n of ns){
+    if (ambito && (n.ambito || "trabajo") !== ambito) continue;
+    if (n.archivada) continue;
+    const f = n.fecha || "";
+    if (n.ancla && !n.hecha && !n.texto && !n.titulo){ s.anclas.push(n); continue; }
+    if (!n.hecha && f){ if (f === hoy) s.hoy.push(n); else if (f < hoy) s.atrasado.push(n); else if (f <= semana) s.proximos.push(n); }
+    else if (!n.hecha) s.sinFecha++;
+    if (!n.hecha && isoDia(new Date(n.creada)) === ayer && (!f || f > semana)) s.ayer.push(n);
+  }
+  const ord = (a, b) => ((a.fecha || "") + (a.hora || "99")).localeCompare((b.fecha || "") + (b.hora || "99"));
+  s.hoy.sort(ord); s.atrasado.sort(ord); s.proximos.sort(ord);
+  s.hay = s.hoy.length + s.atrasado.length + s.proximos.length + s.ayer.length + s.anclas.length > 0;
+  return s;
+}
+function htmlResumen(s, nombre, prueba){
+  const e = t => esc(String(t || "")).replace(/\n/g, "<br>");
+  const fc = f => new Date(f + "T12:00").toLocaleDateString("es-ES", {weekday: "short", day: "numeric", month: "short"});
+  const bloque = (t, l, conFecha, rojo) => !l.length ? "" : `<h3 style="margin:24px 4px 8px;font-size:16px;color:${rojo ? "#C2412D" : "#16213A"}">${e(t)} <span style="color:#A3ACBD;font-weight:400">${l.length}</span></h3><div style="border:1px solid #E4E8EF;border-radius:14px;overflow:hidden">`
+    + l.slice(0, 25).map((n, i) => { const p = partesNota(n), it = partirLista(n.texto).items.filter(x => !x.hecho), meta = [];
+        if (conFecha) meta.push(fc(n.fecha) + (n.hora ? " " + n.hora : "")); if (n.para?.nombre) meta.push(n.para.nombre); if (n.tipo && n.tipo !== "nota") meta.push(TIPOS[n.tipo]?.[0] || n.tipo);
+        return `<div style="padding:11px 14px;border-top:${i ? "1px solid #EEF1F6" : "0"}"><div style="font-weight:600">${e(p.titulo || p.vacio || "Nota")}</div>`
+          + (p.desc ? `<div style="color:#4A5670;font-size:14px;margin-top:2px">${e(p.desc.slice(0, 240))}</div>` : "")
+          + (it.length ? `<ul style="margin:6px 0 0;padding-left:20px;font-size:14px;color:#4A5670">${it.slice(0, 8).map(x => `<li>${e(x.texto)}</li>`).join("")}</ul>` : "")
+          + (meta.length ? `<div style="color:#66728A;font-size:13px;margin-top:3px">${e(meta.join(" · "))}</div>` : "") + "</div>"; }).join("")
+    + (l.length > 25 ? `<div style="padding:10px 14px;color:#66728A">y ${l.length - 25} más…</div>` : "") + "</div>";
+  const fecha = new Date().toLocaleDateString("es-ES", {weekday: "long", day: "numeric", month: "long"});
+  return `<div style="font-family:Segoe UI,Roboto,Arial,sans-serif;max-width:640px;margin:0 auto;color:#16213A">
+    <div style="background:#16213A;color:#fff;border-radius:16px;padding:18px 22px"><div style="font-size:20px;font-weight:700"><span style="color:#F4B63E">&#9889;</span> Chispa${nombre ? " · " + nombre : ""}</div><div style="opacity:.8;margin-top:4px">${capital(fecha)}</div></div>
+    ${bloque("Para hoy", s.hoy, true)}${bloque("Atrasado", s.atrasado, true, true)}${bloque("Próximos 7 días", s.proximos, true)}${bloque("Anotado ayer", s.ayer)}${bloque("Anclas por completar", s.anclas)}
+    ${!s.hay ? `<p style="margin:22px 4px">No tienes nada pendiente. ¡Buen día!</p>` : ""}
+    ${s.sinFecha ? `<p style="margin:18px 4px;color:#66728A">Además tienes ${s.sinFecha} ${s.sinFecha === 1 ? "nota pendiente" : "notas pendientes"} sin fecha.</p>` : ""}
+    <p style="margin:24px 4px"><a href="${REDIRECT}" style="background:#F4B63E;color:#3A2700;text-decoration:none;font-weight:700;padding:11px 18px;border-radius:12px;display:inline-block">Abrir Chispa</a></p>
+    <p style="font-size:12px;color:#A3ACBD;margin:18px 4px">Resumen automático de Chispa${prueba ? " (prueba)" : ""}. Solo se envía si hay algo que contar.</p></div>`;
+}
+function asuntoResumen(s, nombre, prueba){
+  const p = [];
+  if (s.hoy.length) p.push(`${s.hoy.length} para hoy`);
+  if (s.atrasado.length) p.push(`${s.atrasado.length} ${s.atrasado.length === 1 ? "atrasada" : "atrasadas"}`);
+  if (!p.length && s.proximos.length) p.push(`${s.proximos.length} esta semana`);
+  if (!p.length && s.ayer.length) p.push(`${s.ayer.length} ${s.ayer.length === 1 ? "idea de ayer" : "ideas de ayer"}`);
+  return `${prueba ? "[Prueba] " : ""}Chispa${nombre ? " · " + nombre : ""}: ${p.length ? p.join(", ") : s.hay ? "tu resumen" : "nada pendiente"}`;
+}
+async function enviarResumenWeb(prueba = false){
+  const anotar = r => { lsSet("chispa.resumenUltimo", `${new Date().toLocaleString("es-ES", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"})} · ${r}`); return r; };
+  if (!lsGet("chispa.permCorreo")) return anotar("Falta dar permiso para enviar correo");
+  try {
+    if (!prueba && config.resumenActivo === false) return "Resumen desactivado";
+    const ahora = new Date(), hoy = isoDia(ahora), hm = `${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`;
+    if (!prueba && hm < (config.resumenHora || "07:30")) return "Todavía no es la hora";
+    let marca = null;
+    if (!prueba){
+      const pid = await asegurarCarpeta("Configuracion/Envios");
+      const r = await graph(`${DRIVE}/items/${pid}:/${hoy}.json:/content?@microsoft.graph.conflictBehavior=fail`, {method: "PUT", headers: {"Content-Type": "application/json"}, body: JSON.stringify({estado: "enviando", desde: disp.terminal})});
+      if (r.status === 409){ lsSet("chispa.resumenHecho", hoy); return anotar("El resumen de hoy ya se envió"); }
+      if (!r.ok) throw await errorDe(r, "al marcar el envío del día");
+      marca = (await r.json()).id;
+    }
+    const cuenta = lsGet("chispa.usuario") || "";
+    let aT = (config.correoTrabajo || "").trim(), aP = (config.correoPersonal || "").trim();
+    if (!aT && !aP) aP = cuenta;
+    const envios = aT && aP ? [[aT, "trabajo", "Trabajo"], [aP, "personal", "Personal"]] : [[aT || aP, null, ""]];
+    const hechos = [];
+    try {
+      for (const [para, amb, nombre] of envios){
+        const sec = seccionesResumen(deNotas(), amb);
+        if (!sec.hay && !prueba) continue;
+        const r = await graph("https://graph.microsoft.com/v1.0/me/sendMail", {method: "POST", headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({message: {subject: asuntoResumen(sec, nombre, prueba), body: {contentType: "HTML", content: htmlResumen(sec, nombre, prueba)}, toRecipients: [{emailAddress: {address: para}}]}, saveToSentItems: true})});
+        if (r.status === 403 || r.status === 401){ lsSet("chispa.permCorreo", false); throw new Error("Microsoft no ha dado permiso para enviar correo. Vuelve a pulsar «Dar permiso»"); }
+        if (!r.ok) throw await errorDe(r, "al enviar el correo a " + para);
+        hechos.push(nombre ? nombre.toLowerCase() : "todo a " + para);
+      }
+    } catch(e){ if (marca) await graph(`${DRIVE}/items/${marca}`, {method: "DELETE"}).catch(() => {}); throw e; }
+    if (marca) await graph(`${DRIVE}/items/${marca}/content`, {method: "PUT", headers: {"Content-Type": "application/json"}, body: JSON.stringify({estado: "enviado", envios: hechos.join(", "), desde: disp.terminal})}).catch(() => {});
+    if (!prueba) lsSet("chispa.resumenHecho", hoy);
+    return anotar(hechos.length ? `Enviado (${hechos.join(", ")})` : "Sin novedades: no se envió nada");
+  } catch(e){ return anotar("Error: " + (e.message || e)); }
+}
+// tras cada sincronización: si ya es la hora y nadie lo ha enviado hoy, lo envía este dispositivo
+async function resumenSiToca(){
+  if (!lsGet("chispa.permCorreo") || !navigator.onLine || lsGet("chispa.resumenHecho") === hoyISO()) return;
+  const ahora = new Date(), hm = `${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`;
+  if (config.resumenActivo === false || hm < (config.resumenHora || "07:30")) return;
+  if (resumenSiToca.enMarcha) return; resumenSiToca.enMarcha = true;
+  try { const r = await enviarResumenWeb(false); if (r.startsWith("Enviado")) toast("Resumen del día enviado por correo", "mail", 4000); } finally { resumenSiToca.enMarcha = false; }
+}
 // Resumen diario: la app del móvil entra en la cuenta con permiso para enviar correo
 async function pintarCorreo(){
   const caja = $("#kCorreo"); if (!caja || !esApp()) return;
@@ -2658,6 +2750,19 @@ async function pintarCorreo(){
     pintarCorreo();
   };
   if ($("#kResDesc")) $("#kResDesc").onclick = async () => { await nat.desconectarCorreo().catch(() => {}); pintarCorreo(); };
+}
+function pintarCorreoWeb(){
+  const caja = $("#kCorreoWeb"); if (!caja) return;
+  const ok = lsGet("chispa.permCorreo"), ult = lsGet("chispa.resumenUltimo");
+  caja.innerHTML = ok
+    ? `<div class="ajuste">${ic(esApp() ? "nube" : "movil")}<div class="lbl">Envío al abrir Chispa${esApp() ? "" : " en este equipo"}<small>Si a la hora del resumen nadie lo ha enviado, lo envía este dispositivo${ult ? " · Último: " + esc(ult) : ""}</small></div></div>
+       <div class="ajuste"><button class="btn sec" id="kWebProbar">${ic("mail")}Enviar prueba desde aquí</button></div>`
+    : `<div class="ajuste">${ic("mail")}<div class="lbl">Envío al abrir Chispa${esApp() ? "" : " en este equipo"}<small>${esApp() ? "Respaldo por si el móvil no lo envía en segundo plano." : "El PC envía el resumen cuando abres Chispa después de la hora."} Pide permiso a Microsoft una vez</small></div><button class="btn" id="kWebPermiso">Dar permiso</button></div>`;
+  if ($("#kWebPermiso")) $("#kWebPermiso").onclick = () => { lsSet("chispa.permCorreo", true); irALogin(false); };
+  if ($("#kWebProbar")) $("#kWebProbar").onclick = async () => {
+    const b = $("#kWebProbar"); b.disabled = true; b.textContent = "Enviando…";
+    const r = await enviarResumenWeb(true); toast(r, r.startsWith("Error") || r.startsWith("Falta") ? "alerta" : "mail", 7000); pintarCorreoWeb();
+  };
 }
 function abrirElegirCoche(lista, elegir, cancelar){
   const fondo = document.createElement("div"); fondo.className = "elegir-coche";
@@ -3064,7 +3169,8 @@ function pintarAjustes(){
       <div class="ajuste">${ic("maletin")}<div class="lbl">Trabajo</div><input type="email" id="kCT" value="${esc(c.correoTrabajo)}" placeholder="tu correo del trabajo"></div>
       <div class="ajuste">${ic("casa")}<div class="lbl">Personal</div><input type="email" id="kCP" value="${esc(c.correoPersonal)}" placeholder="tu correo personal"></div>
       <div class="ajuste">${ic("mail")}<div class="lbl">Resumen diario<small>Solo se envía si hay algo para hoy, atrasado, de la semana o anotado ayer</small></div><select id="kResAct"><option value="1">Sí</option><option value="0">No</option></select><input type="time" id="kResHora" value="${esc(c.resumenHora || "07:30")}"></div>
-      ${esApp() ? `<div id="kCorreo"><div class="ajuste"><div class="lbl">Cargando…</div></div></div>` : `<div class="ajuste">${ic("movil")}<div class="lbl">Lo envía la app de Android<small>Conéctalo una vez desde Ajustes en el móvil. El móvil lo envía aunque no abras Chispa</small></div></div>`}
+      ${esApp() ? `<div id="kCorreo"><div class="ajuste"><div class="lbl">Cargando…</div></div></div>` : ""}
+      <div id="kCorreoWeb"></div>
     </div></div>
     <div class="grupo"><h3>Nombres que Chispa reconoce</h3><div class="caja">
       <div class="ajuste"><div class="lbl">Clientes<small>Uno por línea</small></div><textarea id="kCli" rows="4">${esc((cont.cliente||[]).join("\n"))}</textarea></div>
@@ -3085,7 +3191,7 @@ function pintarAjustes(){
       <div class="ajuste">${ic("user")}<div class="lbl">${esc(lsGet("chispa.usuario") || "Cuenta de Microsoft")}<small>Tus datos están en OneDrive, en Aplicaciones › Chispa</small></div><button class="btn sec" id="kSalir">${ic("salir")}Salir</button></div>
     </div></div>
     <div class="cuenta" style="text-align:center;margin:20px 0">Chispa ${VERSION}${esApp() ? ` · app Android ${esc(infoApp?.version || "")}` : ""}</div>`;
-  pintarTelefono(); pintarCorreo();
+  pintarTelefono(); pintarCorreo(); pintarCorreoWeb();
   $("#kResAct").value = c.resumenActivo === false ? "0" : "1";
   $("#kAmb").value = disp.ambito || "trabajo"; $("#kTrans").value = disp.trans === false ? "0" : "1"; $("#kUbi").value = disp.ubi ? "1" : "0"; $("#kTema").value = disp.tema || "auto";
   document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => ver(b.dataset.ir));
