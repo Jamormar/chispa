@@ -459,6 +459,17 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .toast{width:max-content;max-width:calc(100vw - 32px)}
 .toast span{min-width:0}
 .toast .deshacer{flex:none;white-space:nowrap;margin-left:6px;padding:5px 11px;border-radius:9px;background:color-mix(in srgb,var(--on-ink) 18%,transparent);color:var(--spark);font-weight:700;font-size:14px}
+.preguntar{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 16px;border-radius:18px;margin:2px 0 10px;background:linear-gradient(135deg,var(--spark-soft),var(--surface));border:1px solid var(--line)}
+.preguntar>svg{width:24px;height:24px;color:#E0A21F;flex:none}
+.preguntar span{display:flex;flex-direction:column;min-width:0}.preguntar b{font-size:15.5px}.preguntar small{color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hoja.pregunta h3{display:flex;align-items:center;gap:8px}.hoja.pregunta h3 svg{width:20px;height:20px;color:#E0A21F}
+.pq-campo{display:flex;gap:8px;align-items:flex-end}.pq-campo textarea{flex:1}
+.pq-ideas{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.pq-pensando{display:flex;align-items:center;gap:8px;color:var(--muted);padding:14px 4px}.pq-pensando svg{width:18px;height:18px;color:#E0A21F;animation:giro 1.4s linear infinite}
+.pq-resp{background:var(--bg);border-radius:16px;padding:14px 16px;line-height:1.5;margin:6px 0 4px;font-size:15px}.pq-resp.error{color:var(--danger,#D9483B)}
+.ia-caja{display:flex;gap:10px;background:var(--spark-soft);color:var(--text);border-radius:14px;padding:12px 14px;margin-top:10px;font-size:14px;line-height:1.45}
+.ia-caja>svg{width:18px;height:18px;color:#C98A0E;flex:none;margin-top:2px}
+#eIA .enl{margin-top:10px;display:inline-flex;align-items:center;gap:6px}#eIA .enl svg{width:16px;height:16px}
 .gente{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:6px 0 4px}
 @media (min-width:700px){ .gente{grid-template-columns:repeat(3,minmax(0,1fr))} }
 .persona-c{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;background:var(--surface);border:1px solid var(--line);text-align:left;min-width:0}
@@ -666,6 +677,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
       <h4><span id="eTitTexto">Descripción</span><button class="enl" id="eAddLista"></button></h4>
       <div class="efield"><textarea id="eTexto" rows="3" placeholder="Escribe la nota"></textarea></div>
       <div class="transc oculto" id="eTransc"></div>
+      <div id="eIA"></div>
       <div id="eTransBtn"></div>
     </section>
     <section class="esec oculto" id="eSecLista">
@@ -707,6 +719,15 @@ html.lz-on,html.lz-on body{overflow:hidden}
   <div class="hpie"><button class="btn sec" id="aSaltar">Así vale</button><div class="esp"></div><button class="btn" id="aOk">Guardar palabra</button></div>
 </div>
 
+<div class="hoja mini pregunta" id="hPregunta" role="dialog" aria-label="Pregúntale a tus notas">
+  <div class="asa"></div>
+  <h3><span data-i="spark"></span>Pregúntale a tus notas</h3>
+  <p id="pqPersona"></p>
+  <div class="pq-campo"><textarea id="pqIn" class="crece" rows="1" placeholder="¿Qué quedé con Pérez la semana pasada?" enterkeyhint="send"></textarea><button class="btn" id="pqOk">Preguntar</button></div>
+  <div class="pq-ideas" id="pqIdeas"></div>
+  <div id="pqRes"></div>
+</div>
+
 <!-- Lienzo a pantalla completa -->
 <div id="lz" class="lz oculto" role="dialog" aria-label="Lienzo">
   <div class="lz-top">
@@ -746,7 +767,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.14";
+const VERSION = "0.15";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -1863,9 +1884,10 @@ async function guardarCaptura(){
   else if (borrador.para) n.para = borrador.para;
   n.ubicacion = await ubicacion();
   if (n.audio && !n.transcripcion && voz()) n._transcribir = true;
+  if (iaAuto() && mereceIA(n)) n._ia = true;
   if (n.hora) pedirPermisoAvisos();
   await guardarNotaLocal(n, adj);
-  setTimeout(procesarTranscripciones, 800);
+  setTimeout(procesarTranscripciones, 800); setTimeout(procesarIA, 1500);
   vibrar(80); toast(n.nocturna ? "Idea nocturna guardada" : "Guardada", n.nocturna ? "luna" : "check");
   nuevoBorrador(); anclaAbierta = null;
 }
@@ -2229,6 +2251,15 @@ function abrirEdicion(n, original){
     + (n.ubicacion ? `<a target="_blank" rel="noopener" href="https://www.google.com/maps?q=${n.ubicacion.lat},${n.ubicacion.lon}">${ic("pin")}Ver lugar</a>` : "");
   const tr = n.transcripcion && n.transcripcion !== n.texto ? n.transcripcion : "";
   $("#eTransc").textContent = tr ? "Dictado: " + tr : ""; $("#eTransc").classList.toggle("oculto", !tr);
+  const iaTxt = [n.ia?.resumen ? `<b>Resumen:</b> ${esc(n.ia.resumen)}` : "", n.ia?.textoFotos ? `<b>Texto de las fotos:</b> ${esc(n.ia.textoFotos).replace(/\n/g, "<br>")}` : ""].filter(Boolean).join("<br>");
+  $("#eIA").innerHTML = (iaTxt ? `<div class="ia-caja">${ic("spark")}<div>${iaTxt}</div></div>` : "") + (ia() ? `<button class="enl" id="eOrdenar">${ic("spark")}${n.ia ? "Volver a ordenar con IA" : "Ordenar con IA"}</button>` : "");
+  if ($("#eOrdenar")) $("#eOrdenar").onclick = async () => {
+    const b = $("#eOrdenar"); b.disabled = true; b.innerHTML = ic("spark") + "Pensando…";
+    try { const c = notaDelEditor(); delete c._imagenes; const r = await enriquecerNota(c), cambios = aplicarIA(c, r);
+      Object.assign(editando, c); await guardarNotaLocal(editando); cerrarHojas(); abrirEdicion(editando); refrescar();
+      toast(cambios.length ? `Ordenada: ${cambios.join(", ")}` : "No había nada que cambiar", "spark", 3500); if (editando.ia?.contactoFoto) ofrecerContacto(editando); }
+    catch(e){ toast(e.message, "alerta", 5000); b.disabled = false; b.innerHTML = ic("spark") + "Ordenar con IA"; }
+  };
   $("#eHecha").innerHTML = n.hecha ? ic("deshacer") + `<span class="largo">Marcar pendiente</span><span class="corto">Pendiente</span>` : ic("check") + `<span class="largo">Marcar hecha</span><span class="corto">Hecha</span>`;
   $("#eHecha").title = n.hecha ? "Volver a dejarla pendiente" : "Marcar como hecha"; $("#eHecha").classList.toggle("hecha-on", !n.hecha);
   pintarOpciones(); pintarAdjEdicion();
@@ -2547,9 +2578,135 @@ async function procesarTranscripciones(){
   if (transcribiendo || !voz() || !navigator.onLine || !token) return;
   transcribiendo = true;
   try { for (const n of notas.filter(x => x._transcribir && !x._borrar)){ if (await transcribirNota(n)) toast("Nota de voz transcrita", "mic"); } }
-  finally { transcribiendo = false; }
+  finally { transcribiendo = false; setTimeout(procesarIA, 500); }
 }
 setInterval(() => { if (document.visibilityState === "visible") procesarTranscripciones(); }, 90000);
+
+/* ================= Inteligencia artificial (Azure OpenAI con la clave del usuario) ================= */
+// config.ia = {endpoint, clave, despliegue, auto}. La clave vive en Configuracion/config.json de tu OneDrive.
+const ia = () => !!(config.ia?.endpoint && config.ia?.clave);
+const iaAuto = () => ia() && config.ia.auto !== false;
+async function llamarIA(mensajes, {json = true, max = 900} = {}){
+  const c = config.ia, base = c.endpoint.trim().replace(/\/+$/, "");
+  const url = `${base}/openai/deployments/${encodeURIComponent(c.despliegue || "chispa")}/chat/completions?api-version=2024-10-21`;
+  const r = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json", "api-key": c.clave.trim()},
+    body: JSON.stringify({messages: mensajes, temperature: 0.2, max_tokens: max, ...(json ? {response_format: {type: "json_object"}} : {})})});
+  if (!r.ok){
+    let m = ""; try { const j = await r.json(); m = j.error?.message || j.error?.code || ""; } catch(e){}
+    throw new Error(r.status === 401 ? "La clave de la IA no es válida" : r.status === 404 ? "No encuentro la implementación «" + (c.despliegue || "chispa") + "». Revisa el nombre" : r.status === 429 ? "La IA está saturada; se reintentará" : `IA (${r.status})${m ? ": " + m : ""}`);
+  }
+  const t = (await r.json()).choices?.[0]?.message?.content || "";
+  if (!json) return t;
+  try { return JSON.parse(t); } catch(e){ const m = t.match(/\{[\s\S]*\}/); if (m) return JSON.parse(m[0]); throw new Error("La IA respondió algo que no entiendo"); }
+}
+async function probarIA(){
+  const r = await llamarIA([{role: "user", content: 'Responde solo con este JSON: {"ok": true}'}], {max: 20});
+  if (!r.ok) throw new Error("Respuesta inesperada");
+}
+const hoyLargo = () => new Date().toLocaleDateString("es-ES", {weekday: "long", day: "numeric", month: "long", year: "numeric"});
+async function imagenParaIA(ruta){
+  const b = await idb.blob(ruta) || await descargarRuta(ruta);
+  return (await blobADataUrl(b, 1280)).src;
+}
+// Ordena una nota: título, resumen, tareas, tipo, para quién y fecha; lee el texto de las fotos
+async function enriquecerNota(n){
+  const contactos = personas().slice(0, 150).map(p => `${p.nombre}${p.cat ? " (" + CAT[p.cat] + ")" : ""}`).join("; ");
+  const fotos = (n.fotos || []).filter(r => !r.includes("trazo")).slice(0, 3);
+  const texto = [n.titulo ? "Título: " + n.titulo : "", n.texto || "", n.transcripcion && n.transcripcion !== n.texto ? "Dictado: " + n.transcripcion : ""].filter(Boolean).join("\n").slice(0, 6000);
+  const sistema = `Eres el asistente de Chispa, la app de notas de un delegado comercial de material eléctrico en Sevilla. Hoy es ${hoyLargo()}.
+Analiza la nota (y sus fotos, si las hay) y responde SOLO con un JSON con estas claves:
+"titulo": título breve y concreto en español (máx. 60 caracteres), sin comillas;
+"resumen": 1-2 frases si el texto es largo o confuso (más de 3 frases); si no, "";
+"tareas": lista de acciones concretas que se deducen (verbo en infinitivo, máx. 8); [] si no hay;
+"tipo": "tarea", "idea", "recordatorio" o "nota";
+"para": {"nombre": persona o empresa a la que se refiere, usando EXACTAMENTE el nombre de la lista de contactos si coincide, "categoria": "cliente", "proveedor", "companero", "personal" o ""};
+"fecha": "AAAA-MM-DD" si se menciona un día concreto o relativo (mañana, el jueves…), si no "";
+"hora": "HH:MM" o "";
+"textoFotos": texto legible en las fotos (tarjeta de visita, albarán, cartel…), resumido y ordenado; "" si no hay fotos o no tienen texto;
+"contactoFoto": si una foto es una tarjeta de visita, {"nombre","empresa","telefono","email","cargo"}; si no, null.
+Contactos conocidos: ${contactos || "ninguno"}.`;
+  const contenido = [{type: "text", text: texto || "(nota sin texto)"}];
+  for (const r of fotos){ try { contenido.push({type: "image_url", image_url: {url: await imagenParaIA(r), detail: "low"}}); } catch(e){} }
+  return llamarIA([{role: "system", content: sistema}, {role: "user", content: contenido}], {max: 900});
+}
+// Aplica lo que propone la IA sin pisar lo que ya puso el usuario
+function aplicarIA(n, r){
+  const cambios = [];
+  if (r.titulo && !n.titulo && !n.ancla){ n.titulo = String(r.titulo).slice(0, 80); cambios.push("título"); }
+  if (r.tipo && TIPOS[r.tipo] && (!n.tipo || n.tipo === "nota") && r.tipo !== "nota"){ n.tipo = r.tipo; cambios.push("tipo"); }
+  if (r.para?.nombre && !n.para?.nombre){ n.para = {categoria: CAT[r.para.categoria] ? r.para.categoria : "", nombre: String(r.para.nombre).slice(0, 60)}; cambios.push("para quién"); }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(r.fecha || "") && !n.fecha){ n.fecha = r.fecha; if (/^\d{2}:\d{2}$/.test(r.hora || "")) n.hora = r.hora; cambios.push("fecha"); }
+  const tareas = (Array.isArray(r.tareas) ? r.tareas : []).map(t => String(t).trim()).filter(Boolean).slice(0, 8);
+  if (tareas.length >= 2 && !partirLista(n.texto).items.length){ n.texto = [String(n.texto || "").trim(), ...tareas.map(t => `[ ] ${t}`)].filter(Boolean).join("\n"); cambios.push("tareas"); }
+  n.ia = {resumen: r.resumen || "", textoFotos: r.textoFotos || "", contactoFoto: r.contactoFoto || null, fecha: new Date().toISOString()};
+  if (!n.ia.resumen && !n.ia.textoFotos && !n.ia.contactoFoto) n.ia = {fecha: n.ia.fecha};
+  return cambios;
+}
+const mereceIA = n => !n.ancla && !n.hecha && ((n.texto || "").length > 25 || n.audio || (n.fotos || []).some(r => !r.includes("trazo")));
+let pensandoIA = false;
+async function procesarIA(){
+  if (pensandoIA || !iaAuto() || !navigator.onLine) return;
+  pensandoIA = true;
+  try {
+    for (const n of notas.filter(x => x._ia && !x._transcribir && !x._borrar)){
+      try {
+        const r = await enriquecerNota(n), cambios = aplicarIA(n, r);
+        delete n._ia; delete n._intentosIA; await guardarNotaLocal(n); refrescar();
+        if (cambios.length) toast(`Chispa ordenó tu nota: ${cambios.join(", ")}`, "spark", 3500);
+        if (n.ia?.contactoFoto?.nombre || n.ia?.contactoFoto?.empresa) ofrecerContacto(n);
+      } catch(e){ n._intentosIA = (n._intentosIA || 0) + 1; if (n._intentosIA >= 3) delete n._ia; await idb.poner(n); }
+    }
+  } finally { pensandoIA = false; }
+}
+setInterval(() => { if (document.visibilityState === "visible") procesarIA(); }, 60000);
+// Tarjeta de visita: ofrecer guardarla como cliente
+function ofrecerContacto(n){
+  const c = n.ia.contactoFoto, nombre = c.empresa || c.nombre;
+  if (!nombre || personas().some(p => norm(p.nombre) === norm(nombre))) return;
+  toast(`Tarjeta de ${nombre}. ¿Guardar como cliente?`, "user", 9000, () => {
+    config.contactos = config.contactos || {}; config.contactos.cliente = [...(config.contactos.cliente || []), nombre]; guardarConfig();
+    if (!n.para?.nombre){ n.para = {categoria: "cliente", nombre}; guardarNotaLocal(n); }
+    toast(`${nombre} añadido a tus clientes`, "check");
+  }, "Guardar");
+}
+// ---------- Pregúntale a tus notas
+function notasParaPregunta(pregunta, persona){
+  const palabras = norm(pregunta).split(/[^a-z0-9ñ]+/).filter(p => p.length > 3);
+  const puntua = n => { const h = norm([n.titulo, n.texto, n.transcripcion, n.para?.nombre, n.ia?.textoFotos].join(" ")); let p = 0; for (const w of palabras) if (h.includes(w)) p += 3; return p + (Date.now() - new Date(n.creada) < 30 * 864e5 ? 1 : 0); };
+  let l = deNotas(); if (persona) l = l.filter(n => norm(n.para?.nombre || "") === norm(persona));
+  return l.map(n => [puntua(n), n]).sort((a, b) => b[0] - a[0] || b[1].creada.localeCompare(a[1].creada)).slice(0, 120).map(x => x[1]);
+}
+async function preguntarNotas(pregunta, persona){
+  const ns = notasParaPregunta(pregunta, persona);
+  const compacta = n => [`[${n.id}]`, isoDia(new Date(n.creada)), n.hecha ? "HECHA" : "PENDIENTE", n.fecha ? "para " + n.fecha + (n.hora ? " " + n.hora : "") : "", n.para?.nombre ? "con " + n.para.nombre : "", carpetaDe(n) ? "archivador " + carpetaDe(n).nombre : "",
+    "|", (n.titulo ? n.titulo + ". " : "") + String(n.texto || n.transcripcion || "").replace(/\s+/g, " ").slice(0, 400), n.ia?.textoFotos ? "| fotos: " + n.ia.textoFotos.slice(0, 200) : ""].filter(Boolean).join(" ");
+  const sistema = `Eres el asistente de Chispa. Hoy es ${hoyLargo()}. Responde en español, breve y concreto, usando SOLO las notas del usuario que te paso (cada una empieza con su [id]). Si no está en las notas, dilo. Responde SOLO con un JSON: {"respuesta": texto (puedes usar saltos de línea y viñetas con «- »), "notas": [ids de las notas en que te basas, máx. 8]}.`;
+  const r = await llamarIA([{role: "system", content: sistema}, {role: "user", content: `NOTAS:\n${ns.map(compacta).join("\n")}\n\nPREGUNTA: ${pregunta}`}], {max: 700});
+  return {respuesta: String(r.respuesta || "No he encontrado nada."), notas: (r.notas || []).map(id => notas.find(n => n.id === String(id).replace(/[\[\]]/g, ""))).filter(Boolean)};
+}
+function abrirPregunta(persona){
+  if (!ia()){ toast(esMovil() ? "Activa la IA en Ajustes desde el PC" : "Activa la IA en Ajustes", "alerta", 4500); if (!esMovil()) ver("ajustes"); return; }
+  $("#pqPersona").textContent = persona ? `Sobre ${persona}` : "Sobre todas tus notas";
+  $("#hPregunta").dataset.quien = persona || ""; $("#pqRes").innerHTML = ""; $("#pqIn").value = "";
+  $("#pqIdeas").innerHTML = (persona ? [`¿Qué tengo pendiente con ${persona}?`, `¿Qué hablamos la última vez?`, `Resume la relación con ${persona}`] : ["¿Qué tengo pendiente esta semana?", "¿Qué ideas he tenido este mes?", "¿Con qué clientes tengo cosas atrasadas?"])
+    .map(t => `<button class="opc" data-pq="${esc(t)}">${esc(t)}</button>`).join("");
+  abrirHoja("#hPregunta"); setTimeout(() => $("#pqIn").focus(), 250);
+}
+async function lanzarPregunta(){
+  const q = $("#pqIn").value.trim(); if (!q) return;
+  const persona = $("#hPregunta").dataset.quien || null, res = $("#pqRes");
+  res.innerHTML = `<div class="pq-pensando">${ic("spark")}Buscando en tus notas…</div>`; $("#pqOk").disabled = true;
+  try {
+    const r = await preguntarNotas(q, persona);
+    res.innerHTML = `<div class="pq-resp">${esc(r.respuesta).replace(/\n/g, "<br>")}</div>${r.notas.length ? `<div class="dia">Notas en las que me baso</div><div class="lista">${r.notas.map(n => fila(n, {hora: false})).join("")}</div>` : ""}`;
+    cargarMinis(res);
+  } catch(e){ res.innerHTML = `<div class="pq-resp error">${esc(e.message)}</div>`; }
+  finally { $("#pqOk").disabled = false; }
+}
+$("#pqOk").onclick = lanzarPregunta;
+$("#pqIn").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); lanzarPregunta(); } });
+$("#pqIdeas").addEventListener("click", e => { const b = e.target.closest("[data-pq]"); if (b){ $("#pqIn").value = b.dataset.pq; lanzarPregunta(); } });
+$("#hPregunta").addEventListener("click", e => { if (e.target.closest("[data-abrir]")) cerrarHojas(); }, true);
 
 /* ================= App Android (Capacitor) ================= */
 const CAP = window.Capacitor;
@@ -2986,12 +3143,14 @@ function pintarNotas(){
         return tarjeta(b.k, b.ic, b.t, b.k === "todas" ? ns.length : l.length, sub, "bz-" + b.k); }).join("");
     const cs = archivadores().map(c => { const l = ns.filter(n => n.carpeta === c.id && !enArchivo(n)); const p = l.filter(n => !n.hecha).length;
       return tarjeta("c:" + c.id, "carpeta", c.nombre, p, l.length - p ? `${l.length - p} hecha${l.length - p > 1 ? "s" : ""}` : "", "bz-carpeta"); }).join("");
-    $("#listaNotas").innerHTML = `<div class="buzones">${html}</div>
+    $("#listaNotas").innerHTML = `<button class="preguntar" id="bzPreguntar">${ic("spark")}<span><b>Pregúntale a tus notas</b><small>${ia() ? "«¿Qué quedé con Pérez?», «¿Qué tengo esta semana?»" : "Actívalo en Ajustes con tu clave de IA"}</small></span></button>
+      <div class="buzones">${html}</div>
       <div class="dia">Mis archivadores</div>
       <div class="buzones">${cs}<button class="buzon bz-nuevo" id="bzNuevo">${ic("mas")}<span class="bz-t">Nuevo archivador</span><small>Por asunto, cliente u obra</small></button></div>`;
     const gente = personas().slice(0, 6);
     if (gente.length) $("#listaNotas").insertAdjacentHTML("beforeend", `<div class="dia">Clientes y contactos</div><div class="gente">${gente.map(tarjetaPersona).join("")}<button class="persona-c ver-todas" data-buzon="personas">${ic("user")}<span><b>Ver todos</b><small>${personas().length} contactos</small></span></button></div>`);
     $("#bzNuevo").onclick = async () => { const c = await nuevaCarpeta(); if (c) abrirBuzon("c:" + c.id); };
+    $("#bzPreguntar").onclick = () => abrirPregunta();
     return;
   }
 
@@ -3008,7 +3167,7 @@ function pintarNotas(){
   let lista = deNotas().filter(n => {
     if (!q.length){ if (car ? n.carpeta !== car.id : !bz.f(n)) return false; }
     for (const g of GRUPOS){ if (g.k === "estado" && !usarEstado) continue; if (filtro[g.k].length && !filtro[g.k].includes(valorFiltro(n, g.k))) return false; }
-    if (q.length){ const h = norm([n.titulo, n.texto, n.transcripcion, n.para?.nombre, CAT[n.para?.categoria], TIPOS[n.tipo]?.[0], n.terminal, fechaLarga(n.creada), n.fecha ? fechaLarga(n.fecha) : "", n.nocturna ? "noche nocturna" : "", n.ancla ? "ancla" : "", carpetaDe(n)?.nombre, n.importante ? "importante estrella" : ""].join(" ")); if (!q.every(p => h.includes(p))) return false; }
+    if (q.length){ const h = norm([n.titulo, n.texto, n.transcripcion, n.para?.nombre, CAT[n.para?.categoria], TIPOS[n.tipo]?.[0], n.terminal, fechaLarga(n.creada), n.fecha ? fechaLarga(n.fecha) : "", n.nocturna ? "noche nocturna" : "", n.ancla ? "ancla" : "", carpetaDe(n)?.nombre, n.importante ? "importante estrella" : "", n.ia?.textoFotos, n.ia?.resumen].join(" ")); if (!q.every(p => h.includes(p))) return false; }
     return true;
   });
   if (!lista.length){
@@ -3070,7 +3229,7 @@ function pintarFicha(nombre){
   const mes = iso => capital(new Date(iso).toLocaleDateString("es-ES", {month: "long", year: "numeric"}));
   let html = `<div class="ficha-cab">
       <div class="ficha-datos"><span>${p.cat ? CAT[p.cat] : "Contacto"}</span><span><b>${pend.length}</b> pendiente${pend.length === 1 ? "" : "s"}</span><span><b>${llamadas.length}</b> llamada${llamadas.length === 1 ? "" : "s"} anotada${llamadas.length === 1 ? "" : "s"}</span>${p.ultima ? `<span>Último contacto ${fechaRelativaCorta(p.ultima)}</span>` : ""}</div>
-      <div class="ficha-acc"><button class="btn" id="fNueva">${ic("pluma")}Nueva nota</button><button class="btn sec" id="fVoz">${ic("mic")}Dictar</button>${p.notas.length ? `<button class="btn sec" id="fPdf">${ic("compartir")}Informe PDF</button>` : ""}</div></div>`;
+      <div class="ficha-acc"><button class="btn" id="fNueva">${ic("pluma")}Nueva nota</button><button class="btn sec" id="fVoz">${ic("mic")}Dictar</button>${p.notas.length ? `<button class="btn sec" id="fPdf">${ic("compartir")}Informe PDF</button>` : ""}${p.notas.length && ia() ? `<button class="btn sec" id="fPreg">${ic("spark")}Preguntar</button>` : ""}</div></div>`;
   const bloque = (t, l, cls = "") => l.length ? `<div class="dia ${cls}">${t} <span class="c">${l.length}</span></div><div class="lista">${l.map(n => fila(n, {sinPersona: true})).join("")}</div>` : "";
   html += bloque("Atrasado", conFecha.filter(n => n.fecha < hoy), "venc") + bloque("Próximo", conFecha.filter(n => n.fecha >= hoy)) + bloque("Pendiente sin fecha", sinFecha);
   if (historia.length){
@@ -3080,7 +3239,7 @@ function pintarFicha(nombre){
   } else html += `<div class="vacio-grande"><div class="halo">${ic("user")}</div><b>Sin notas todavía</b><span>Lo que anotes para ${esc(p.nombre)} aparecerá aquí, ordenado en el tiempo.</span></div>`;
   $("#listaNotas").innerHTML = html; cargarMinis($("#listaNotas"));
   const nuevaPara = voz => { ver("anotar"); borrador.para = {categoria: p.cat || "", nombre: p.nombre}; tocado = true; pintarDetectado(); toast(`Nota para ${p.nombre}`, "user", 2500); if (voz){ if (!rec) empezarVoz(); } else setTimeout(() => $("#cTexto").focus(), 250); };
-  $("#fNueva").onclick = () => nuevaPara(false); $("#fVoz").onclick = () => nuevaPara(true);
+  $("#fNueva").onclick = () => nuevaPara(false); if ($("#fPreg")) $("#fPreg").onclick = () => abrirPregunta(p.nombre); $("#fVoz").onclick = () => nuevaPara(true);
   if ($("#fPdf")) $("#fPdf").onclick = async () => { const b = $("#fPdf"); b.disabled = true; try { await compartirArchivo(await fichaEnPdf(p), `Chispa - ${p.nombre.replace(/[\\/:*?"<>|]+/g, " ")} - ${hoyISO()}.pdf`, `Seguimiento de ${p.nombre}`); } catch(e){ toast(e.message || "No se pudo preparar el PDF", "alerta"); } finally { b.disabled = false; } };
 }
 // Informe de seguimiento de una persona: lo pendiente y el historial, en un PDF
@@ -3271,6 +3430,13 @@ function pintarAjustes(){
       <div class="ajuste"><div class="lbl">Proveedores</div><textarea id="kPro" rows="4">${esc((cont.proveedor||[]).join("\n"))}</textarea></div>
       <div class="ajuste"><div class="lbl">Compañeros</div><textarea id="kCom" rows="4">${esc((cont.companero||[]).join("\n"))}</textarea></div>
     </div></div>
+    <div class="grupo"><h3>Inteligencia artificial</h3><div class="caja">
+      ${esMovil() ? `<div class="ajuste">${ic("spark")}<div class="lbl">Azure OpenAI<small>${ia() ? "Activa: ordena tus notas, lee fotos y responde preguntas" : "Sin configurar. Se configura desde el PC"}</small></div></div>` : `
+      <div class="ajuste">${ic("spark")}<div class="lbl">Punto de conexión<small>La dirección que acaba en .openai.azure.com/</small></div><input type="text" id="kIaUrl" value="${esc(c.ia?.endpoint || "")}" placeholder="https://chispa-ia.openai.azure.com/" autocomplete="off" spellcheck="false"></div>
+      <div class="ajuste">${ic("ajustes")}<div class="lbl">Clave<small>Se guarda en tu OneDrive, nunca en GitHub</small></div><input type="text" id="kIaClave" value="${esc(c.ia?.clave || "")}" placeholder="Pega aquí la clave 1" autocomplete="off" spellcheck="false"></div>
+      <div class="ajuste">${ic("tag")}<div class="lbl">Nombre de la implementación</div><input type="text" id="kIaDep" value="${esc(c.ia?.despliegue || "chispa")}" style="max-width:180px"><button class="btn sec" id="kIaProbar">Probar</button><span class="estado-t" id="kIaEstado"></span></div>`}
+      <div class="ajuste">${ic("spark")}<div class="lbl">Ordenar las notas solas<small>Título, resumen, tareas, para quién y fecha al guardar o al transcribir; también lee las fotos</small></div><select id="kIaAuto"><option value="1">Sí</option><option value="0">No</option></select></div>
+    </div></div>
     <div class="grupo"><h3>Transcripción de voz</h3><div class="caja">
       ${esMovil() ? `<div class="ajuste">${ic("mic")}<div class="lbl">Azure Speech<small>${voz() ? "Activa: tus notas de voz se pasan a texto solas" : "Sin configurar. Se configura desde el PC"}</small></div></div>` : `
       <div class="ajuste">${ic("mic")}<div class="lbl">Clave de Azure Speech<small>Se guarda en tu OneDrive, nunca en GitHub</small></div><input type="text" id="kVozClave" value="${esc(c.voz?.clave || "")}" placeholder="Pega aquí la clave 1" autocomplete="off" spellcheck="false"></div>
@@ -3286,7 +3452,7 @@ function pintarAjustes(){
     </div></div>
     <div class="cuenta" style="text-align:center;margin:20px 0">Chispa ${VERSION}${esApp() ? ` · app Android ${esc(infoApp?.version || "")}` : ""}</div>`;
   pintarTelefono(); pintarCorreo(); pintarCorreoWeb();
-  $("#kResAct").value = c.resumenActivo === false ? "0" : "1";
+  $("#kResAct").value = c.resumenActivo === false ? "0" : "1"; $("#kIaAuto").value = c.ia?.auto === false ? "0" : "1";
   $("#kAmb").value = disp.ambito || "trabajo"; $("#kTrans").value = disp.trans === false ? "0" : "1"; $("#kUbi").value = disp.ubi ? "1" : "0"; $("#kTema").value = disp.tema || "auto";
   document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => ver(b.dataset.ir));
   const lineas = id => [...new Set($(id).value.split("\n").map(s => s.trim()).filter(Boolean))];
@@ -3297,6 +3463,8 @@ function pintarAjustes(){
     Object.assign(config, {nocheDesde: $("#kDesde").value || "23:00", nocheHasta: $("#kHasta").value || "06:00", correoTrabajo: $("#kCT").value.trim(), correoPersonal: $("#kCP").value.trim(), resumenActivo: $("#kResAct").value === "1", resumenHora: $("#kResHora").value || "07:30",
       contactos: {cliente: lineas("#kCli"), proveedor: lineas("#kPro"), companero: lineas("#kCom")}});
     if ($("#kVozClave")) config.voz = {clave: $("#kVozClave").value.trim(), region: ($("#kVozRegion").value.trim() || "westeurope").toLowerCase()};
+    if ($("#kIaUrl")) config.ia = {endpoint: $("#kIaUrl").value.trim(), clave: $("#kIaClave").value.trim(), despliegue: $("#kIaDep").value.trim() || "chispa", auto: $("#kIaAuto").value === "1"};
+    else if (config.ia) config.ia.auto = $("#kIaAuto").value === "1";
     guardarConfig(); aplicarTema(); setAmbito(disp.ambito); toast("Guardado", "check", 1200);
   };
   // los ajustes se guardan solos al cambiarlos
@@ -3304,6 +3472,10 @@ function pintarAjustes(){
   document.querySelectorAll("#vAjustes input:not(#kMovNom),#vAjustes select:not(#kMovAmb),#vAjustes textarea").forEach(el => {
     el.addEventListener(el.tagName === "SELECT" || el.type === "time" ? "change" : "input", () => { clearTimeout(tAj); tAj = setTimeout(guardarAjustes, 700); });
   });
+  if ($("#kIaProbar")) $("#kIaProbar").onclick = async () => {
+    clearTimeout(tAj); guardarAjustes(); const el = $("#kIaEstado"); el.className = "estado-t"; el.textContent = "Probando…";
+    try { await probarIA(); el.className = "estado-t ok"; el.textContent = "Funciona"; } catch(e){ el.textContent = e.message; }
+  };
   if ($("#kVozProbar")) $("#kVozProbar").onclick = async () => {
     clearTimeout(tAj); guardarAjustes(); const el = $("#kVozEstado"); el.className = "estado-t"; el.textContent = "Probando…";
     try { await probarVoz(); el.className = "estado-t ok"; el.textContent = "Funciona"; setTimeout(procesarTranscripciones, 300); }
@@ -3342,7 +3514,7 @@ function pintarAyuda(){
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
-  <h3>Novedades</h3><p><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y archivadores propios. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y archivadores propios. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
