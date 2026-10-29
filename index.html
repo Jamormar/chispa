@@ -901,7 +901,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.19.1";
+const VERSION = "0.19.2";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -1072,12 +1072,17 @@ async function accessToken(){
 }
 
 /* ================= OneDrive ================= */
-async function graph(url, opts = {}, reintento = true){
-  const r = await fetch(url, {...opts, headers: {...(opts.headers || {}), Authorization: "Bearer " + await accessToken()}});
-  if (r.status === 401 && reintento){ token.exp = 0; return graph(url, opts, false); }
-  if ((r.status === 429 || r.status === 503) && reintento){ await new Promise(s => setTimeout(s, 3000)); return graph(url, opts, false); }
+async function graph(url, opts = {}, reintento = true, intento = 0){
+  let r;
+  try { r = await fetch(url, {...opts, headers: {...(opts.headers || {}), Authorization: "Bearer " + await accessToken()}}); }
+  catch(e){ if (e.login || intento >= 3) throw e; await esperar(2000 * (intento + 1)); return graph(url, opts, reintento, intento + 1); }   // corte de red: reintenta
+  if (r.status === 401 && reintento){ token.exp = 0; return graph(url, opts, false, intento); }
+  if ([429, 500, 502, 503, 504].includes(r.status) && intento < 5){   // OneDrive pide esperar: se respeta su tiempo
+    const s = +r.headers.get("Retry-After"); await esperar(s ? Math.min(60, s) * 1000 : 1500 * 2 ** intento); return graph(url, opts, reintento, intento + 1);
+  }
   return r;
 }
+const esperar = ms => new Promise(ok => setTimeout(ok, ms));
 const carpetas = new Map();
 let raizId = null;
 async function errorDe(r, que){
@@ -1161,7 +1166,7 @@ function pintarEstado(){
   const pend = notas.filter(n => n._pend || n._borrar).length + (lsGet("chispa.cfgPend") ? 1 : 0);
   let cls = "ok", icono = "nubeok", txt = "Guardado", titulo = "Todo está en tu OneDrive";
   if (necesitaLogin){ cls = "err"; icono = "alerta"; txt = "Volver a entrar"; titulo = "La sesión ha caducado"; }
-  else if (sincronizando){ cls = ""; icono = "sync"; txt = "Sincronizando"; }
+  else if (sincronizando){ cls = ""; icono = "sync"; txt = subida.total > 1 ? `Subiendo ${Math.min(subida.hechas + 1, subida.total)} de ${subida.total}` : "Sincronizando"; titulo = subida.total > 1 ? "Subiendo fotos y audios a tu OneDrive. Puedes seguir usando Chispa" : titulo; }
   else if (!navigator.onLine){ cls = "pend"; icono = "sinred"; txt = pend ? `${pend} sin subir` : "Sin conexión"; titulo = "Se subirá cuando vuelva la conexión"; }
   else if (errorSync){ cls = "err"; icono = "alerta"; txt = "Error"; titulo = errorSync; }
   else if (pend){ cls = "pend"; icono = "nube"; txt = `${pend} por subir`; }
@@ -1176,10 +1181,11 @@ document.addEventListener("click", e => {
   if (necesitaLogin) irALogin(false); else { if (errorSync) toast(errorSync, "alerta", 6000); sincronizar(true); }
 });
 
+const subida = {hechas: 0, total: 0};
 async function sincronizar(forzar = false){
   if (sincronizando || !navigator.onLine || !token) return;
   if (!forzar && Date.now() - ultimaSync < 15000) return;
-  sincronizando = true; pintarEstado();
+  sincronizando = true; subida.hechas = 0; subida.total = notas.filter(x => x._pend && !x._borrar).reduce((t, x) => t + (x._subir || []).length, 0); pintarEstado();
   const fallos = [];
   try {
     for (const n of notas.filter(x => x._borrar && Date.now() - (x._borrarEn || 0) > 7000)){
@@ -1196,10 +1202,20 @@ async function sincronizar(forzar = false){
           try { await aPapelera(r); n._quitar = n._quitar.filter(x => x !== r); await idb.quitarBlob(r); cacheUrl.delete(r); }
           catch(e){ if (e.login) throw e; fallos.push(e.message); }
         }
-        for (const r of [...(n._subir || [])]){
-          try { const b = await idb.blob(r); if (b && b.size) await subir(r, b, b.type); n._subir = n._subir.filter(x => x !== r); }
-          catch(e){ if (e.login) throw e; fallos.push(e.message); }
+        if ((n._subir || []).length > 3 && !n._jsonSubido){   // con muchas fotos, la nota sube primero
+          try { const it0 = await subir(`Notas/${n.id}.json`, JSON.stringify(limpia(n), null, 2), "application/json"); n._etag = it0.eTag; n._jsonSubido = true; await idb.poner(n); }
+          catch(e){ if (e.login) throw e; }
         }
+        const cola = [...(n._subir || [])];
+        const trabajador = async () => {
+          while (cola.length){
+            const r = cola.shift();
+            try { const b = await idb.blob(r); if (b && b.size) await subir(r, b, b.type); n._subir = n._subir.filter(x => x !== r); subida.hechas++; await idb.poner(n); pintarEstado(); }   // el avance queda guardado foto a foto
+            catch(e){ if (e.login) throw e; fallos.push(e.message); }
+          }
+        };
+        await Promise.all([trabajador(), trabajador(), trabajador()]);
+        delete n._jsonSubido;
         const it = await subir(`Notas/${n.id}.json`, JSON.stringify(limpia(n), null, 2), "application/json");
         n._etag = it.eTag; n._pend = (n._subir || []).length > 0 || (n._quitar || []).length > 0;
         await idb.poner(n);
@@ -3110,12 +3126,16 @@ $("#tjGuardar").onclick = async () => {
 // config.ia = {endpoint, clave, despliegue, auto}. La clave vive en Configuracion/config.json de tu OneDrive.
 const ia = () => !!(config.ia?.endpoint && config.ia?.clave);
 const iaAuto = () => ia() && config.ia.auto !== false;
-async function llamarIA(mensajes, {json = true, max = 900} = {}){
+async function llamarIA(mensajes, {json = true, max = 900} = {}, intento = 0){
   // vale tanto «https://recurso.openai.azure.com/» como la dirección larga que muestra Azure
   const c = config.ia; let base = c.endpoint.trim(); try { base = new URL(base).origin; } catch(e){ base = base.replace(/\/+$/, ""); }
   const url = `${base}/openai/deployments/${encodeURIComponent(c.despliegue || "chispa")}/chat/completions?api-version=2024-10-21`;
   const r = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json", "api-key": c.clave.trim()},
     body: JSON.stringify({messages: mensajes, temperature: 0.2, max_tokens: max, ...(json ? {response_format: {type: "json_object"}} : {})})});
+  if ((r.status === 429 || r.status >= 500) && intento < 4){   // límite por minuto de Azure: espera lo que pida y reintenta
+    const ms = +r.headers.get("retry-after-ms") || (+r.headers.get("retry-after") || 0) * 1000 || 4000 * 2 ** intento;
+    await esperar(Math.min(60000, ms)); return llamarIA(mensajes, {json, max}, intento + 1);
+  }
   if (!r.ok){
     let m = ""; try { const j = await r.json(); m = j.error?.message || j.error?.code || ""; } catch(e){}
     throw new Error(r.status === 401 ? "La clave de la IA no es válida" : r.status === 404 ? "No encuentro la implementación «" + (c.despliegue || "chispa") + "». Revisa el nombre" : r.status === 429 ? "La IA está saturada; se reintentará" : `IA (${r.status})${m ? ": " + m : ""}`);
@@ -3131,12 +3151,12 @@ async function probarIA(){
 const hoyLargo = () => new Date().toLocaleDateString("es-ES", {weekday: "long", day: "numeric", month: "long", year: "numeric"});
 async function imagenParaIA(ruta){
   const b = await idb.blob(ruta) || await descargarRuta(ruta);
-  return (await blobADataUrl(b, 1280)).src;
+  return (await blobADataUrl(b, 1024)).src;
 }
 // Ordena una nota: título, resumen, tareas, tipo, para quién y fecha; lee el texto de las fotos
 async function enriquecerNota(n){
   const contactos = personas().slice(0, 150).map(p => `${p.nombre}${p.cat ? " (" + CAT[p.cat] + ")" : ""}`).join("; ");
-  const fotos = (n.fotos || []).filter(r => !r.includes("trazo")).slice(0, 3);
+  const todas = (n.fotos || []).filter(r => !r.includes("trazo")), fotos = todas.slice(0, 4);
   const texto = [n.titulo ? "Título: " + n.titulo : "", n.texto || "", n.transcripcion && n.transcripcion !== n.texto ? "Dictado: " + n.transcripcion : ""].filter(Boolean).join("\n").slice(0, 6000);
   const sistema = `Eres el asistente de Chispa, la app de notas de un delegado comercial de material eléctrico en Sevilla. Hoy es ${hoyLargo()}.
 Analiza la nota (y sus fotos, si las hay) y responde SOLO con un JSON con estas claves:
@@ -3152,7 +3172,24 @@ Analiza la nota (y sus fotos, si las hay) y responde SOLO con un JSON con estas 
 Contactos conocidos: ${contactos || "ninguno"}.`;
   const contenido = [{type: "text", text: texto || "(nota sin texto)"}];
   for (const r of fotos){ try { contenido.push({type: "image_url", image_url: {url: await imagenParaIA(r), detail: "low"}}); } catch(e){} }
-  return llamarIA([{role: "system", content: sistema}, {role: "user", content: contenido}], {max: 900});
+  const res = await llamarIA([{role: "system", content: sistema}, {role: "user", content: contenido}], {max: 900});
+  // el resto de fotos, de 8 en 8: solo se lee su texto
+  const resto = todas.slice(4, 100);
+  if (resto.length){
+    const textos = res.textoFotos ? ["Fotos 1-" + fotos.length + ": " + res.textoFotos] : [];
+    for (let i = 0; i < resto.length; i += 8){
+      const tanda = resto.slice(i, i + 8), desde = 5 + i;
+      if (resto.length > 8) toast(`Leyendo fotos ${desde}-${desde + tanda.length - 1} de ${todas.length}…`, "spark", 2500);
+      const c2 = [{type: "text", text: `Fotos ${desde} a ${desde + tanda.length - 1} de una nota${n.titulo ? " titulada «" + n.titulo + "»" : ""}.`}];
+      for (const r of tanda){ try { c2.push({type: "image_url", image_url: {url: await imagenParaIA(r), detail: "low"}}); } catch(e){} }
+      try {
+        const t = await llamarIA([{role: "system", content: 'Para cada foto, en orden, resume el texto legible o, si no hay texto, describe en pocas palabras lo que se ve. Responde SOLO con un JSON: {"fotos": ["…", "…"]}.'}, {role: "user", content: c2}], {max: 120 * tanda.length + 100});
+        (t.fotos || []).forEach((x, k) => { if (x) textos.push(`Foto ${desde + k}: ${x}`); });
+      } catch(e){}
+    }
+    res.textoFotos = textos.join("\n");
+  }
+  return res;
 }
 // Aplica lo que propone la IA sin pisar lo que ya puso el usuario
 function aplicarIA(n, r){
