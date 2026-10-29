@@ -846,7 +846,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.18";
+const VERSION = "0.18.1";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -2906,7 +2906,8 @@ $("#tjGuardar").onclick = async () => {
 const ia = () => !!(config.ia?.endpoint && config.ia?.clave);
 const iaAuto = () => ia() && config.ia.auto !== false;
 async function llamarIA(mensajes, {json = true, max = 900} = {}){
-  const c = config.ia, base = c.endpoint.trim().replace(/\/+$/, "");
+  // vale tanto «https://recurso.openai.azure.com/» como la dirección larga que muestra Azure
+  const c = config.ia; let base = c.endpoint.trim(); try { base = new URL(base).origin; } catch(e){ base = base.replace(/\/+$/, ""); }
   const url = `${base}/openai/deployments/${encodeURIComponent(c.despliegue || "chispa")}/chat/completions?api-version=2024-10-21`;
   const r = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json", "api-key": c.clave.trim()},
     body: JSON.stringify({messages: mensajes, temperature: 0.2, max_tokens: max, ...(json ? {response_format: {type: "json_object"}} : {})})});
