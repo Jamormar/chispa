@@ -459,6 +459,24 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .toast{width:max-content;max-width:calc(100vw - 32px)}
 .toast span{min-width:0}
 .toast .deshacer{flex:none;white-space:nowrap;margin-left:6px;padding:5px 11px;border-radius:9px;background:color-mix(in srgb,var(--on-ink) 18%,transparent);color:var(--spark);font-weight:700;font-size:14px}
+.gente{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:6px 0 4px}
+@media (min-width:700px){ .gente{grid-template-columns:repeat(3,minmax(0,1fr))} }
+.persona-c{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;background:var(--surface);border:1px solid var(--line);text-align:left;min-width:0}
+.persona-c span{display:flex;flex-direction:column;min-width:0}
+.persona-c b{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.persona-c small{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.persona-c.ver-todas{border-style:dashed;background:transparent}.persona-c.ver-todas>svg{width:22px;height:22px;color:var(--muted);flex:none}
+.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:13.5px;flex:none;background:var(--raise);color:var(--text)}
+.av-cliente{background:color-mix(in srgb,var(--cw) 18%,transparent);color:var(--cw)}.av-proveedor{background:color-mix(in srgb,var(--cp) 18%,transparent);color:var(--cp)}
+.av-companero{background:var(--spark-soft);color:var(--spark-text)}
+.bz-tit .avatar{width:34px;height:34px}
+.ficha-cab{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;margin:4px 0 6px}
+.ficha-datos{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:13.5px}.ficha-datos b{color:var(--text)}
+.ficha-acc{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.ficha-acc .btn svg{width:17px;height:17px}
+.sub-mes{font-size:12.5px;font-weight:600;color:var(--faint);margin:14px 4px 6px;text-transform:uppercase;letter-spacing:.04em}
+.dia .c{color:var(--faint);font-weight:500;margin-left:4px}
+.persona-l{display:inline-flex;align-items:center;gap:4px;color:var(--cw);font-weight:600;font-size:inherit;padding:0}
+.persona-l svg{color:var(--cw)}
 .buzones{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:6px 0 4px}
 @media (min-width:700px){ .buzones{grid-template-columns:repeat(3,minmax(0,1fr))} }
 @media (min-width:1100px){ .buzones{grid-template-columns:repeat(4,minmax(0,1fr))} }
@@ -669,7 +687,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
         <div class="prop"><span data-i="tag"></span><span class="lbl">Tipo</span><div class="val"><div class="segm" id="eTipo"></div></div></div>
         <div class="prop"><span data-i="user"></span><span class="lbl">Para quién</span><div class="val">
           <select id="eCat"><option value="">Sin indicar</option><option value="cliente">Cliente</option><option value="proveedor">Proveedor</option><option value="companero">Compañero</option><option value="personal">Personal</option></select>
-          <input type="text" id="eNombre" placeholder="Nombre" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sugs" id="eSugs" role="listbox" aria-label="Contactos"></div></div></div>
+          <input type="text" id="eNombre" placeholder="Nombre" autocomplete="off" autocapitalize="words" enterkeyhint="done"><button class="opc" id="eVerFicha" type="button">Ver ficha</button><div class="sugs" id="eSugs" role="listbox" aria-label="Contactos"></div></div></div>
         <div class="prop"><span data-i="carpeta"></span><span class="lbl">Archivador</span><div class="val">
           <select id="eCarpeta" aria-label="Archivador"></select><button class="opc" id="eArchivar" type="button"></button></div></div>
         <div class="prop"><span data-i="cal"></span><span class="lbl">Fecha y hora</span><div class="val">
@@ -728,7 +746,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.13.1";
+const VERSION = "0.14";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -1261,10 +1279,11 @@ function pintarDetectado(){
   const s = sugerir(textoBorrador()), out = [];
   if (s.fecha && !ignorar.fecha) out.push(`<span class="dchip">${ic("cal")}${capital(fechaRelativa(s.fecha))}${s.hora ? " a las " + s.hora : ""}<button class="q" data-ign="fecha" aria-label="Quitar">${ic("x")}</button></span>`);
   if (s.nombre && !ignorar.nombre) out.push(`<span class="dchip">${ic("user")}${esc(s.nombre)}<button class="q" data-ign="nombre" aria-label="Quitar">${ic("x")}</button></span>`);
+  else if (borrador?.para?.nombre) out.push(`<span class="dchip">${ic("user")}${esc(borrador.para.nombre)}<button class="q" data-ign="para" aria-label="Quitar">${ic("x")}</button></span>`);
   if (s.tipo && !ignorar.tipo) out.push(`<span class="dchip">${ic(TIPOS[s.tipo][1])}${TIPOS[s.tipo][0]}<button class="q" data-ign="tipo" aria-label="Quitar">${ic("x")}</button></span>`);
   $("#detect").innerHTML = out.join("");
 }
-$("#detect").addEventListener("click", e => { const b = e.target.closest("[data-ign]"); if (b){ ignorar[b.dataset.ign] = true; pintarDetectado(); } });
+$("#detect").addEventListener("click", e => { const b = e.target.closest("[data-ign]"); if (b){ if (b.dataset.ign === "para") borrador.para = null; else ignorar[b.dataset.ign] = true; pintarDetectado(); } });
 function pintarAdjuntos(){
   const ex = $("#adj"); ex.innerHTML = "";
   if (borrador.audio) ex.insertAdjacentHTML("beforeend", `<span class="aud">${ic("mic")}Audio ${borrador.dur}</span>`);
@@ -1935,7 +1954,8 @@ function fila(n, opts = {}){
   const hoy = hoyISO(), venc = n.fecha && n.fecha < hoy && !n.hecha;
   const mt = [];
   if (n.fecha) mt.push(`<span class="fe ${venc ? "venc" : n.fecha === hoy ? "hoy" : ""}">${ic("cal")}${fechaRelativa(n.fecha)}${n.hora ? ", " + n.hora : ""}</span>`);
-  if (n.para?.nombre || n.para?.categoria) mt.push(`<span>${ic("user")}${esc(n.para.nombre || CAT[n.para.categoria])}</span>`);
+  if (n.para?.nombre && !opts.sinPersona) mt.push(`<button class="persona-l" data-persona="${esc(n.para.nombre)}" title="Ver la ficha de ${esc(n.para.nombre)}">${ic("user")}${esc(n.para.nombre)}</button>`);
+  else if (n.para?.categoria) mt.push(`<span>${ic("user")}${esc(CAT[n.para.categoria])}</span>`);
   const lista = partirLista(n.texto).items;
   if (lista.length){ const h = lista.filter(i => i.hecho).length; mt.push(`<span class="prog ${h === lista.length ? "completa" : ""}">${ic("tarea")}${h} de ${lista.length}</span>`); }
   if (n.tipo === "idea") mt.push(`<span>${ic("idea")}Idea</span>`);
@@ -2201,7 +2221,7 @@ function abrirEdicion(n, original){
   $("#eTitulo").value = n.ancla && !n.titulo ? "" : titulo; requestAnimationFrame(() => crecerTitulo($("#eTitulo")));
   const conLista = eItems.length > 0;
   $("#eTexto").placeholder = conLista ? "Notas sobre la lista (opcional)" : "Escribe la nota"; $("#eTexto").classList.toggle("corto", conLista && !$("#eTexto").value); $("#eTexto").rows = conLista && !$("#eTexto").value ? 1 : 3;
-  $("#eCat").value = n.para?.categoria || ""; $("#eNombre").value = n.para?.nombre || ""; $("#eFecha").value = n.fecha || ""; $("#eHora").value = n.hora || "";
+  $("#eCat").value = n.para?.categoria || ""; $("#eNombre").value = n.para?.nombre || ""; pintarVerFicha(); $("#eFecha").value = n.fecha || ""; $("#eHora").value = n.hora || "";
   $("#eTransBtn").innerHTML = n.audio && !n.transcripcion && voz() ? `<button class="btn sec" id="eTranscribir" style="margin-top:10px">${ic("mic")}${n._transcribir ? "Transcribiendo…" : "Transcribir el audio"}</button>` : "";
   if ($("#eTranscribir")) $("#eTranscribir").onclick = async () => { $("#eTranscribir").textContent = "Transcribiendo…"; const ok = await transcribirNota(n, true); if (ok){ cerrarHojas(); abrirEdicion(n); } else $("#eTranscribir").textContent = "No se pudo. Reintentar"; };
   $("#eInfo").innerHTML = `<span>${ic(n.ancla ? "ancla" : n.nocturna ? "luna" : "spark")}${capital(fechaLarga(n.creada))}, ${hora(n.creada)}</span>`
@@ -2246,6 +2266,9 @@ function pintarSugs(){
 }
 $("#eNombre").addEventListener("focus", () => { pintarSugs(); setTimeout(() => $("#eNombre").scrollIntoView({block: "center", behavior: "smooth"}), 350); });
 $("#eNombre").addEventListener("input", pintarSugs);
+const pintarVerFicha = () => $("#eVerFicha").classList.toggle("oculto", !$("#eNombre").value.trim());
+$("#eNombre").addEventListener("input", pintarVerFicha);
+$("#eVerFicha").onclick = async () => { const nom = $("#eNombre").value.trim(); if (!nom) return; if (hayCambiosEdicion()) await guardarEdicion(); else { olvidarEdicion(); cerrarHojas(); } lsSet("chispa.desdePersonas", false); ver("notas"); abrirBuzon("p:" + nom); };
 $("#eNombre").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); $("#eNombre").blur(); } });
 $("#eNombre").addEventListener("blur", () => setTimeout(() => { $("#eSugs").innerHTML = ""; }, 150));
 $("#eCat").addEventListener("change", () => { if (document.activeElement === $("#eNombre")) pintarSugs(); });
@@ -2950,6 +2973,7 @@ function pintarNotas(){
   const q = norm($("#q").value).split(/\s+/).filter(Boolean);
   const car = buzon?.startsWith("c:") ? archivadores().find(c => "c:" + c.id === buzon) : null;
   if (buzon?.startsWith("c:") && !car) buzon = null;
+  if (!q.length && (buzon === "personas" || buzon?.startsWith("p:"))){ $("#filtros").classList.add("oculto"); buzon === "personas" ? pintarPersonas() : pintarFicha(buzon.slice(2)); return; }
   const bz = BUZONES.find(x => x.k === buzon);
   // --- portada: los buzones y los archivadores
   if (!q.length && !bz && !car){
@@ -2965,9 +2989,12 @@ function pintarNotas(){
     $("#listaNotas").innerHTML = `<div class="buzones">${html}</div>
       <div class="dia">Mis archivadores</div>
       <div class="buzones">${cs}<button class="buzon bz-nuevo" id="bzNuevo">${ic("mas")}<span class="bz-t">Nuevo archivador</span><small>Por asunto, cliente u obra</small></button></div>`;
+    const gente = personas().slice(0, 6);
+    if (gente.length) $("#listaNotas").insertAdjacentHTML("beforeend", `<div class="dia">Clientes y contactos</div><div class="gente">${gente.map(tarjetaPersona).join("")}<button class="persona-c ver-todas" data-buzon="personas">${ic("user")}<span><b>Ver todos</b><small>${personas().length} contactos</small></span></button></div>`);
     $("#bzNuevo").onclick = async () => { const c = await nuevaCarpeta(); if (c) abrirBuzon("c:" + c.id); };
     return;
   }
+
   // --- dentro de un buzón (o buscando en todos)
   $("#filtros").classList.remove("oculto");
   if (!grupoAbierto) pintarFiltros(); else document.querySelectorAll(".desp").forEach(b => { const g = GRUPOS.find(x => x.k === b.dataset.g); b.querySelector(".d-val").textContent = resumenGrupo(g); b.classList.toggle("on", filtroActivo(g)); });
@@ -3009,6 +3036,73 @@ function pintarNotas(){
   cargarMinis($("#listaNotas"));
 }
 $("#listaNotas").addEventListener("click", e => { const b = e.target.closest("[data-buzon]"); if (b) abrirBuzon(b.dataset.buzon); });
+// ---------- Ficha por cliente o contacto: todo lo hablado con esa persona
+function personas(){
+  const m = new Map(), cont = config.contactos || {};
+  const meter = (nombre, cat) => { const k = norm(nombre.trim()); if (!k) return null; if (!m.has(k)) m.set(k, {nombre: nombre.trim(), cat: cat || "", notas: [], ultima: ""}); const p = m.get(k); if (!p.cat && cat) p.cat = cat; return p; };
+  for (const c of ["cliente", "proveedor", "companero"]) for (const x of cont[c] || []) meter(x, c);
+  for (const n of deNotas()) if (n.para?.nombre){ const p = meter(n.para.nombre, n.para.categoria); p.notas.push(n); if (n.creada > p.ultima) p.ultima = n.creada; }
+  return [...m.values()].sort((a, b) => (b.ultima || "").localeCompare(a.ultima || "") || a.nombre.localeCompare(b.nombre));
+}
+const iniciales = t => t.split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join("").toUpperCase();
+const esLlamada = n => /^llamada con /i.test(n.titulo || "");
+function tarjetaPersona(p){
+  const pend = p.notas.filter(n => !n.hecha && !enArchivo(n)).length;
+  return `<button class="persona-c" data-buzon="p:${esc(p.nombre)}"><i class="avatar av-${p.cat || "otro"}">${esc(iniciales(p.nombre))}</i><span><b>${esc(p.nombre)}</b><small>${pend ? `${pend} pendiente${pend > 1 ? "s" : ""}` : p.notas.length ? `${p.notas.length} nota${p.notas.length > 1 ? "s" : ""}` : "Sin notas aún"}${p.ultima ? " · " + fechaRelativaCorta(p.ultima) : ""}</small></span></button>`;
+}
+function fechaRelativaCorta(iso){ const d = Math.round((new Date(isoDia(new Date())) - new Date(isoDia(new Date(iso)))) / 864e5); return d <= 0 ? "hoy" : d === 1 ? "ayer" : d < 7 ? `hace ${d} días` : d < 60 ? `hace ${Math.round(d / 7)} sem.` : `hace ${Math.round(d / 30)} meses`; }
+function cabFicha(titulo, icono){
+  $("#buzonCab").innerHTML = `<div class="bz-cab"><button class="ibtn" id="bzVolver" aria-label="Volver">${ic("atras")}</button><div class="bz-tit">${icono}<span>${esc(titulo)}</span></div></div>`;
+  $("#bzVolver").onclick = () => abrirBuzon(buzon?.startsWith("p:") && lsGet("chispa.desdePersonas") ? "personas" : null);
+}
+function pintarPersonas(){
+  cabFicha("Clientes y contactos", ic("user")); lsSet("chispa.desdePersonas", true);
+  const ps = personas(), grupos = [["cliente", "Clientes"], ["proveedor", "Proveedores"], ["companero", "Compañeros"], ["personal", "Personal"], ["", "Otros"]];
+  $("#listaNotas").innerHTML = ps.length ? grupos.map(([c, t]) => { const l = ps.filter(p => (p.cat || "") === c); return l.length ? `<div class="dia">${t} <span class="c">${l.length}</span></div><div class="gente">${l.map(tarjetaPersona).join("")}</div>` : ""; }).join("")
+    : `<div class="vacio-grande"><div class="halo">${ic("user")}</div><b>Aún no hay contactos</b><span>Cuando asignes una nota a alguien (Para quién) o anotes tras una llamada, aparecerá aquí.</span></div>`;
+}
+function pintarFicha(nombre){
+  const p = personas().find(x => norm(x.nombre) === norm(nombre)) || {nombre, cat: "", notas: []};
+  cabFicha(p.nombre, `<i class="avatar av-${p.cat || "otro"}">${esc(iniciales(p.nombre))}</i>`);
+  const vivas = p.notas.filter(n => !enArchivo(n)), pend = vivas.filter(n => !n.hecha), llamadas = p.notas.filter(esLlamada);
+  const hoy = hoyISO(), conFecha = pend.filter(n => n.fecha).sort((a, b) => (a.fecha + (a.hora || "")).localeCompare(b.fecha + (b.hora || ""))), sinFecha = pend.filter(n => !n.fecha);
+  const historia = [...p.notas].sort((a, b) => b.creada.localeCompare(a.creada));
+  const mes = iso => capital(new Date(iso).toLocaleDateString("es-ES", {month: "long", year: "numeric"}));
+  let html = `<div class="ficha-cab">
+      <div class="ficha-datos"><span>${p.cat ? CAT[p.cat] : "Contacto"}</span><span><b>${pend.length}</b> pendiente${pend.length === 1 ? "" : "s"}</span><span><b>${llamadas.length}</b> llamada${llamadas.length === 1 ? "" : "s"} anotada${llamadas.length === 1 ? "" : "s"}</span>${p.ultima ? `<span>Último contacto ${fechaRelativaCorta(p.ultima)}</span>` : ""}</div>
+      <div class="ficha-acc"><button class="btn" id="fNueva">${ic("pluma")}Nueva nota</button><button class="btn sec" id="fVoz">${ic("mic")}Dictar</button>${p.notas.length ? `<button class="btn sec" id="fPdf">${ic("compartir")}Informe PDF</button>` : ""}</div></div>`;
+  const bloque = (t, l, cls = "") => l.length ? `<div class="dia ${cls}">${t} <span class="c">${l.length}</span></div><div class="lista">${l.map(n => fila(n, {sinPersona: true})).join("")}</div>` : "";
+  html += bloque("Atrasado", conFecha.filter(n => n.fecha < hoy), "venc") + bloque("Próximo", conFecha.filter(n => n.fecha >= hoy)) + bloque("Pendiente sin fecha", sinFecha);
+  if (historia.length){
+    html += `<div class="dia">Historial</div>`; let g = null;
+    for (const n of historia){ const m = mes(n.creada); if (m !== g){ if (g) html += "</div>"; html += `<div class="sub-mes">${m}</div><div class="lista linea">`; g = m; } html += fila(n, {hora: false, sinPersona: true}); }
+    html += "</div>";
+  } else html += `<div class="vacio-grande"><div class="halo">${ic("user")}</div><b>Sin notas todavía</b><span>Lo que anotes para ${esc(p.nombre)} aparecerá aquí, ordenado en el tiempo.</span></div>`;
+  $("#listaNotas").innerHTML = html; cargarMinis($("#listaNotas"));
+  const nuevaPara = voz => { ver("anotar"); borrador.para = {categoria: p.cat || "", nombre: p.nombre}; tocado = true; pintarDetectado(); toast(`Nota para ${p.nombre}`, "user", 2500); if (voz){ if (!rec) empezarVoz(); } else setTimeout(() => $("#cTexto").focus(), 250); };
+  $("#fNueva").onclick = () => nuevaPara(false); $("#fVoz").onclick = () => nuevaPara(true);
+  if ($("#fPdf")) $("#fPdf").onclick = async () => { const b = $("#fPdf"); b.disabled = true; try { await compartirArchivo(await fichaEnPdf(p), `Chispa - ${p.nombre.replace(/[\\/:*?"<>|]+/g, " ")} - ${hoyISO()}.pdf`, `Seguimiento de ${p.nombre}`); } catch(e){ toast(e.message || "No se pudo preparar el PDF", "alerta"); } finally { b.disabled = false; } };
+}
+// Informe de seguimiento de una persona: lo pendiente y el historial, en un PDF
+async function fichaEnPdf(p){
+  const jsPDF = await cargarJsPdf(), doc = new jsPDF({unit: "mm", format: "a4"}), W = 210, H = 297, M = 18, AN = W - 2 * M, TINTA = [22, 33, 58], GRIS = [102, 114, 138];
+  let y = 0;
+  const cab = () => { doc.setFillColor(...TINTA); doc.rect(0, 0, W, 20, "F"); doc.setFillColor(244, 182, 62); doc.lines([[-4.2, 6.2], [3.2, 0], [-1, 5.6], [5, -7.4], [-3.4, 0], [1.6, -4.4]], M + 3.4, 5.2, [1, 1], "F", true);
+    doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(13); doc.text("Chispa", M + 9, 12.6); doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(200, 208, 222); doc.text("Seguimiento", W - M, 12.6, {align: "right"}); y = 32; };
+  const sitio = h => { if (y + h > H - 18){ doc.addPage(); cab(); } };
+  const txt = (t, {tam = 11, color = TINTA, estilo = "normal", sangria = 0} = {}) => { doc.setFont("helvetica", estilo); doc.setFontSize(tam); doc.setTextColor(...color); const a = tam * .3528 * 1.4;
+    for (const l of doc.splitTextToSize(latin1(t), AN - sangria)){ sitio(a); doc.text(l, M + sangria, y + a * .75); y += a; } };
+  cab(); txt(p.nombre, {tam: 20, estilo: "bold"}); txt(`${p.cat ? CAT[p.cat] + "  ·  " : ""}${p.notas.length} notas  ·  informe del ${new Date().toLocaleDateString("es-ES")}`, {tam: 9.5, color: GRIS}); y += 4;
+  const nota = n => { const pt = partesNota(n); y += 2; txt((n.hecha ? "[hecha] " : "") + (pt.titulo || pt.vacio || "Nota"), {estilo: "bold"});
+    const meta = [fechaLarga(n.creada)]; if (n.fecha) meta.push("para el " + fechaLarga(n.fecha) + (n.hora ? " " + n.hora : "")); txt(meta.join("  ·  "), {tam: 9, color: GRIS});
+    if (pt.desc) txt(pt.desc, {tam: 10.5}); for (const it of partirLista(n.texto).items) txt((it.hecho ? "[x] " : "[ ] ") + it.texto, {tam: 10.5, sangria: 3}); };
+  const pend = p.notas.filter(n => !n.hecha && !enArchivo(n)), resto = p.notas.filter(n => !pend.includes(n)).sort((a, b) => b.creada.localeCompare(a.creada));
+  if (pend.length){ y += 4; txt("PENDIENTE", {tam: 10, estilo: "bold", color: GRIS}); pend.forEach(nota); }
+  if (resto.length){ y += 6; txt("HISTORIAL", {tam: 10, estilo: "bold", color: GRIS}); resto.forEach(nota); }
+  const total = doc.getNumberOfPages(); for (let i = 1; i <= total; i++){ doc.setPage(i); doc.setFontSize(8); doc.setTextColor(163, 172, 189); doc.text("Compartido desde Chispa", M, H - 9); if (total > 1) doc.text(`${i} / ${total}`, W - M, H - 9, {align: "right"}); }
+  return doc.output("blob");
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-persona]"); if (!b) return; e.stopPropagation(); e.preventDefault(); lsSet("chispa.desdePersonas", false); cerrarHojas(); $("#q").value = ""; ver("notas"); abrirBuzon("p:" + b.dataset.persona); }, true);
 async function nuevaCarpeta(){
   const nombre = (prompt("Nombre del archivador (por ejemplo, Casa nueva o un cliente):") || "").trim(); if (!nombre) return null;
   const ya = archivadores().find(c => norm(c.nombre) === norm(nombre)); if (ya) return ya;
@@ -3248,7 +3342,7 @@ function pintarAyuda(){
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
-  <h3>Novedades</h3><p><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y archivadores propios. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y archivadores propios. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
