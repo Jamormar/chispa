@@ -18,7 +18,13 @@ import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import androidx.activity.result.ActivityResult;
+import android.app.Activity;
+import android.database.Cursor;
+import android.provider.ContactsContract;
+import java.util.HashMap;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
 
@@ -35,7 +41,8 @@ import java.util.ArrayList;
     name = "ChispaNativo",
     permissions = {
         @Permission(alias = "llamadas", strings = {Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CALL_LOG}),
-        @Permission(alias = "bluetooth", strings = {Manifest.permission.BLUETOOTH_CONNECT})
+        @Permission(alias = "bluetooth", strings = {Manifest.permission.BLUETOOTH_CONNECT}),
+        @Permission(alias = "contactos", strings = {Manifest.permission.READ_CONTACTS})
     }
 )
 public class ChispaNativoPlugin extends Plugin {
@@ -171,6 +178,7 @@ public class ChispaNativoPlugin extends Plugin {
         r.put("enCoche", Ajustes.enCoche(getContext()));
         r.put("permisoLlamadas", permiso("llamadas"));
         r.put("permisoBluetooth", permiso("bluetooth"));
+        r.put("permisoContactos", permiso("contactos"));
         call.resolve(r);
     }
 
@@ -353,5 +361,62 @@ public class ChispaNativoPlugin extends Plugin {
     public void probarSueno(PluginCall call) {
         Suenos.avisar(getContext(), true);
         call.resolve();
+    }
+
+    // ---------------------------------------------------------------- agenda del móvil
+
+    /** Abre la agenda de Android para elegir un contacto (no necesita permiso: Android solo da ese contacto). */
+    @PluginMethod
+    public void elegirContacto(PluginCall call) {
+        Intent i = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+        startActivityForResult(call, i, "trasElegirContacto");
+    }
+
+    @ActivityCallback
+    private void trasElegirContacto(PluginCall call, ActivityResult res) {
+        JSObject r = new JSObject();
+        if (call == null) return;
+        if (res.getResultCode() != Activity.RESULT_OK || res.getData() == null || res.getData().getData() == null) { r.put("cancelado", true); call.resolve(r); return; }
+        Uri uri = res.getData().getData();
+        String id = null;
+        try (Cursor c = getContext().getContentResolver().query(uri, new String[]{ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME}, null, null, null)) {
+            if (c != null && c.moveToFirst()) { id = c.getString(0); r.put("nombre", c.getString(1)); }
+        } catch (Exception e) {
+            call.reject("No se pudo leer el contacto"); return;
+        }
+        if (id != null && permiso("contactos")) {   // con permiso, también la empresa
+            HashMap<String, String> emp = empresas(id);
+            if (emp.containsKey(id)) r.put("empresa", emp.get(id));
+        }
+        call.resolve(r);
+    }
+
+    private HashMap<String, String> empresas(String soloId) {
+        HashMap<String, String> m = new HashMap<>();
+        String sel = ContactsContract.Data.MIMETYPE + "=?" + (soloId != null ? " AND " + ContactsContract.Data.CONTACT_ID + "=?" : "");
+        String[] args = soloId != null ? new String[]{ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE, soloId} : new String[]{ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE};
+        try (Cursor c = getContext().getContentResolver().query(ContactsContract.Data.CONTENT_URI,
+                new String[]{ContactsContract.Data.CONTACT_ID, ContactsContract.CommonDataKinds.Organization.COMPANY}, sel, args, null)) {
+            while (c != null && c.moveToNext()) { String e = c.getString(1); if (e != null && !e.trim().isEmpty()) m.put(c.getString(0), e.trim()); }
+        } catch (Exception ignorado) { }
+        return m;
+    }
+
+    /** Nombres (y empresa) de la agenda, para sugerirlos al escribir «Para quién». Solo se usan en el móvil. */
+    @PluginMethod
+    public void contactos(PluginCall call) {
+        if (!permiso("contactos")) { JSObject r = new JSObject(); r.put("permiso", false); r.put("contactos", new JSArray()); call.resolve(r); return; }
+        HashMap<String, String> emp = empresas(null);
+        JSArray lista = new JSArray();
+        try (Cursor c = getContext().getContentResolver().query(ContactsContract.Contacts.CONTENT_URI,
+                new String[]{ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME}, null, null, ContactsContract.Contacts.DISPLAY_NAME + " ASC")) {
+            while (c != null && c.moveToNext()) {
+                String nombre = c.getString(1); if (nombre == null || nombre.trim().isEmpty()) continue;
+                JSObject o = new JSObject(); o.put("nombre", nombre.trim());
+                String e = emp.get(c.getString(0)); if (e != null) o.put("empresa", e);
+                lista.put(o);
+            }
+        } catch (Exception ignorado) { }
+        JSObject r = new JSObject(); r.put("permiso", true); r.put("contactos", lista); call.resolve(r);
     }
 }
