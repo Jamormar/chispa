@@ -68,6 +68,7 @@ cambiar(manifiesto, m => {
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="es.jamormar.chispa" android:host="auth" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/chispa_atajos" />
         </activity>`;
   m = m.replace("</activity>", compartir);
   const extra = fs.readFileSync(path.join(nativo, "manifiesto-aplicacion.xml"), "utf8");
