@@ -509,6 +509,7 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .buzon small{grid-row:3;grid-column:1/-1;color:var(--muted);font-size:12.5px;line-height:1.3;margin-top:2px}
 .buzon:active{transform:scale(.98)}
 .bz-importantes svg{color:#E0A21F}.bz-importantes{background:var(--spark-soft);border-color:transparent}
+.bz-suenos svg{color:#7A6BC4}.bz-suenos{background:color-mix(in srgb,#7A6BC4 9%,var(--surface))}
 .bz-entrada svg{color:var(--cw)}.bz-porhacer svg{color:var(--danger,#D9483B)}.bz-ideas svg{color:#E0A21F}.bz-completadas svg{color:var(--cp)}
 .bz-carpeta svg{color:var(--cw)}
 .bz-nuevo{border-style:dashed;background:transparent}.bz-nuevo .bz-t{white-space:normal}.bz-nuevo b{display:none}.bz-nuevo small{grid-row:2}
@@ -536,6 +537,32 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .ajuste .estado-t.ok{color:var(--home)}
 .transcribiendo{display:inline-flex;align-items:center;gap:6px;color:var(--spark-text);font-size:13px}
 .toast svg{width:18px;height:18px;color:var(--spark)}
+/* Tarjeta de visita */
+.menu-foto{position:fixed;z-index:60;width:220px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:0 12px 32px rgba(10,16,32,.18);display:flex;flex-direction:column}
+.menu-foto button{display:flex;align-items:center;gap:12px;height:46px;padding:0 12px;border-radius:11px;font-size:15px;color:var(--text);text-align:left}
+.menu-foto button:active{background:var(--raise)}.menu-foto svg{width:20px;height:20px;color:var(--muted)}
+#tj{z-index:96}
+.tj-paso{flex:1;display:flex;flex-direction:column;min-height:0}
+.tj-guia{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center;color:var(--muted);font-size:15px;line-height:1.5}
+.tj-marco{width:240px;height:152px;border:3px dashed var(--spark);border-radius:16px;display:grid;place-items:center;color:var(--spark-deep)}.tj-marco svg{width:40px;height:40px}
+.tj-guia p{max-width:420px;margin:0}
+.tj-bots{display:flex;flex-direction:column;gap:10px;padding:12px 16px calc(16px + env(safe-area-inset-bottom))}.tj-bots .btn{height:52px;font-size:16px;gap:10px}.tj-bots svg{width:20px;height:20px}
+.tj-aviso{padding:12px 16px 4px;color:var(--muted);font-size:14px;text-align:center}
+#tjCanvas{flex:1;width:100%;min-height:0;touch-action:none;background:#0b0f1a}
+.tj-scroll{flex:1;overflow-y:auto;padding:14px 16px}
+.tj-caras{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tj-cara{position:relative;display:flex;flex-direction:column;gap:6px;align-items:flex-start;font-size:13px;color:var(--muted)}
+.tj-cara img{width:100%;aspect-ratio:1.585;object-fit:contain;background:#fff;border-radius:10px;box-shadow:0 4px 14px rgba(10,16,32,.15)}
+.tj-cara .enl{position:absolute;right:0;bottom:0;font-size:13px}
+.tj-anadir{align-items:center;justify-content:center;aspect-ratio:1.585;border:2px dashed var(--line);border-radius:10px;background:transparent;text-align:center;padding:8px}
+.tj-anadir svg{width:24px;height:24px;color:var(--muted)}.tj-anadir span{font-weight:600;color:var(--text);font-size:14px}.tj-anadir small{font-size:11.5px}
+.tj-leyendo{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13.5px;margin:12px 2px}.tj-leyendo svg{width:16px;height:16px;color:#E0A21F}
+.tj-campos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tj-campos label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted);min-width:0}.tj-campos .ancho{grid-column:1/-1}
+.tj-campos input{height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:0 12px;font-size:15.5px;color:var(--text);outline:0;min-width:0}
+.tj-campos input:focus{border-color:var(--work)}
+.tj-nombre{margin:14px 2px 4px;font-size:13.5px;color:var(--muted)}.tj-nombre b{color:var(--text)}
+.tj-pie{background:var(--surface);border-top:1px solid var(--line)}.tj-pie .btn{flex:1;height:50px;font-size:16px}
 /* Lienzo a pantalla completa */
 html.lz-on,html.lz-on body{overflow:hidden}
 .lz{position:fixed;inset:0;z-index:95;background:var(--bg);display:flex;flex-direction:column}
@@ -750,6 +777,35 @@ html.lz-on,html.lz-on body{overflow:hidden}
   <div class="hpie"><div class="esp"></div><button class="btn sec oculto" id="evPermiso">Dar permiso para enviar</button><button class="btn" id="evCorreoB"><span data-i="mail"></span>Enviar por correo</button></div>
 </div>
 
+<!-- Tarjeta de visita -->
+<div id="tj" class="lz oculto" role="dialog" aria-label="Tarjeta de visita">
+  <div class="lz-top"><button class="lz-b" id="tjCerrar" aria-label="Cerrar"><span data-i="x"></span></button><div class="lz-tit">Tarjeta de visita · <span id="tjPaso"></span></div></div>
+  <input type="file" id="tjIn" accept="image/*" class="oculto">
+  <div class="tj-paso" id="tjElegir">
+    <div class="tj-guia"><div class="tj-marco"><span data-i="user"></span></div><p>Pon la tarjeta sobre una superficie que contraste (una mesa oscura si la tarjeta es clara) y hazle la foto. No hace falta que salga recta: Chispa la encuadra y la endereza.</p></div>
+    <div class="tj-bots"><button class="btn" id="tjCam"><span data-i="camara"></span>Hacer foto</button><button class="btn sec" id="tjGal"><span data-i="imagen"></span>Elegir de la galería</button></div>
+  </div>
+  <div class="tj-paso oculto" id="tjAjustar">
+    <div class="tj-aviso" id="tjAviso"></div>
+    <canvas id="tjCanvas"></canvas>
+    <div class="lz-rec-b"><button class="btn sec" id="tjRepetir">Repetir foto</button><div class="esp"></div><button class="btn" id="tjUsar">Usar</button></div>
+  </div>
+  <div class="tj-paso oculto" id="tjDatos">
+    <div class="tj-scroll">
+      <div class="tj-caras" id="tjCaras"></div>
+      <div class="tj-leyendo" id="tjLeyendo"></div>
+      <div class="tj-campos">
+        <label>Empresa<input id="tj_empresa" autocomplete="off"></label><label>Persona<input id="tj_persona" autocomplete="off"></label>
+        <label>Cargo<input id="tj_cargo" autocomplete="off"></label><label>Teléfono<input id="tj_telefono" inputmode="tel" autocomplete="off"></label>
+        <label>Correo<input id="tj_email" inputmode="email" autocomplete="off"></label><label>Web<input id="tj_web" autocomplete="off"></label>
+        <label class="ancho">Dirección<input id="tj_direccion" autocomplete="off"></label>
+      </div>
+      <div class="tj-nombre" id="tjNombre"></div>
+    </div>
+    <div class="lz-rec-b tj-pie"><div class="esp"></div><button class="btn" id="tjGuardar">Guardar tarjeta</button></div>
+  </div>
+</div>
+
 <!-- Lienzo a pantalla completa -->
 <div id="lz" class="lz oculto" role="dialog" aria-label="Lienzo">
   <div class="lz-top">
@@ -784,12 +840,13 @@ html.lz-on,html.lz-on body{overflow:hidden}
   </div>
 </div>
 
+<div id="menuFoto" class="menu-foto oculto" role="menu"><button data-mf="foto"><span data-i="camara"></span>Foto</button><button data-mf="tarjeta"><span data-i="user"></span>Tarjeta de visita</button></div>
 <div id="visor"><img alt=""></div>
 <div class="toast" id="toast"></div>
 
 <script>
 "use strict";
-const VERSION = "0.16";
+const VERSION = "0.18";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -1324,11 +1381,12 @@ function pintarDetectado(){
   const s = sugerir(textoBorrador()), out = [];
   if (s.fecha && !ignorar.fecha) out.push(`<span class="dchip">${ic("cal")}${capital(fechaRelativa(s.fecha))}${s.hora ? " a las " + s.hora : ""}<button class="q" data-ign="fecha" aria-label="Quitar">${ic("x")}</button></span>`);
   if (s.nombre && !ignorar.nombre) out.push(`<span class="dchip">${ic("user")}${esc(s.nombre)}<button class="q" data-ign="nombre" aria-label="Quitar">${ic("x")}</button></span>`);
-  else if (borrador?.para?.nombre) out.push(`<span class="dchip">${ic("user")}${esc(borrador.para.nombre)}<button class="q" data-ign="para" aria-label="Quitar">${ic("x")}</button></span>`);
+  if (borrador?.sueno) out.unshift(`<span class="dchip">${ic("luna")}Sueños<button class="q" data-ign="sueno" aria-label="Quitar">${ic("x")}</button></span>`);
+  if (!(s.nombre && !ignorar.nombre) && borrador?.para?.nombre) out.push(`<span class="dchip">${ic("user")}${esc(borrador.para.nombre)}<button class="q" data-ign="para" aria-label="Quitar">${ic("x")}</button></span>`);
   if (s.tipo && !ignorar.tipo) out.push(`<span class="dchip">${ic(TIPOS[s.tipo][1])}${TIPOS[s.tipo][0]}<button class="q" data-ign="tipo" aria-label="Quitar">${ic("x")}</button></span>`);
   $("#detect").innerHTML = out.join("");
 }
-$("#detect").addEventListener("click", e => { const b = e.target.closest("[data-ign]"); if (b){ if (b.dataset.ign === "para") borrador.para = null; else ignorar[b.dataset.ign] = true; pintarDetectado(); } });
+$("#detect").addEventListener("click", e => { const b = e.target.closest("[data-ign]"); if (b){ if (b.dataset.ign === "sueno") borrador.sueno = false; else if (b.dataset.ign === "para") borrador.para = null; else ignorar[b.dataset.ign] = true; pintarDetectado(); } });
 function pintarAdjuntos(){
   const ex = $("#adj"); ex.innerHTML = "";
   if (borrador.audio) ex.insertAdjacentHTML("beforeend", `<span class="aud">${ic("mic")}Audio ${borrador.dur}</span>`);
@@ -1832,7 +1890,13 @@ async function docDesdeFoto(blob){
 }
 
 $("#bLimpiar").onclick = () => { if (vacio() || confirm("¿Descartar lo que llevas y empezar de nuevo?")){ if (rec){ descartarVoz = true; pararVoz(); } nuevoBorrador(); } };
-$("#bFoto").onclick = () => { tocado = true; $("#inFoto").click(); };
+$("#bFoto").onclick = e => {
+  e.stopPropagation(); const m = $("#menuFoto"); if (!m.classList.contains("oculto")){ m.classList.add("oculto"); return; }
+  const r = $("#bFoto").getBoundingClientRect(); m.style.left = Math.max(8, r.left + r.width / 2 - 110) + "px"; m.style.bottom = (innerHeight - r.top + 10) + "px"; m.classList.remove("oculto");
+};
+document.addEventListener("click", e => { if (!e.target.closest("#menuFoto")) $("#menuFoto").classList.add("oculto"); });
+$("#menuFoto").onclick = e => { const b = e.target.closest("[data-mf]"); if (!b) return; $("#menuFoto").classList.add("oculto");
+  if (b.dataset.mf === "foto"){ tocado = true; $("#inFoto").click(); } else abrirTarjeta(); };
 $("#inFoto").onchange = async () => { for (const f of $("#inFoto").files) borrador.fotos.push(await reducirFoto(f)); $("#inFoto").value = ""; pintarAdjuntos(); guardarCapturaPronto(); };
 
 // Voz: guarda el audio original, muestra el nivel en vivo y transcribe si el móvil puede
@@ -1906,6 +1970,7 @@ async function guardarCaptura(){
   if (s.tipo && !ignorar.tipo) n.tipo = s.tipo;
   if (s.cat && !ignorar.nombre) n.para = {categoria: s.cat, nombre: s.nombre};
   else if (borrador.para) n.para = borrador.para;
+  if (borrador.sueno) n.sueno = true;
   n.ubicacion = await ubicacion();
   if (n.audio && !n.transcripcion && voz()) n._transcribir = true;
   if (iaAuto() && mereceIA(n)) n._ia = true;
@@ -2641,6 +2706,201 @@ async function procesarTranscripciones(){
 }
 setInterval(() => { if (document.visibilityState === "visible") procesarTranscripciones(); }, 90000);
 
+/* ================= Tarjetas de visita ================= */
+// Frontal (y reverso si hace falta): se detecta la tarjeta en la foto, se endereza, se encuadra y se mejora el contraste.
+// Se guardan como «Empresa@Persona.jpg» y «Empresa@Persona (reverso).jpg» en una nota del archivador «Tarjetas de visita».
+const TJ = {lado: "frontal", caras: {frontal: null, reverso: null}, foto: null, quad: null, datos: {}};
+async function cargarCanvas(blob, max = 2400){
+  const bmp = await createImageBitmap(blob, {imageOrientation: "from-image"}), k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height); return c;
+}
+// Detección: zona clara u oscura más grande que no toca los bordes de la foto; sus 4 esquinas
+function detectarTarjeta(src){
+  const max = 360, k = Math.min(1, max / Math.max(src.width, src.height)), w = Math.max(8, Math.round(src.width * k)), h = Math.max(8, Math.round(src.height * k));
+  const c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d", {willReadFrequently: true}); g.drawImage(src, 0, 0, w, h);
+  const d = g.getImageData(0, 0, w, h).data, gris = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) gris[i] = d[i*4] * .299 + d[i*4+1] * .587 + d[i*4+2] * .114;
+  const bl = new Float32Array(w * h);   // suavizado 5x5
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++){ let s = 0, n = 0; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++){ const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < w && yy < h){ s += gris[yy*w+xx]; n++; } } bl[y*w+x] = s / n; }
+  // umbral de Otsu
+  // distancia de color a la mesa (el color de los bordes de la foto): separa la tarjeta entera, también sus franjas oscuras o de color
+  const borde = [[], [], []];
+  for (let x = 0; x < w; x++) for (const y of [0, 1, h - 2, h - 1]){ const i = (y * w + x) * 4; for (let k = 0; k < 3; k++) borde[k].push(d[i + k]); }
+  for (let y = 0; y < h; y++) for (const x of [0, 1, w - 2, w - 1]){ const i = (y * w + x) * 4; for (let k = 0; k < 3; k++) borde[k].push(d[i + k]); }
+  const fondo = borde.map(l => l.sort((a, b) => a - b)[l.length >> 1]);
+  const dist = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) dist[i] = Math.min(255, Math.hypot(d[i*4] - fondo[0], d[i*4+1] - fondo[1], d[i*4+2] - fondo[2]));
+  const distS = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++){ let s = 0, n = 0; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++){ const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < w && yy < h){ s += dist[yy*w+xx]; n++; } } distS[y*w+x] = s / n; }
+  const otsu = arr => { const hs = new Array(256).fill(0); for (const v of arr) hs[Math.min(255, v | 0)]++; let tot = arr.length, sm = 0; for (let i = 0; i < 256; i++) sm += i * hs[i];
+    let sb = 0, wb = 0, mj = 0, t0 = 128; for (let t = 0; t < 256; t++){ wb += hs[t]; if (!wb) continue; const wf = tot - wb; if (!wf) break; sb += t * hs[t]; const v = wb * wf * (sb / wb - (sm - sb) / wf) ** 2; if (v > mj){ mj = v; t0 = t; } } return t0; };
+  const uDist = Math.max(18, Math.min(42, otsu(distS)));   // umbral bajo: basta con que se distinga algo de la mesa
+  const hist = new Array(256).fill(0); for (const v of bl) hist[Math.min(255, v | 0)]++;
+  let total = w * h, suma = 0; for (let i = 0; i < 256; i++) suma += i * hist[i];
+  let sB = 0, wB = 0, mejor = 0, umbral = 128;
+  for (let t = 0; t < 256; t++){ wB += hist[t]; if (!wB) continue; const wF = total - wB; if (!wF) break; sB += t * hist[t]; const mB = sB / wB, mF = (suma - sB) / wF, v = wB * wF * (mB - mF) ** 2; if (v > mejor){ mejor = v; umbral = t; } }
+  let elegido = null;
+  for (const modo of ["color", "claro", "oscuro"]){
+    const m = new Uint8Array(w * h);
+    for (let i = 0; i < w * h; i++) m[i] = modo === "color" ? (distS[i] > uDist ? 1 : 0) : ((bl[i] > umbral) === (modo === "claro") ? 1 : 0);
+    const vista = new Uint8Array(w * h);
+    for (let i = 0; i < w * h; i++){
+      if (!m[i] || vista[i]) continue;
+      const pila = [i]; vista[i] = 1; let area = 0, borde = 0, a = Infinity, b = -Infinity, cc = Infinity, dd = -Infinity, pa, pb, pc, pd;
+      while (pila.length){
+        const p = pila.pop(), x = p % w, y = (p / w) | 0; area++;
+        if (x === 0 || y === 0 || x === w - 1 || y === h - 1) borde++;
+        const s1 = x + y, s2 = x - y;
+        if (s1 < a){ a = s1; pa = [x, y]; } if (s1 > b){ b = s1; pb = [x, y]; } if (s2 < cc){ cc = s2; pc = [x, y]; } if (s2 > dd){ dd = s2; pd = [x, y]; }
+        for (const q of [p - 1, p + 1, p - w, p + w]){ if (q < 0 || q >= w * h || vista[q] || !m[q]) continue; if ((q === p - 1 && x === 0) || (q === p + 1 && x === w - 1)) continue; vista[q] = 1; pila.push(q); }
+      }
+      const frac = area / (w * h), bordeFrac = borde / (2 * (w + h));
+      if (frac < .12 || frac > .97 || bordeFrac > .25) continue;
+      const puntos = frac * (1 - bordeFrac * 2) * (modo === "color" ? 1.15 : 1);   // la del color abarca la tarjeta completa
+      if (!elegido || puntos > elegido.puntos) elegido = {puntos, quad: [pa, pd, pb, pc]};   // arriba-izq, arriba-dcha, abajo-dcha, abajo-izq
+    }
+  }
+  const esc = 1 / k;
+  if (!elegido){ const mx = src.width * .06, my = src.height * .06; return {auto: false, quad: [[mx, my], [src.width - mx, my], [src.width - mx, src.height - my], [mx, src.height - my]]}; }
+  return {auto: true, quad: elegido.quad.map(([x, y]) => [x * esc, y * esc])};
+}
+// Homografía: de un rectángulo de salida a las 4 esquinas de la foto
+function homografia(dst, src){
+  const A = [], B = [];
+  for (let i = 0; i < 4; i++){ const [x, y] = dst[i], [u, v] = src[i];
+    A.push([x, y, 1, 0, 0, 0, -u * x, -u * y]); B.push(u); A.push([0, 0, 0, x, y, 1, -v * x, -v * y]); B.push(v); }
+  for (let c = 0; c < 8; c++){
+    let p = c; for (let r = c + 1; r < 8; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    [A[c], A[p]] = [A[p], A[c]]; [B[c], B[p]] = [B[p], B[c]];
+    for (let r = 0; r < 8; r++){ if (r === c) continue; const f = A[r][c] / A[c][c]; for (let k = c; k < 8; k++) A[r][k] -= f * A[c][k]; B[r] -= f * B[c]; }
+  }
+  return B.map((b, i) => b / A[i][i]);
+}
+function enderezar(src, quad){
+  const L = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  let ancho = (L(quad[0], quad[1]) + L(quad[3], quad[2])) / 2, alto = (L(quad[0], quad[3]) + L(quad[1], quad[2])) / 2;
+  let ratio = ancho / alto; const horizontal = ratio >= 1, r = horizontal ? ratio : 1 / ratio;
+  const final = r > 1.35 && r < 1.85 ? 1.585 : r;   // medida estándar de tarjeta (85 × 54 mm) si se parece
+  const W = horizontal ? 1400 : Math.round(1400 / final), H = horizontal ? Math.round(1400 / final) : 1400;
+  const hm = homografia([[0, 0], [W, 0], [W, H], [0, H]], quad);
+  const sd = src.getContext("2d", {willReadFrequently: true}).getImageData(0, 0, src.width, src.height), s = sd.data, sw = src.width, sh = src.height;
+  const out = document.createElement("canvas"); out.width = W; out.height = H; const og = out.getContext("2d"), od = og.createImageData(W, H), o = od.data;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++){
+    const z = hm[6] * x + hm[7] * y + 1, u = (hm[0] * x + hm[1] * y + hm[2]) / z, v = (hm[3] * x + hm[4] * y + hm[5]) / z;
+    const x0 = Math.max(0, Math.min(sw - 2, u | 0)), y0 = Math.max(0, Math.min(sh - 2, v | 0)), fx = Math.max(0, Math.min(1, u - x0)), fy = Math.max(0, Math.min(1, v - y0));
+    const i00 = (y0 * sw + x0) * 4, i10 = i00 + 4, i01 = i00 + sw * 4, i11 = i01 + 4, j = (y * W + x) * 4;
+    for (let k = 0; k < 3; k++) o[j + k] = (s[i00 + k] * (1 - fx) + s[i10 + k] * fx) * (1 - fy) + (s[i01 + k] * (1 - fx) + s[i11 + k] * fx) * fy;
+    o[j + 3] = 255;
+  }
+  // contraste y blancos limpios, como escaneada
+  const lum = []; for (let i = 0; i < o.length; i += 16) lum.push(o[i] * .299 + o[i+1] * .587 + o[i+2] * .114); lum.sort((a, b) => a - b);
+  const lo = lum[Math.floor(lum.length * .02)], hi = lum[Math.floor(lum.length * .97)], f = 255 / Math.max(40, hi - lo);
+  for (let i = 0; i < o.length; i += 4) for (let k = 0; k < 3; k++) o[i + k] = Math.max(0, Math.min(255, (o[i + k] - lo) * f));
+  og.putImageData(od, 0, 0); return out;
+}
+// ---------- Pantalla de la tarjeta
+function abrirTarjeta(){
+  TJ.lado = "frontal"; TJ.caras = {frontal: null, reverso: null}; TJ.datos = {}; TJ.foto = null;
+  $("#tj").classList.remove("oculto"); document.documentElement.classList.add("lz-on"); pasoTarjeta("elegir");
+}
+function cerrarTarjeta(){ $("#tj").classList.add("oculto"); document.documentElement.classList.remove("lz-on"); }
+function pasoTarjeta(p){
+  for (const id of ["tjElegir", "tjAjustar", "tjDatos"]) $("#" + id).classList.toggle("oculto", id !== {elegir: "tjElegir", ajustar: "tjAjustar", datos: "tjDatos"}[p]);
+  $("#tjPaso").textContent = p === "datos" ? "Revisa los datos" : TJ.lado === "frontal" ? "Frontal" : "Reverso";
+  if (p === "datos") pintarDatosTarjeta();
+}
+for (const [id, cam] of [["#tjCam", true], ["#tjGal", false]]) $(id).onclick = () => { const i = $("#tjIn"); if (cam) i.setAttribute("capture", "environment"); else i.removeAttribute("capture"); i.click(); };
+$("#tjIn").onchange = async () => {
+  const f = $("#tjIn").files[0]; $("#tjIn").value = ""; if (!f) return;
+  try { TJ.foto = await cargarCanvas(f); const r = detectarTarjeta(TJ.foto); TJ.quad = r.quad; pasoTarjeta("ajustar");
+    $("#tjAviso").textContent = r.auto ? "He encuadrado la tarjeta. Si no está bien, arrastra las esquinas." : "No he encontrado bien la tarjeta: arrastra las esquinas a sus bordes.";
+    requestAnimationFrame(pintarAjuste); }
+  catch(e){ toast("No se pudo abrir la foto", "alerta"); }
+};
+let tjEsc = 1, tjOx = 0, tjOy = 0, tjArr = -1;
+function pintarAjuste(){
+  const c = $("#tjCanvas"), r = c.getBoundingClientRect(), k = devicePixelRatio || 1, im = TJ.foto; if (!im || !r.width) return;
+  c.width = r.width * k; c.height = r.height * k; tjEsc = Math.min((r.width - 32) / im.width, (r.height - 32) / im.height); tjOx = (r.width - im.width * tjEsc) / 2; tjOy = (r.height - im.height * tjEsc) / 2;
+  const g = c.getContext("2d"); g.setTransform(k, 0, 0, k, 0, 0); g.clearRect(0, 0, r.width, r.height); g.drawImage(im, tjOx, tjOy, im.width * tjEsc, im.height * tjEsc);
+  const P = TJ.quad.map(([x, y]) => [tjOx + x * tjEsc, tjOy + y * tjEsc]);
+  g.fillStyle = "rgba(8,12,24,.5)"; g.beginPath(); g.rect(0, 0, r.width, r.height); g.moveTo(...P[0]); for (const p of P.slice(1)) g.lineTo(...p); g.closePath(); g.fill("evenodd");
+  g.strokeStyle = "#F4B63E"; g.lineWidth = 2.5; g.beginPath(); g.moveTo(...P[0]); for (const p of P.slice(1)) g.lineTo(...p); g.closePath(); g.stroke();
+  for (const p of P){ g.fillStyle = "#F4B63E"; g.beginPath(); g.arc(p[0], p[1], 11, 0, Math.PI * 2); g.fill(); g.fillStyle = "#16213A"; g.beginPath(); g.arc(p[0], p[1], 4, 0, Math.PI * 2); g.fill(); }
+}
+(() => {
+  const c = $("#tjCanvas"), pos = e => { const r = c.getBoundingClientRect(); return [(e.clientX - r.left - tjOx) / tjEsc, (e.clientY - r.top - tjOy) / tjEsc]; };
+  c.onpointerdown = e => { c.setPointerCapture(e.pointerId); const [x, y] = pos(e); let m = 1e9; tjArr = -1; TJ.quad.forEach(([qx, qy], i) => { const d = Math.hypot(qx - x, qy - y) * tjEsc; if (d < m && d < 44){ m = d; tjArr = i; } }); };
+  c.onpointermove = e => { if (tjArr < 0) return; const [x, y] = pos(e); TJ.quad[tjArr] = [Math.max(0, Math.min(TJ.foto.width, x)), Math.max(0, Math.min(TJ.foto.height, y))]; pintarAjuste(); };
+  c.onpointerup = c.onpointercancel = () => { tjArr = -1; };
+  addEventListener("resize", () => { if (!$("#tjAjustar").classList.contains("oculto")) pintarAjuste(); });
+})();
+$("#tjRepetir").onclick = () => pasoTarjeta("elegir");
+$("#tjUsar").onclick = async () => {
+  const b = $("#tjUsar"); b.disabled = true; b.textContent = "Enderezando…"; await new Promise(r => setTimeout(r, 30));
+  try { TJ.caras[TJ.lado] = enderezar(TJ.foto, TJ.quad); TJ.foto = null; pasoTarjeta("datos"); leerTarjeta(); }   // con el reverso, completa lo que falte (dirección, web…)
+  finally { b.disabled = false; b.textContent = "Usar"; }
+};
+$("#tjCerrar").onclick = () => { if ((TJ.caras.frontal || TJ.foto) && !confirm("¿Descartar esta tarjeta?")) return; cerrarTarjeta(); };
+function pintarDatosTarjeta(){
+  const cara = (lado, t) => TJ.caras[lado]
+    ? `<div class="tj-cara"><img src="${TJ.caras[lado].toDataURL("image/jpeg", .8)}" alt="${t}"><span>${t}</span><button class="enl" data-rehacer="${lado}">Repetir</button></div>`
+    : `<button class="tj-cara tj-anadir" data-anadir="${lado}">${ic("mas")}<span>Añadir ${t.toLowerCase()}</span><small>Solo si la tarjeta tiene algo detrás</small></button>`;
+  $("#tjCaras").innerHTML = cara("frontal", "Frontal") + cara("reverso", "Reverso");
+  const d = TJ.datos;
+  for (const k of ["empresa", "persona", "cargo", "telefono", "email", "web", "direccion"]) if ($("#tj_" + k) && document.activeElement !== $("#tj_" + k)) $("#tj_" + k).value = d[k] || "";
+  pintarNombreTarjeta();
+}
+function nombreTarjeta(){
+  const limpio = t => String(t || "").replace(/[\\/:*?"<>|#%\n\r]+/g, " ").replace(/\s+/g, " ").trim();
+  const e = limpio($("#tj_empresa").value), p = limpio($("#tj_persona").value);
+  return e || p ? `${e || "Sin empresa"}@${p || "Sin nombre"}` : "";
+}
+function pintarNombreTarjeta(){ const n = nombreTarjeta(); $("#tjNombre").innerHTML = n ? `Se guardará como <b>${esc(n)}</b>${TJ.caras.reverso ? ` y <b>${esc(n)} (reverso)</b>` : ""}` : "Escribe al menos la empresa o la persona"; $("#tjGuardar").disabled = !n; }
+document.addEventListener("input", e => { if (e.target.id?.startsWith("tj_")){ TJ.datos[e.target.id.slice(3)] = e.target.value; pintarNombreTarjeta(); } });
+$("#tjCaras").addEventListener("click", e => {
+  const a = e.target.closest("[data-anadir]"), r = e.target.closest("[data-rehacer]");
+  if (a || r){ TJ.lado = (a || r).dataset.anadir || (a || r).dataset.rehacer; pasoTarjeta("elegir"); }
+});
+async function leerTarjeta(){
+  if (!ia()){ $("#tjLeyendo").textContent = "Escribe los datos (con la IA activada se rellenan solos)."; return; }
+  $("#tjLeyendo").innerHTML = `${ic("spark")}Leyendo la tarjeta…`;
+  try {
+    const contenido = [{type: "text", text: "Tarjeta de visita (frontal y, si está, reverso)."}];
+    for (const l of ["frontal", "reverso"]) if (TJ.caras[l]) contenido.push({type: "image_url", image_url: {url: TJ.caras[l].toDataURL("image/jpeg", .85), detail: "high"}});
+    const r = await llamarIA([{role: "system", content: 'Lee la tarjeta de visita y responde SOLO con un JSON: {"empresa","persona","cargo","telefono","email","web","direccion"}. Usa "" si un dato no aparece. "persona" es nombre y apellidos de la persona. Teléfonos separados por « / ».'}, {role: "user", content: contenido}], {max: 400});
+    for (const k of Object.keys(r)) if (r[k] && !TJ.datos[k]) TJ.datos[k] = String(r[k]);
+    TJ.datos.leida = true; $("#tjLeyendo").textContent = "Datos leídos de la tarjeta. Corrige lo que haga falta.";
+    pintarDatosTarjeta();
+  } catch(e){ $("#tjLeyendo").textContent = "No se pudo leer: " + e.message + ". Escribe los datos."; }
+}
+$("#tjGuardar").onclick = async () => {
+  const nombre = nombreTarjeta(); if (!nombre || !TJ.caras.frontal) return;
+  const b = $("#tjGuardar"); b.disabled = true; b.textContent = "Guardando…";
+  try {
+    const ahora = new Date(), n = notaBase(ahora), carpeta = `${ahora.getFullYear()}/${pad(ahora.getMonth()+1)}`, adj = [];
+    const usados = new Set(notas.flatMap(x => x.fotos || []).map(r => r.split("/").pop()));
+    let base = nombre, k = 2; while (usados.has(base + ".jpg")) base = `${nombre} ${k++}`;
+    for (const [lado, sufijo] of [["frontal", ""], ["reverso", " (reverso)"]]){
+      if (!TJ.caras[lado]) continue;
+      const r = `Fotos/${carpeta}/${base}${sufijo}.jpg`, blob = await new Promise(ok => TJ.caras[lado].toBlob(ok, "image/jpeg", .9));
+      await idb.ponerBlob(r, blob); n.fotos.push(r); adj.push(r);
+    }
+    const v = id => $("#tj_" + id).value.trim(), empresa = v("empresa"), persona = v("persona");
+    n.titulo = nombre; n.tarjeta = true;
+    n.texto = [persona && v("cargo") ? `${persona}, ${v("cargo")}` : persona || v("cargo"), empresa, v("telefono") && "Tel.: " + v("telefono"), v("email") && "Correo: " + v("email"), v("web") && "Web: " + v("web"), v("direccion")].filter(Boolean).join("\n");
+    if (empresa || persona) n.para = {categoria: "cliente", nombre: empresa || persona};
+    let car = archivadores().find(c => norm(c.nombre) === norm("Tarjetas de visita"));
+    if (!car){ car = {id: "c" + Date.now().toString(36), nombre: "Tarjetas de visita"}; config.carpetas = [...archivadores(), car]; }
+    n.carpeta = car.id;
+    if (n.para){ config.contactos = config.contactos || {}; const l = config.contactos.cliente || []; if (!l.some(x => norm(x) === norm(n.para.nombre))) config.contactos.cliente = [...l, n.para.nombre]; }
+    guardarConfig();
+    await guardarNotaLocal(n, adj);
+    cerrarTarjeta(); vibrar(60); toast(`Tarjeta guardada: ${nombre}`, "check", 3500);
+  } catch(e){ toast("No se pudo guardar la tarjeta: " + e.message, "alerta", 5000); }
+  finally { b.disabled = false; b.textContent = "Guardar tarjeta"; }
+};
+
 /* ================= Inteligencia artificial (Azure OpenAI con la clave del usuario) ================= */
 // config.ia = {endpoint, clave, despliegue, auto}. La clave vive en Configuracion/config.json de tu OneDrive.
 const ia = () => !!(config.ia?.endpoint && config.ia?.clave);
@@ -2790,6 +3050,10 @@ async function procesarEntrada(d){
   cerrarHojas();
   if (d.accion === "voz"){ ver("anotar"); if (d.quien) deLlamada(d); tocado = true; if (!rec) empezarVoz(); }
   else if (d.accion === "llamada"){ ver("anotar"); deLlamada(d); setTimeout(() => $("#cTexto").focus(), 250); }
+  else if (d.accion === "sueno" || d.accion === "sueno_voz"){
+    ver("anotar"); borrador.sueno = true; tocado = true; pintarDetectado(); toast("Para tu buzón Sueños", "luna", 2500);
+    if (d.accion === "sueno_voz"){ if (!rec) empezarVoz(); } else setTimeout(() => $("#cTexto").focus(), 250);
+  }
   else if (d.accion === "ancla"){
     ver("anotar"); anclaAbierta = null;
     // si hay un ancla vacía de hace menos de 2 minutos, se reutiliza en vez de crear otra
@@ -3017,6 +3281,22 @@ async function pintarCorreo(){
   };
   if ($("#kResDesc")) $("#kResDesc").onclick = async () => { await nat.desconectarCorreo().catch(() => {}); pintarCorreo(); };
 }
+async function pintarSuenos(cambios){
+  const caja = $("#kSuenos"); if (!caja || !esApp()) return;
+  const nat = nativo("ChispaNativo"); let e;
+  try { e = await nat.suenos(cambios || {}); }
+  catch(x){ caja.innerHTML = `<div class="ajuste">${ic("luna")}<div class="lbl">«¿Has pensado esta noche en algo?»<small>Actualiza la app para activarlo</small></div><button class="btn sec" id="kBajar3">${ic("subir")}Actualizar</button></div>`; $("#kBajar3").onclick = actualizarApp; return; }
+  const hm = ms => new Date(ms).toLocaleTimeString("es-ES", {hour: "2-digit", minute: "2-digit"}), cuando = ms => { const d = isoDia(new Date(ms)); return d === hoyISO() ? "hoy" : d === masDias(1) ? "mañana" : fechaLarga(d); };
+  const estado = !e.activo ? "Desactivada" : e.proximo ? `Próxima: ${cuando(e.proximo)} a las ${hm(e.proximo)}${e.despertador ? ` (${e.minutos} min después de tu despertador de las ${hm(e.despertador)})` : " (hora de respaldo: no hay despertador puesto)"}` : "Sin despertador ni hora de respaldo";
+  caja.innerHTML = `<div class="ajuste">${ic("luna")}<div class="lbl">«¿Has pensado esta noche en algo?»<small>${esc(estado)}</small></div><select id="kSuAct"><option value="1">Sí</option><option value="0">No</option></select></div>
+    <div class="ajuste">${ic("cal")}<div class="lbl">Minutos después del despertador</div><input type="number" id="kSuMin" min="0" max="120" step="5" value="${e.minutos}" style="max-width:90px"></div>
+    <div class="ajuste">${ic("sun")}<div class="lbl">Hora si no hay despertador<small>Déjala vacía para no preguntar esos días</small></div><input type="time" id="kSuResp" value="${esc(e.respaldo || "")}"><button class="btn sec" id="kSuProbar">Probar</button></div>`;
+  $("#kSuAct").value = e.activo ? "1" : "0";
+  $("#kSuAct").onchange = () => pintarSuenos({activo: $("#kSuAct").value === "1"});
+  $("#kSuMin").onchange = () => pintarSuenos({minutos: Math.max(0, Math.min(120, +$("#kSuMin").value || 15))});
+  $("#kSuResp").onchange = () => pintarSuenos({respaldo: $("#kSuResp").value || ""});
+  $("#kSuProbar").onclick = () => { nat.probarSueno().catch(() => {}); toast("Mira las notificaciones", "luna"); };
+}
 function pintarCalendario(){
   const caja = $("#kCal"); if (!caja) return;
   const mio = lsGet("chispa.permCal") && config.calendarioDispositivo === disp.terminal, otro = config.calendarioDispositivo && config.calendarioDispositivo !== disp.terminal;
@@ -3210,9 +3490,10 @@ const enArchivo = n => !!n.archivada || (n.hecha && hechaHace(n) > DIAS_ARCHIVO 
 const conPlazo = n => !!n.fecha || n.tipo === "tarea" || n.tipo === "recordatorio";
 const BUZONES = [
   {k: "importantes", t: "Importantes", ic: "estrella", d: "Las que marcas con estrella", f: n => n.importante && !enArchivo(n)},
-  {k: "entrada", t: "Entrada", ic: "bandeja", d: "Anotado y aún sin clasificar", f: n => !n.hecha && !enArchivo(n) && !n.carpeta && !conPlazo(n) && n.tipo !== "idea"},
+  {k: "entrada", t: "Entrada", ic: "bandeja", d: "Anotado y aún sin clasificar", f: n => !n.hecha && !enArchivo(n) && !n.carpeta && !conPlazo(n) && n.tipo !== "idea" && !n.sueno && !n.nocturna},
   {k: "porhacer", t: "Por hacer", ic: "tarea", d: "Tareas y notas con fecha", f: n => !n.hecha && !enArchivo(n) && conPlazo(n)},
-  {k: "ideas", t: "Ideas", ic: "idea", d: "Para pensarlas con calma", f: n => !n.hecha && !enArchivo(n) && n.tipo === "idea" && !n.fecha},
+  {k: "ideas", t: "Ideas", ic: "idea", d: "Para pensarlas con calma", f: n => !n.hecha && !enArchivo(n) && n.tipo === "idea" && !n.fecha && !n.sueno && !n.nocturna},
+  {k: "suenos", t: "Sueños", ic: "luna", d: "Lo que piensas de noche y al despertar", f: n => (n.sueno || n.nocturna) && !enArchivo(n)},
   {k: "completadas", t: "Completadas", ic: "check", d: `Hechas en los últimos ${DIAS_ARCHIVO} días`, f: n => n.hecha && !enArchivo(n)},
   {k: "archivo", t: "Archivo", ic: "archivo", d: "Lo antiguo, por meses", f: enArchivo},
   {k: "todas", t: "Todas", ic: "lista", d: "Con todos los filtros", f: () => true}];
@@ -3510,6 +3791,7 @@ function pintarAjustes(){
       <div class="ajuste">${ic("sun")}<div class="lbl">Apariencia</div><select id="kTema"><option value="auto">Como el sistema</option><option value="claro">Clara</option><option value="oscuro">Oscura</option></select></div>
     </div></div>
     ${esApp() ? `<div class="grupo"><h3>Teléfono y coche</h3><div class="caja" id="kTelefono"><div class="ajuste"><div class="lbl">Cargando…</div></div></div></div>` : ""}
+    <div class="grupo"><h3>Pregunta de la mañana</h3><div class="caja" id="kSuenos">${esApp() ? `<div class="ajuste"><div class="lbl">Cargando…</div></div>` : `<div class="ajuste">${ic("luna")}<div class="lbl">«¿Has pensado esta noche en algo?»<small>Solo en la app de Android: te lo pregunta unos minutos después de que suene tu despertador, y lo que anotes va al buzón Sueños</small></div></div>`}</div></div>
     <div class="grupo"><h3>Modo noche</h3><div class="caja">
       <div class="ajuste">${ic("luna")}<div class="lbl">Horario<small>Pantalla negra y notas marcadas como nocturnas</small></div><input type="time" id="kDesde" value="${c.nocheDesde}"><input type="time" id="kHasta" value="${c.nocheHasta}"></div>
     </div></div>
@@ -3547,7 +3829,7 @@ function pintarAjustes(){
       <div class="ajuste">${ic("user")}<div class="lbl">${esc(lsGet("chispa.usuario") || "Cuenta de Microsoft")}<small>Tus datos están en OneDrive, en Aplicaciones › Chispa</small></div><button class="btn sec" id="kSalir">${ic("salir")}Salir</button></div>
     </div></div>
     <div class="cuenta" style="text-align:center;margin:20px 0">Chispa ${VERSION}${esApp() ? ` · app Android ${esc(infoApp?.version || "")}` : ""}</div>`;
-  pintarTelefono(); pintarCorreo(); pintarCorreoWeb(); pintarCalendario();
+  pintarTelefono(); pintarCorreo(); pintarCorreoWeb(); pintarCalendario(); pintarSuenos();
   $("#kResAct").value = c.resumenActivo === false ? "0" : "1"; $("#kIaAuto").value = c.ia?.auto === false ? "0" : "1";
   $("#kAmb").value = disp.ambito || "trabajo"; $("#kTrans").value = disp.trans === false ? "0" : "1"; $("#kUbi").value = disp.ubi ? "1" : "0"; $("#kTema").value = disp.tema || "auto";
   document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => ver(b.dataset.ir));
@@ -3565,7 +3847,7 @@ function pintarAjustes(){
   };
   // los ajustes se guardan solos al cambiarlos
   let tAj = 0;
-  document.querySelectorAll("#vAjustes input:not(#kMovNom),#vAjustes select:not(#kMovAmb),#vAjustes textarea").forEach(el => {
+  document.querySelectorAll("#vAjustes input:not(#kMovNom):not([id^=kSu]),#vAjustes select:not(#kMovAmb):not([id^=kSu]),#vAjustes textarea").forEach(el => {
     el.addEventListener(el.tagName === "SELECT" || el.type === "time" ? "change" : "input", () => { clearTimeout(tAj); tAj = setTimeout(guardarAjustes, 700); });
   });
   if ($("#kIaProbar")) $("#kIaProbar").onclick = async () => {
@@ -3611,7 +3893,7 @@ function pintarAyuda(){
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
-  <h3>Novedades</h3><p><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Chispa se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y archivadores propios. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Chispa se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y archivadores propios. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
 }
 

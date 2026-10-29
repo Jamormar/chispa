@@ -47,3 +47,14 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/chispa_compartir" />
         </provider>
+
+        <!-- Pregunta de la mañana (buzón Sueños): sigue al despertador -->
+        <receiver
+            android:name=".Suenos"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.app.action.NEXT_ALARM_CLOCK_CHANGED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>

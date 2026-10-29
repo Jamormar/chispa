@@ -51,6 +51,7 @@ public class ChispaNativoPlugin extends Plugin {
     public void load() {
         instancia = this;
         Correo.programar(getContext());
+        Suenos.programar(getContext());
         if (pendiente != null) {
             notifyListeners("entrada", pendiente, true);
             pendiente = null;
@@ -326,5 +327,31 @@ public class ChispaNativoPlugin extends Plugin {
         } catch (Exception e) {
             call.reject("No se pudo compartir: " + e.getMessage());
         }
+    }
+
+    // ---------------------------------------------------------------- pregunta de la mañana (Sueños)
+
+    @PluginMethod
+    public void suenos(PluginCall call) {
+        SharedPreferences p = Ajustes.prefs(getContext());
+        SharedPreferences.Editor e = p.edit();
+        if (call.hasOption("activo")) e.putBoolean(Suenos.P_ACTIVO, Boolean.TRUE.equals(call.getBoolean("activo")));
+        if (call.hasOption("minutos")) e.putInt(Suenos.P_MINUTOS, Math.max(0, Math.min(120, call.getInt("minutos", 15))));
+        if (call.hasOption("respaldo")) e.putString(Suenos.P_RESPALDO, call.getString("respaldo", ""));
+        e.commit();
+        Suenos.programar(getContext());
+        JSObject r = new JSObject();
+        r.put("activo", Suenos.activo(getContext()));
+        r.put("minutos", p.getInt(Suenos.P_MINUTOS, 15));
+        r.put("respaldo", p.getString(Suenos.P_RESPALDO, "07:30"));
+        r.put("proximo", p.getLong(Suenos.P_PROXIMO, 0));
+        r.put("despertador", p.getLong(Suenos.P_DESPERTADOR, 0));
+        call.resolve(r);
+    }
+
+    @PluginMethod
+    public void probarSueno(PluginCall call) {
+        Suenos.avisar(getContext(), true);
+        call.resolve();
     }
 }
