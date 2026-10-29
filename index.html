@@ -537,6 +537,15 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .ajuste .estado-t.ok{color:var(--home)}
 .transcribiendo{display:inline-flex;align-items:center;gap:6px;color:var(--spark-text);font-size:13px}
 .toast svg{width:18px;height:18px;color:var(--spark)}
+/* Barras de desplazamiento finas y discretas (sobre todo en el PC) */
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-button{display:none;width:0;height:0}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text) 22%,transparent);border-radius:12px;border:4px solid transparent;background-clip:padding-box;min-height:40px}
+::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--text) 38%,transparent)}
+::-webkit-scrollbar-corner{background:transparent}
+.hoja::-webkit-scrollbar-track{margin:26px 0}   /* que no invada las esquinas redondeadas */
+@supports not selector(::-webkit-scrollbar){ *{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--text) 25%,transparent) transparent} }
 /* Tarjeta de visita */
 .menu-foto{position:fixed;z-index:60;width:220px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:0 12px 32px rgba(10,16,32,.18);display:flex;flex-direction:column}
 .menu-foto button{display:flex;align-items:center;gap:12px;height:46px;padding:0 12px;border-radius:11px;font-size:15px;color:var(--text);text-align:left}
@@ -846,7 +855,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.18.1";
+const VERSION = "0.18.2";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
