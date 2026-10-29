@@ -805,9 +805,9 @@ html.lz-on,html.lz-on body{overflow:hidden}
       <div class="tj-leyendo" id="tjLeyendo"></div>
       <div class="tj-campos">
         <label>Empresa<input id="tj_empresa" autocomplete="off"></label><label>Persona<input id="tj_persona" autocomplete="off"></label>
-        <label>Cargo<input id="tj_cargo" autocomplete="off"></label><label>Teléfono<input id="tj_telefono" inputmode="tel" autocomplete="off"></label>
-        <label>Correo<input id="tj_email" inputmode="email" autocomplete="off"></label><label>Web<input id="tj_web" autocomplete="off"></label>
-        <label class="ancho">Dirección<input id="tj_direccion" autocomplete="off"></label>
+        <label>Cargo<input id="tj_cargo" autocomplete="off"></label><label>Correo<input id="tj_email" inputmode="email" autocomplete="off"></label>
+        <label>Teléfono fijo<input id="tj_telefono" inputmode="tel" autocomplete="off"></label><label>Móvil<input id="tj_movil" inputmode="tel" autocomplete="off"></label>
+        <label>Web<input id="tj_web" autocomplete="off"></label><label>Dirección<input id="tj_direccion" autocomplete="off"></label>
       </div>
       <div class="tj-nombre" id="tjNombre"></div>
     </div>
@@ -855,7 +855,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.18.3";
+const VERSION = "0.18.4";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -2827,11 +2827,11 @@ for (const [id, cam] of [["#tjCam", true], ["#tjGal", false]]) $(id).onclick = (
 $("#tjIn").onchange = async () => {
   const f = $("#tjIn").files[0]; $("#tjIn").value = ""; if (!f) return;
   try { TJ.foto = await cargarCanvas(f); const r = detectarTarjeta(TJ.foto); TJ.quad = r.quad; pasoTarjeta("ajustar");
-    $("#tjAviso").textContent = r.auto ? "He encuadrado la tarjeta. Si no está bien, arrastra las esquinas." : "No he encontrado bien la tarjeta: arrastra las esquinas a sus bordes.";
+    $("#tjAviso").textContent = r.auto ? "He encuadrado la tarjeta. Para afinar, arrastra una esquina: verás una lupa encima." : "No he encontrado bien la tarjeta: arrastra las esquinas a sus bordes.";
     requestAnimationFrame(pintarAjuste); }
   catch(e){ toast("No se pudo abrir la foto", "alerta"); }
 };
-let tjEsc = 1, tjOx = 0, tjOy = 0, tjArr = -1;
+let tjEsc = 1, tjOx = 0, tjOy = 0, tjArr = -1, tjDesfase = [0, 0];
 function pintarAjuste(){
   const c = $("#tjCanvas"), r = c.getBoundingClientRect(), k = devicePixelRatio || 1, im = TJ.foto; if (!im || !r.width) return;
   c.width = r.width * k; c.height = r.height * k; tjEsc = Math.min((r.width - 32) / im.width, (r.height - 32) / im.height); tjOx = (r.width - im.width * tjEsc) / 2; tjOy = (r.height - im.height * tjEsc) / 2;
@@ -2839,13 +2839,32 @@ function pintarAjuste(){
   const P = TJ.quad.map(([x, y]) => [tjOx + x * tjEsc, tjOy + y * tjEsc]);
   g.fillStyle = "rgba(8,12,24,.5)"; g.beginPath(); g.rect(0, 0, r.width, r.height); g.moveTo(...P[0]); for (const p of P.slice(1)) g.lineTo(...p); g.closePath(); g.fill("evenodd");
   g.strokeStyle = "#F4B63E"; g.lineWidth = 2.5; g.beginPath(); g.moveTo(...P[0]); for (const p of P.slice(1)) g.lineTo(...p); g.closePath(); g.stroke();
-  for (const p of P){ g.fillStyle = "#F4B63E"; g.beginPath(); g.arc(p[0], p[1], 11, 0, Math.PI * 2); g.fill(); g.fillStyle = "#16213A"; g.beginPath(); g.arc(p[0], p[1], 4, 0, Math.PI * 2); g.fill(); }
+  P.forEach((p, i) => { g.fillStyle = i === tjArr ? "rgba(244,182,62,.45)" : "#F4B63E"; g.beginPath(); g.arc(p[0], p[1], 11, 0, Math.PI * 2); g.fill(); g.fillStyle = "#16213A"; g.beginPath(); g.arc(p[0], p[1], 3, 0, Math.PI * 2); g.fill(); });
+  // lupa: mientras arrastras una esquina, se ve ampliada por encima del dedo
+  if (tjArr >= 0){
+    const [cx, cy] = P[tjArr], R = 70, Z = 4, ex = tjEsc * Z;
+    let lx = cx, ly = cy - 125; if (ly - R < 4) ly = cy + 125; lx = Math.max(R + 6, Math.min(r.width - R - 6, lx));
+    g.save(); g.beginPath(); g.arc(lx, ly, R, 0, Math.PI * 2); g.closePath(); g.fillStyle = "#0b0f1a"; g.fill(); g.clip();
+    const [qx, qy] = TJ.quad[tjArr];
+    g.drawImage(im, qx - R / ex, qy - R / ex, 2 * R / ex, 2 * R / ex, lx - R, ly - R, 2 * R, 2 * R);
+    // los dos lados que llegan a esa esquina, también ampliados
+    g.strokeStyle = "#F4B63E"; g.lineWidth = 2;
+    for (const o of [(tjArr + 1) % 4, (tjArr + 3) % 4]){ const [ox, oy] = TJ.quad[o]; g.beginPath(); g.moveTo(lx, ly); g.lineTo(lx + (ox - qx) * ex, ly + (oy - qy) * ex); g.stroke(); }
+    g.strokeStyle = "rgba(255,255,255,.9)"; g.lineWidth = 1; g.beginPath(); g.moveTo(lx - 12, ly); g.lineTo(lx + 12, ly); g.moveTo(lx, ly - 12); g.lineTo(lx, ly + 12); g.stroke();
+    g.restore(); g.strokeStyle = "#fff"; g.lineWidth = 3; g.beginPath(); g.arc(lx, ly, R, 0, Math.PI * 2); g.stroke();
+  }
 }
 (() => {
   const c = $("#tjCanvas"), pos = e => { const r = c.getBoundingClientRect(); return [(e.clientX - r.left - tjOx) / tjEsc, (e.clientY - r.top - tjOy) / tjEsc]; };
-  c.onpointerdown = e => { c.setPointerCapture(e.pointerId); const [x, y] = pos(e); let m = 1e9; tjArr = -1; TJ.quad.forEach(([qx, qy], i) => { const d = Math.hypot(qx - x, qy - y) * tjEsc; if (d < m && d < 44){ m = d; tjArr = i; } }); };
-  c.onpointermove = e => { if (tjArr < 0) return; const [x, y] = pos(e); TJ.quad[tjArr] = [Math.max(0, Math.min(TJ.foto.width, x)), Math.max(0, Math.min(TJ.foto.height, y))]; pintarAjuste(); };
-  c.onpointerup = c.onpointercancel = () => { tjArr = -1; };
+  // la esquina se mueve con el dedo pero sin saltar debajo de él (así no la tapa), y más despacio que el dedo para afinar
+  let inicio = null;
+  c.onpointerdown = e => { c.setPointerCapture(e.pointerId); const [x, y] = pos(e); let m = 1e9; tjArr = -1;
+    TJ.quad.forEach(([qx, qy], i) => { const d = Math.hypot(qx - x, qy - y) * tjEsc; if (d < m && d < 60){ m = d; tjArr = i; } });
+    if (tjArr >= 0){ inicio = {dedo: [x, y], esquina: [...TJ.quad[tjArr]]}; pintarAjuste(); } };
+  c.onpointermove = e => { if (tjArr < 0 || !inicio) return; const [x, y] = pos(e), lento = e.pointerType === "touch" ? .5 : 1;
+    const nx = inicio.esquina[0] + (x - inicio.dedo[0]) * lento, ny = inicio.esquina[1] + (y - inicio.dedo[1]) * lento;
+    TJ.quad[tjArr] = [Math.max(0, Math.min(TJ.foto.width, nx)), Math.max(0, Math.min(TJ.foto.height, ny))]; pintarAjuste(); };
+  c.onpointerup = c.onpointercancel = () => { tjArr = -1; inicio = null; pintarAjuste(); };
   addEventListener("resize", () => { if (!$("#tjAjustar").classList.contains("oculto")) pintarAjuste(); });
 })();
 $("#tjRepetir").onclick = () => pasoTarjeta("elegir");
@@ -2861,7 +2880,7 @@ function pintarDatosTarjeta(){
     : `<button class="tj-cara tj-anadir" data-anadir="${lado}">${ic("mas")}<span>Añadir ${t.toLowerCase()}</span><small>Solo si la tarjeta tiene algo detrás</small></button>`;
   $("#tjCaras").innerHTML = cara("frontal", "Frontal") + cara("reverso", "Reverso");
   const d = TJ.datos;
-  for (const k of ["empresa", "persona", "cargo", "telefono", "email", "web", "direccion"]) if ($("#tj_" + k) && document.activeElement !== $("#tj_" + k)) $("#tj_" + k).value = d[k] || "";
+  for (const k of ["empresa", "persona", "cargo", "telefono", "movil", "email", "web", "direccion"]) if ($("#tj_" + k) && document.activeElement !== $("#tj_" + k)) $("#tj_" + k).value = d[k] || "";
   pintarNombreTarjeta();
 }
 function nombreTarjeta(){
@@ -2881,7 +2900,7 @@ async function leerTarjeta(){
   try {
     const contenido = [{type: "text", text: "Tarjeta de visita (frontal y, si está, reverso)."}];
     for (const l of ["frontal", "reverso"]) if (TJ.caras[l]) contenido.push({type: "image_url", image_url: {url: TJ.caras[l].toDataURL("image/jpeg", .85), detail: "high"}});
-    const r = await llamarIA([{role: "system", content: 'Lee la tarjeta de visita y responde SOLO con un JSON: {"empresa","persona","cargo","telefono","email","web","direccion"}. Usa "" si un dato no aparece. "persona" es nombre y apellidos de la persona. Teléfonos separados por « / ».'}, {role: "user", content: contenido}], {max: 400});
+    const r = await llamarIA([{role: "system", content: 'Lee la tarjeta de visita y responde SOLO con un JSON: {"empresa","persona","cargo","telefono","movil","email","web","direccion"}. Usa "" si un dato no aparece. "persona" es nombre y apellidos de la persona. "telefono" es el fijo y "movil" el móvil (en España los móviles empiezan por 6 o 7; los fijos por 8 o 9); si hay varios del mismo tipo, sepáralos con « / ». No pongas el fax.'}, {role: "user", content: contenido}], {max: 400});
     for (const k of Object.keys(r)) if (r[k] && !TJ.datos[k]) TJ.datos[k] = String(r[k]);
     TJ.datos.leida = true; $("#tjLeyendo").textContent = "Datos leídos de la tarjeta. Corrige lo que haga falta.";
     pintarDatosTarjeta();
@@ -2901,7 +2920,7 @@ $("#tjGuardar").onclick = async () => {
     }
     const v = id => $("#tj_" + id).value.trim(), empresa = v("empresa"), persona = v("persona");
     n.titulo = nombre; n.tarjeta = true;
-    n.texto = [persona && v("cargo") ? `${persona}, ${v("cargo")}` : persona || v("cargo"), empresa, v("telefono") && "Tel.: " + v("telefono"), v("email") && "Correo: " + v("email"), v("web") && "Web: " + v("web"), v("direccion")].filter(Boolean).join("\n");
+    n.texto = [persona && v("cargo") ? `${persona}, ${v("cargo")}` : persona || v("cargo"), empresa, v("telefono") && "Teléfono: " + v("telefono"), v("movil") && "Móvil: " + v("movil"), v("email") && "Correo: " + v("email"), v("web") && "Web: " + v("web"), v("direccion")].filter(Boolean).join("\n");
     if (empresa || persona) n.para = {categoria: "cliente", nombre: empresa || persona};
     let car = archivadores().find(c => norm(c.nombre) === norm("Tarjetas de visita"));
     if (!car){ car = {id: "c" + Date.now().toString(36), nombre: "Tarjetas de visita"}; config.carpetas = [...archivadores(), car]; }
