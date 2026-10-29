@@ -855,7 +855,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.18.2";
+const VERSION = "0.18.3";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
@@ -1337,7 +1337,11 @@ function textareaCrece(){
   });
 }
 // Los títulos crecen hacia abajo al escribir (sin desplazarse a la izquierda); Intro pasa al texto
-function crecerTitulo(el){ if (!el) return; if (/\n/.test(el.value)) el.value = el.value.replace(/\s*\n\s*/g, " "); el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
+function crecerTitulo(el){
+  if (!el) return; if (/\n/.test(el.value)) el.value = el.value.replace(/\s*\n\s*/g, " ");
+  el.style.height = "auto"; const h = el.scrollHeight;
+  el.style.height = h ? h + "px" : "";   // si aún no se ve (pantalla oculta), se deja su altura natural de una línea
+}
 for (const [t, sig] of [["#cTitulo", "#cTexto"], ["#eTitulo", "#eTexto"]]){
   $(t).addEventListener("keydown", e => { if (e.key === "Enter" && !e.ctrlKey && !e.metaKey){ e.preventDefault(); $(sig).focus(); } });
   $(t).addEventListener("input", () => crecerTitulo($(t)));
@@ -3387,7 +3391,7 @@ function ver(v){
   vista = v;
   document.querySelectorAll("#sideNav button,#tabs button").forEach(b => b.classList.toggle("activo", b.dataset.v === v || (b.closest("#tabs") && b.dataset.v === "ajustes" && (v === "estad" || v === "ayuda"))));
   document.querySelectorAll("#main>section").forEach(s => s.classList.toggle("oculto", s.dataset.v !== v));
-  if (v === "anotar"){ prepararTeclado(); requestAnimationFrame(ajustarLienzo); if (!esMovil()) setTimeout(() => $("#cTexto").focus(), 50); }
+  if (v === "anotar"){ prepararTeclado(); requestAnimationFrame(() => { ajustarLienzo(); crecerTitulo($("#cTitulo")); }); if (!esMovil()) setTimeout(() => $("#cTexto").focus(), 50); }
   refrescar(); scrollTo(0, 0);
 }
 document.querySelectorAll("#sideNav button,#tabs button").forEach(b => b.onclick = () => ver(b.dataset.v));
