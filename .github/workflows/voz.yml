@@ -5,6 +5,8 @@ on:
 jobs:
   voz:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,5 +27,7 @@ jobs:
                   subprocess.run(["piper", "--model", voz + ".onnx", "--output_file", f"salida/{voz}-{i:02d}.wav", "--length_scale", "0.92", "--sentence_silence", "0.15"] + extra, input=s.encode(), check=True)
           PY
           ls -la salida
-      - uses: actions/upload-artifact@v4
-        with: { name: voz, path: salida }
+      - name: Subir audios a la rama
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@github.com"
+          git add salida && git commit -m "Audios generados" && git push
