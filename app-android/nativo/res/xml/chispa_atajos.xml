@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Accesos al mantener pulsado el icono de Chispa (y para «Ok Google, abre Grabar nota de Chispa») -->
+<!-- Accesos al mantener pulsado el icono de Visitario (y para «Ok Google, abre Grabar nota de Visitario») -->
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
     <shortcut android:shortcutId="grabar" android:enabled="true" android:icon="@drawable/ic_w_mic"
         android:shortcutShortLabel="@string/atajo_grabar" android:shortcutLongLabel="@string/atajo_grabar_largo">

@@ -112,9 +112,9 @@ public class Suenos extends BroadcastReceiver {
         }
         NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CANAL)
                 .setSmallIcon(R.drawable.ic_stat_chispa)
-                .setColor(0xFFF4B63E)
+                .setColor(0xFF8BA91A)
                 .setContentTitle("¿Has pensado esta noche en algo?")
-                .setContentText("Cuéntaselo a Chispa antes de que se te olvide")
+                .setContentText("Cuéntaselo a Visitario antes de que se te olvide")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .setTimeoutAfter(2 * 3600_000L)

@@ -1,6 +1,6 @@
 name: App Android
 
-# Compila la app de Chispa cada vez que cambia algo en app-android/
+# Compila la app de Visitario cada vez que cambia algo en app-android/
 # y la publica en «Releases» para descargarla desde el móvil.
 on:
   push:
@@ -41,7 +41,7 @@ jobs:
       - name: Crear el proyecto Android
         run: npx cap add android
 
-      - name: Aplicar las piezas de Chispa
+      - name: Aplicar las piezas de Visitario
         run: node scripts/aplicar.mjs
 
       - name: Sincronizar plugins
@@ -75,20 +75,20 @@ jobs:
             grep -E "error:|e: |What went wrong" -A3 ../compilacion.log | head -60 | while IFS= read -r l; do echo "::error::$l"; done
             exit 1
           fi
-          cp app/build/outputs/apk/release/app-release.apk ../Chispa.apk
+          cp app/build/outputs/apk/release/app-release.apk ../Visitario.apk
 
       - name: Guardar el APK como artefacto
         uses: actions/upload-artifact@v4
         with:
-          name: Chispa-${{ github.run_number }}
-          path: app-android/Chispa.apk
+          name: Visitario-${{ github.run_number }}
+          path: app-android/Visitario.apk
 
       - name: Publicar en Releases
         if: env.PRUEBA != '1'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "android-${{ github.run_number }}" Chispa.apk \
-            --title "Chispa para Android 1.0.${{ github.run_number }}" \
-            --notes "Descarga Chispa.apk desde el móvil e instálala encima de la anterior." \
+          gh release create "android-${{ github.run_number }}" Visitario.apk \
+            --title "Visitario para Android 1.0.${{ github.run_number }}" \
+            --notes "Descarga Visitario.apk desde el móvil e instálala encima de la anterior." \
             --latest

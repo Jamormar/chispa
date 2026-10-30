@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F6F7FA">
-<title>Chispa</title>
+<title>Visitario</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Chispa">
+<meta name="apple-mobile-web-app-title" content="Visitario">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +19,7 @@
 /* ===== Tokens ===== */
 :root{
   --ink:#16213A; --bg:#F6F7FA; --surface:#FFFFFF; --raise:#EEF1F6; --line:#E4E8EF; --text:#16213A; --muted:#66728A; --faint:#A3ACBD;
-  --spark:#F4B63E; --spark-hi:#FFD889; --spark-deep:#D9931A; --spark-soft:#FDF3DD; --spark-text:#8A5E0B;
+  --spark:#B5D334; --spark-hi:#D6EC74; --spark-deep:#8BA91A; --spark-soft:#F1F7DA; --spark-text:#566B0A;
   --work:#4767A8; --work-soft:#E9EEF8; --home:#2C9580; --home-soft:#E2F3EE;
   --danger:#C9503C; --danger-soft:#FBEAE6;
   --on-ink:#FFFFFF; --dots:#DCE1EA;
@@ -29,16 +29,16 @@
 }
 :root[data-theme="dark"]{
   --ink:#E8ECF4; --bg:#0D1221; --surface:#151C2E; --raise:#1D263B; --line:#263049; --text:#E8ECF4; --muted:#94A0B8; --faint:#5C6880;
-  --spark-soft:#33290F; --spark-text:#F4C566; --work:#86A3E0; --work-soft:#1C2742; --home:#5CC4AC; --home-soft:#14302A;
+  --spark-soft:#252D10; --spark-text:#C8E46A; --work:#86A3E0; --work-soft:#1C2742; --home:#5CC4AC; --home-soft:#14302A;
   --danger:#E4806E; --danger-soft:#3A1F1A; --on-ink:#0D1221; --dots:#222C42; --float:0 12px 32px -14px rgba(0,0,0,.6);
 }
 :root[data-theme="noche"]{
   --ink:#1E1E1E; --bg:#000; --surface:#060606; --raise:#0F0F0F; --line:#171717; --text:#7C7C7C; --muted:#4E4E4E; --faint:#333;
-  --spark:#7A5D1E; --spark-hi:#8F6E28; --spark-deep:#5E4614; --spark-soft:#140F05; --spark-text:#7A5D1E;
+  --spark:#55621E; --spark-hi:#647326; --spark-deep:#414B14; --spark-soft:#0D1005; --spark-text:#55621E;
   --work:#4B5A78; --work-soft:#0C0F16; --home:#3F6B61; --home-soft:#08110F; --danger:#7A3A30; --danger-soft:#140806;
   --on-ink:#8A8A8A; --dots:#121212; --float:none;
 }
-:root[data-theme="noche"] .badge{background:#4A3910;color:#000}
+:root[data-theme="noche"] .badge{background:#3A4410;color:#000}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
 body{font-family:var(--body);font-size:15.5px;line-height:1.45;background:var(--bg);color:var(--text);min-height:100dvh;-webkit-font-smoothing:antialiased}
@@ -51,7 +51,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 /* ===== Entrada ===== */
 #login{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
-#login .marca{width:96px;height:96px;border-radius:28px;box-shadow:0 18px 50px -12px rgba(244,182,62,.55)}
+#login .marca{width:96px;height:96px;border-radius:28px;box-shadow:0 18px 50px -12px rgba(139,169,26,.5)}
 #login h1{font-family:var(--display);font-weight:700;font-size:46px;letter-spacing:-.02em;margin:22px 0 4px}
 #login p{color:var(--muted);max-width:340px;margin:6px 0}
 .btn-ms{display:inline-flex;align-items:center;gap:12px;margin-top:26px;background:var(--ink);color:var(--on-ink);padding:14px 22px;border-radius:16px;font-weight:600}
@@ -74,7 +74,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 #tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0 5px;border-radius:18px;color:var(--muted);font-size:11.5px;font-weight:500;position:relative}
 #tabs button svg{width:23px;height:23px}
 #tabs button.activo{color:var(--text);background:var(--raise)}
-#tabs .badge,.side-nav .badge{position:absolute;top:3px;left:calc(50% + 6px);min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:var(--spark);color:#3a2700;font-size:10.5px;font-weight:700;display:grid;place-items:center}
+#tabs .badge,.side-nav .badge{position:absolute;top:3px;left:calc(50% + 6px);min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:var(--spark);color:#16213A;font-size:10.5px;font-weight:700;display:grid;place-items:center}
 
 @media (min-width:900px){
   #side{display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;width:240px;padding:22px 14px;border-right:1px solid var(--line);background:var(--surface)}
@@ -159,8 +159,8 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .tool svg{width:23px;height:23px}
 .tool.guardar{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
 .tool:active{transform:scale(.94)}
-.chispa{--lvl:0;width:82px;height:82px;border-radius:50%;display:grid;place-items:center;position:relative;color:#3a2700;
-  background:radial-gradient(circle at 34% 28%,var(--spark-hi),var(--spark) 55%,var(--spark-deep));box-shadow:0 14px 34px -10px rgba(244,182,62,.75),inset 0 -3px 0 rgba(0,0,0,.08)}
+.chispa{--lvl:0;width:82px;height:82px;border-radius:50%;display:grid;place-items:center;position:relative;color:#16213A;
+  background:radial-gradient(circle at 34% 28%,var(--spark-hi),var(--spark) 55%,var(--spark-deep));box-shadow:0 14px 34px -10px rgba(139,169,26,.6),inset 0 -3px 0 rgba(0,0,0,.08)}
 .chispa svg{width:32px;height:32px;stroke-width:2}
 .chispa::before{content:"";position:absolute;inset:-8px;border-radius:50%;border:2px solid var(--spark);opacity:0;transform:scale(calc(1 + var(--lvl)*.45));transition:transform .08s,opacity .2s}
 .chispa.rec::before{opacity:.55}
@@ -562,7 +562,7 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .cam-top{position:relative;display:flex;align-items:center;padding:calc(10px + env(safe-area-inset-top)) 12px 10px}
 .cam-bot{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-around;padding:20px 20px calc(26px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.55))}
 .cam-b{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(0,0,0,.35);backdrop-filter:blur(6px)}
-.cam-b svg{width:24px;height:24px}.cam-b.on{background:#F4B63E;color:#16213A}
+.cam-b svg{width:24px;height:24px}.cam-b.on{background:#B5D334;color:#16213A}
 .cam-disparo{width:76px;height:76px;border-radius:50%;background:#fff;border:6px solid rgba(255,255,255,.35);background-clip:padding-box;box-shadow:0 0 0 2px #fff}
 .cam-disparo:active{transform:scale(.94)}
 .cam-guia{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;pointer-events:none}
@@ -636,8 +636,8 @@ html.lz-on,html.lz-on body{overflow:hidden}
 <!-- ===== Entrada ===== -->
 <section id="login" class="oculto">
   <img class="marca" src="icon-512.png" alt="">
-  <h1>Chispa</h1>
-  <p>Lo que se te ocurre, a salvo en tu OneDrive.</p>
+  <h1>Visitario</h1>
+  <p>Tu cuaderno de visitas: clientes, notas y pendientes, a salvo en tu OneDrive.</p>
   <p id="loginMsg" style="font-size:14px">Entra con tu cuenta personal de Microsoft.</p>
   <button class="btn-ms" id="bLogin">
     <svg width="18" height="18" viewBox="0 0 21 21"><rect width="10" height="10" fill="#F25022"/><rect x="11" width="10" height="10" fill="#7FBA00"/><rect y="11" width="10" height="10" fill="#00A4EF"/><rect x="11" y="11" width="10" height="10" fill="#FFB900"/></svg>
@@ -647,7 +647,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <div id="app" class="oculto">
   <aside id="side">
-    <div class="logo"><img src="icon-192.png" alt="">Chispa</div>
+    <div class="logo"><img src="icon-192.png" alt="">Visitario</div>
     <nav class="side-nav" id="sideNav"></nav>
     <div class="pie-side"><button class="sync" id="syncSide"></button></div>
   </aside>
@@ -808,7 +808,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
   <div class="hpie"><div class="esp"></div><button class="btn sec oculto" id="evPermiso">Dar permiso para enviar</button><button class="btn" id="evCorreoB"><span data-i="mail"></span>Enviar por correo</button></div>
 </div>
 
-<!-- Cámara de Chispa: siempre la trasera -->
+<!-- Cámara de Visitario: siempre la trasera -->
 <div id="cam" class="cam oculto" role="dialog" aria-label="Cámara">
   <video id="camVideo" playsinline muted autoplay></video>
   <div class="cam-guia oculto" id="camGuia"><div></div><span>Encaja la tarjeta en el marco</span></div>
@@ -838,7 +838,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
   <div class="lz-top"><button class="lz-b" id="tjCerrar" aria-label="Cerrar"><span data-i="x"></span></button><div class="lz-tit">Tarjeta de visita · <span id="tjPaso"></span></div></div>
   <input type="file" id="tjIn" accept="image/*" class="oculto">
   <div class="tj-paso" id="tjElegir">
-    <div class="tj-guia"><div class="tj-marco"><span data-i="user"></span></div><p>Pon la tarjeta sobre una superficie que contraste (una mesa oscura si la tarjeta es clara) y hazle la foto. No hace falta que salga recta: Chispa la encuadra y la endereza.</p></div>
+    <div class="tj-guia"><div class="tj-marco"><span data-i="user"></span></div><p>Pon la tarjeta sobre una superficie que contraste (una mesa oscura si la tarjeta es clara) y hazle la foto. No hace falta que salga recta: Visitario la encuadra y la endereza.</p></div>
     <div class="tj-bots"><button class="btn" id="tjCam"><span data-i="camara"></span>Hacer foto</button><button class="btn sec" id="tjGal"><span data-i="imagen"></span>Elegir de la galería</button></div>
   </div>
   <div class="tj-paso oculto" id="tjAjustar">
@@ -903,10 +903,10 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.20";
+const VERSION = "0.21";
 /* ================= Iconos ================= */
 const ICONOS = {
-  spark: '<path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"/>',
+  spark: '<path d="M12 3.5c.7 4.3 2.7 6.3 7 7-4.3.7-6.3 2.7-7 7-.7-4.3-2.7-6.3-7-7 4.3-.7 6.3-2.7 7-7z"/><path d="M19 3v3M17.5 4.5h3"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
   lista: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="18" r="1.2"/>',
   ajustes: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/>',
@@ -1094,7 +1094,7 @@ async function errorDe(r, que){
 async function idRaiz(){
   if (raizId) return raizId;
   const r = await graph(GRAPH);
-  if (!r.ok) throw await errorDe(r, "al abrir la carpeta de Chispa");
+  if (!r.ok) throw await errorDe(r, "al abrir la carpeta de Visitario");
   return raizId = (await r.json()).id;
 }
 async function hijos(id){
@@ -1168,7 +1168,7 @@ function pintarEstado(){
   const pend = notas.filter(n => n._pend || n._borrar).length + (lsGet("chispa.cfgPend") ? 1 : 0);
   let cls = "ok", icono = "nubeok", txt = "Guardado", titulo = "Todo está en tu OneDrive";
   if (necesitaLogin){ cls = "err"; icono = "alerta"; txt = "Volver a entrar"; titulo = "La sesión ha caducado"; }
-  else if (sincronizando){ cls = ""; icono = "sync"; txt = subida.total > 1 ? `Subiendo ${Math.min(subida.hechas + 1, subida.total)} de ${subida.total}` : "Sincronizando"; titulo = subida.total > 1 ? "Subiendo fotos y audios a tu OneDrive. Puedes seguir usando Chispa" : titulo; }
+  else if (sincronizando){ cls = ""; icono = "sync"; txt = subida.total > 1 ? `Subiendo ${Math.min(subida.hechas + 1, subida.total)} de ${subida.total}` : "Sincronizando"; titulo = subida.total > 1 ? "Subiendo fotos y audios a tu OneDrive. Puedes seguir usando Visitario" : titulo; }
   else if (!navigator.onLine){ cls = "pend"; icono = "sinred"; txt = pend ? `${pend} sin subir` : "Sin conexión"; titulo = "Se subirá cuando vuelva la conexión"; }
   else if (errorSync){ cls = "err"; icono = "alerta"; txt = "Error"; titulo = errorSync; }
   else if (pend){ cls = "pend"; icono = "nube"; txt = `${pend} por subir`; }
@@ -1933,7 +1933,7 @@ async function recortarImagen(blob){
     const x = ox + caja.x * esc, y = oy + caja.y * esc, w = caja.w * esc, h = caja.h * esc;
     g.fillStyle = "rgba(8,12,24,.55)"; g.beginPath(); g.rect(ox, oy, im.w * esc, im.h * esc); g.rect(x, y, w, h); g.fill("evenodd");
     g.strokeStyle = "#fff"; g.lineWidth = 2; g.strokeRect(x, y, w, h);
-    g.fillStyle = "#F4B63E"; for (const [a, b] of [[x, y], [x + w, y], [x, y + h], [x + w, y + h]]){ g.beginPath(); g.arc(a, b, 9, 0, Math.PI * 2); g.fill(); }
+    g.fillStyle = "#B5D334"; for (const [a, b] of [[x, y], [x + w, y], [x, y + h], [x + w, y + h]]){ g.beginPath(); g.arc(a, b, 9, 0, Math.PI * 2); g.fill(); }
   };
   const aImg = e => { const r = R(); return {x: (e.clientX - r.left - ox) / esc, y: (e.clientY - r.top - oy) / esc}; };
   c.onpointerdown = e => {
@@ -2545,7 +2545,7 @@ function pintarAdjEdicion(){
   if (!eAdj.audio && !eAdj.fotos.length && !eAdj.nuevas.length) g.innerHTML = `<div class="sin-adj">Esta nota no tiene audio ni fotos.</div>`;
 }
 $("#eInFoto").onchange = async () => { for (const f of $("#eInFoto").files) eAdj.nuevas.push(await reducirFoto(f)); $("#eInFoto").value = ""; pintarAdjEdicion(); };
-$("#eBorrar").onclick = () => { if (confirm("¿Borrar esta nota? Irá a la Papelera de Chispa en tu OneDrive.")){ olvidarEdicion(); cerrarHojas(); borrarNota(editando); } };
+$("#eBorrar").onclick = () => { if (confirm("¿Borrar esta nota? Irá a la Papelera de Visitario en tu OneDrive.")){ olvidarEdicion(); cerrarHojas(); borrarNota(editando); } };
 $("#eHecha").onclick = async () => { editando.hecha = !editando.hecha; editando.hechaEn = editando.hecha ? new Date().toISOString() : null; await guardarEdicion(); toast(editando.hecha ? "Hecha" : "Pendiente de nuevo"); };
 $("#eGuardar").onclick = async () => { await guardarEdicion(); toast("Cambios guardados"); };
 $("#eCompartir").innerHTML = ic("compartir") + `<span class="largo">Compartir</span>`;
@@ -2573,9 +2573,9 @@ $("#evCorreoB").onclick = async () => {
       ${p.desc ? `<div style="margin-top:6px;color:#4A5670">${esc(p.desc)}</div>` : ""}
       ${items.length ? `<ul style="margin:8px 0 0;padding-left:20px">${items.map(i => `<li${i.hecho ? ' style="color:#A3ACBD;text-decoration:line-through"' : ""}>${esc(i.texto)}</li>`).join("")}</ul>` : ""}
       ${n.fecha ? `<div style="margin-top:8px;color:#66728A;font-size:13px">Fecha: ${esc(fechaLarga(n.fecha))}${n.hora ? " a las " + n.hora : ""}</div>` : ""}</div>
-      <p style="font-size:12px;color:#A3ACBD">Enviado desde Chispa. La nota completa va en el PDF adjunto.</p></div>`;
+      <p style="font-size:12px;color:#A3ACBD">Enviado desde Visitario. La nota completa va en el PDF adjunto.</p></div>`;
     const r = await graph("https://graph.microsoft.com/v1.0/me/sendMail", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({message: {
-      subject: (tituloPlano(n) || "Nota de Chispa").slice(0, 120), body: {contentType: "HTML", content: html}, toRecipients: [{emailAddress: {address: para}}],
+      subject: (tituloPlano(n) || "Nota de Visitario").slice(0, 120), body: {contentType: "HTML", content: html}, toRecipients: [{emailAddress: {address: para}}],
       attachments: [{"@odata.type": "#microsoft.graph.fileAttachment", name: nombrePdf(n), contentType: "application/pdf", contentBytes: datos}]}, saveToSentItems: true})});
     if (r.status === 401 || r.status === 403){ lsSet("chispa.permCorreo", false); throw new Error("Falta el permiso de correo. Pulsa «Dar permiso para enviar»"); }
     if (!r.ok) throw await errorDe(r, "al enviar el correo");
@@ -2588,7 +2588,7 @@ async function compartirPdfEditor(){
   const b = $("#eCompartir"); if (b.disabled) return; b.disabled = true; b.classList.add("cargando");
   try {
     const n = notaDelEditor(), blob = await notaEnPdf(n), nombre = nombrePdf(n);
-    await compartirArchivo(blob, nombre, tituloPlano(n) || "Nota de Chispa");
+    await compartirArchivo(blob, nombre, tituloPlano(n) || "Nota de Visitario");
   } catch(e){ console.warn(e); toast(e.message || "No se pudo preparar el PDF", "alerta", 5000); }
   finally { b.disabled = false; b.classList.remove("cargando"); }
 };
@@ -2601,7 +2601,7 @@ function notaDelEditor(){
   n._imagenes = [...eAdj.fotos.map(r => ({ruta: r, dibujo: r.includes("trazo")})), ...eAdj.nuevas.map(b => b instanceof Blob ? {blob: b} : {blob: b.png, dibujo: true})];
   return n;
 }
-const nombrePdf = n => `Chispa - ${(tituloPlano(n) || "Nota").replace(/[\\/:*?"<>|\n\r]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 60)} - ${isoDia(new Date(n.creada))}.pdf`;
+const nombrePdf = n => `Visitario - ${(tituloPlano(n) || "Nota").replace(/[\\/:*?"<>|\n\r]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 60)} - ${isoDia(new Date(n.creada))}.pdf`;
 // jsPDF solo trae las letras del alfabeto latino: se cambian comillas tipográficas, guiones largos y se quitan emojis
 const latin1 = s => String(s || "").replace(/[“”]/g, '"').replace(/[‘’]/g, "'").replace(/[–—]/g, "-").replace(/…/g, "...").replace(/[•]/g, "-").replace(/[^\x00-\xFF]/g, "");
 async function cargarJsPdf(){
@@ -2619,13 +2619,12 @@ async function imagenParaPdf(im){
 async function notaEnPdf(n){
   const jsPDF = await cargarJsPdf();
   const doc = new jsPDF({unit: "mm", format: "a4"}), W = 210, H = 297, M = 18, AN = W - 2 * M;
-  const TINTA = [22, 33, 58], GRIS = [102, 114, 138], CLARO = [163, 172, 189], AMBAR = [244, 182, 62];
+  const TINTA = [22, 33, 58], GRIS = [102, 114, 138], CLARO = [163, 172, 189], AMBAR = [181, 211, 52];
   let y = 0;
   const cabecera = () => {
     doc.setFillColor(...TINTA); doc.rect(0, 0, W, 20, "F");
-    doc.setFillColor(...AMBAR);   // la chispa
-    doc.lines([[-4.2, 6.2], [3.2, 0], [-1, 5.6], [5, -7.4], [-3.4, 0], [1.6, -4.4]], M + 3.4, 5.2, [1, 1], "F", true);
-    doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(13); doc.text("Chispa", M + 9, 12.6);
+    doc.setDrawColor(181, 211, 52); doc.setLineWidth(1.4); doc.setLineCap("round"); doc.setLineJoin("round"); doc.lines([[2.1, 2.3], [4.3, -5.4]], M + 0.6, 9.6, [1, 1], "S"); doc.setLineWidth(0.2);   // la marca
+    doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(13); doc.text("Visitario", M + 9, 12.6);
     doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(200, 208, 222); doc.text("Nota compartida", W - M, 12.6, {align: "right"});
     y = 32;
   };
@@ -2686,9 +2685,9 @@ async function notaEnPdf(n){
   const total = doc.getNumberOfPages(), hoy = new Date().toLocaleDateString("es-ES");
   for (let i = 1; i <= total; i++){
     doc.setPage(i); doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...CLARO);
-    doc.text(`Compartido desde Chispa el ${hoy}`, M, H - 9); if (total > 1) doc.text(`${i} / ${total}`, W - M, H - 9, {align: "right"});
+    doc.text(`Compartido desde Visitario el ${hoy}`, M, H - 9); if (total > 1) doc.text(`${i} / ${total}`, W - M, H - 9, {align: "right"});
   }
-  doc.setProperties({title: latin1(titulo), creator: "Chispa"});
+  doc.setProperties({title: latin1(titulo), creator: "Visitario"});
   return doc.output("blob");
 }
 // Enviar un archivo: en la app, con el menú «Compartir» de Android; en el navegador, con el del sistema o descargándolo
@@ -2854,7 +2853,7 @@ function pintarEI(){
   g.fillStyle = "rgba(8,12,24,.6)"; g.beginPath(); g.rect(eiOx, eiOy, im.width * eiEsc, im.height * eiEsc); g.rect(x, y, w, h); g.fill("evenodd");
   g.strokeStyle = "rgba(255,255,255,.5)"; g.lineWidth = 1; g.beginPath(); for (const f of [1/3, 2/3]){ g.moveTo(x + w * f, y); g.lineTo(x + w * f, y + h); g.moveTo(x, y + h * f); g.lineTo(x + w, y + h * f); } g.stroke();
   g.strokeStyle = "#fff"; g.lineWidth = 2; g.strokeRect(x, y, w, h);
-  g.strokeStyle = "#F4B63E"; g.lineWidth = 5; g.lineCap = "round"; const L = Math.min(22, w / 3, h / 3);
+  g.strokeStyle = "#B5D334"; g.lineWidth = 5; g.lineCap = "round"; const L = Math.min(22, w / 3, h / 3);
   for (const [a, b, dx, dy] of [[x, y, 1, 1], [x + w, y, -1, 1], [x, y + h, 1, -1], [x + w, y + h, -1, -1]]){ g.beginPath(); g.moveTo(a + dx * L, b); g.lineTo(a, b); g.lineTo(a, b + dy * L); g.stroke(); }
 }
 (() => {
@@ -2896,7 +2895,7 @@ $("#eiOk").onclick = async () => {
   cerrarEI(await new Promise(ok => o.toBlob(ok, "image/jpeg", .9)));
 };
 
-/* ================= Cámara de Chispa ================= */
+/* ================= Cámara de Visitario ================= */
 // Usa la cámara trasera dentro de la propia app (la app de cámara del sistema abría a veces la frontal).
 // Si no hay cámara o no hay permiso, se abre el selector de fotos del sistema.
 const CAM = {stream: null, fin: null, frontal: false, luz: false};
@@ -3058,8 +3057,8 @@ function pintarAjuste(){
   const g = c.getContext("2d"); g.setTransform(k, 0, 0, k, 0, 0); g.clearRect(0, 0, r.width, r.height); g.drawImage(im, tjOx, tjOy, im.width * tjEsc, im.height * tjEsc);
   const P = TJ.quad.map(([x, y]) => [tjOx + x * tjEsc, tjOy + y * tjEsc]);
   g.fillStyle = "rgba(8,12,24,.5)"; g.beginPath(); g.rect(0, 0, r.width, r.height); g.moveTo(...P[0]); for (const p of P.slice(1)) g.lineTo(...p); g.closePath(); g.fill("evenodd");
-  g.strokeStyle = "#F4B63E"; g.lineWidth = 2.5; g.beginPath(); g.moveTo(...P[0]); for (const p of P.slice(1)) g.lineTo(...p); g.closePath(); g.stroke();
-  P.forEach((p, i) => { g.fillStyle = i === tjArr ? "rgba(244,182,62,.45)" : "#F4B63E"; g.beginPath(); g.arc(p[0], p[1], 11, 0, Math.PI * 2); g.fill(); g.fillStyle = "#16213A"; g.beginPath(); g.arc(p[0], p[1], 3, 0, Math.PI * 2); g.fill(); });
+  g.strokeStyle = "#B5D334"; g.lineWidth = 2.5; g.beginPath(); g.moveTo(...P[0]); for (const p of P.slice(1)) g.lineTo(...p); g.closePath(); g.stroke();
+  P.forEach((p, i) => { g.fillStyle = i === tjArr ? "rgba(181,211,52,.45)" : "#B5D334"; g.beginPath(); g.arc(p[0], p[1], 11, 0, Math.PI * 2); g.fill(); g.fillStyle = "#16213A"; g.beginPath(); g.arc(p[0], p[1], 3, 0, Math.PI * 2); g.fill(); });
   // lupa: mientras arrastras una esquina, se ve ampliada por encima del dedo
   if (tjArr >= 0){
     const [cx, cy] = P[tjArr], R = 70, Z = 4, ex = tjEsc * Z;
@@ -3068,7 +3067,7 @@ function pintarAjuste(){
     const [qx, qy] = TJ.quad[tjArr];
     g.drawImage(im, qx - R / ex, qy - R / ex, 2 * R / ex, 2 * R / ex, lx - R, ly - R, 2 * R, 2 * R);
     // los dos lados que llegan a esa esquina, también ampliados
-    g.strokeStyle = "#F4B63E"; g.lineWidth = 2;
+    g.strokeStyle = "#B5D334"; g.lineWidth = 2;
     for (const o of [(tjArr + 1) % 4, (tjArr + 3) % 4]){ const [ox, oy] = TJ.quad[o]; g.beginPath(); g.moveTo(lx, ly); g.lineTo(lx + (ox - qx) * ex, ly + (oy - qy) * ex); g.stroke(); }
     g.strokeStyle = "rgba(255,255,255,.9)"; g.lineWidth = 1; g.beginPath(); g.moveTo(lx - 12, ly); g.lineTo(lx + 12, ly); g.moveTo(lx, ly - 12); g.lineTo(lx, ly + 12); g.stroke();
     g.restore(); g.strokeStyle = "#fff"; g.lineWidth = 3; g.beginPath(); g.arc(lx, ly, R, 0, Math.PI * 2); g.stroke();
@@ -3160,7 +3159,7 @@ const iaAuto = () => ia() && config.ia.auto !== false;
 async function llamarIA(mensajes, {json = true, max = 900} = {}, intento = 0){
   // vale tanto «https://recurso.openai.azure.com/» como la dirección larga que muestra Azure
   const c = config.ia; let base = c.endpoint.trim(); try { base = new URL(base).origin; } catch(e){ base = base.replace(/\/+$/, ""); }
-  const url = `${base}/openai/deployments/${encodeURIComponent(c.despliegue || "chispa")}/chat/completions?api-version=2024-10-21`;
+  const url = `${base}/openai/deployments/${encodeURIComponent(c.despliegue || "gpt-4.1-mini")}/chat/completions?api-version=2024-10-21`;
   const r = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json", "api-key": c.clave.trim()},
     body: JSON.stringify({messages: mensajes, temperature: 0.2, max_tokens: max, ...(json ? {response_format: {type: "json_object"}} : {})})});
   if ((r.status === 429 || r.status >= 500) && intento < 4){   // límite por minuto de Azure: espera lo que pida y reintenta
@@ -3169,7 +3168,7 @@ async function llamarIA(mensajes, {json = true, max = 900} = {}, intento = 0){
   }
   if (!r.ok){
     let m = ""; try { const j = await r.json(); m = j.error?.message || j.error?.code || ""; } catch(e){}
-    throw new Error(r.status === 401 ? "La clave de la IA no es válida" : r.status === 404 ? "No encuentro la implementación «" + (c.despliegue || "chispa") + "». Revisa el nombre" : r.status === 429 ? "La IA está saturada; se reintentará" : `IA (${r.status})${m ? ": " + m : ""}`);
+    throw new Error(r.status === 401 ? "La clave de la IA no es válida" : r.status === 404 ? "No encuentro la implementación «" + (c.despliegue || "gpt-4.1-mini") + "». Revisa el nombre" : r.status === 429 ? "La IA está saturada; se reintentará" : `IA (${r.status})${m ? ": " + m : ""}`);
   }
   const t = (await r.json()).choices?.[0]?.message?.content || "";
   if (!json) return t;
@@ -3194,7 +3193,7 @@ async function enriquecerNota(n){
   }
   const todas = (n.fotos || []).filter(r => !r.includes("trazo")), fotos = todas.slice(0, 4);
   const texto = [n.titulo ? "Título: " + n.titulo : "", n.texto || "", n.transcripcion && n.transcripcion !== n.texto ? "Dictado: " + n.transcripcion : ""].filter(Boolean).join("\n").slice(0, 6000);
-  const sistema = `Eres el asistente de Chispa, la app de notas de un delegado comercial de material eléctrico en Sevilla. Hoy es ${hoyLargo()}.
+  const sistema = `Eres el asistente de Visitario, la app de notas de un delegado comercial de material eléctrico en Sevilla. Hoy es ${hoyLargo()}.
 Analiza la nota (y sus fotos, si las hay) y responde SOLO con un JSON con estas claves:
 "titulo": título breve y concreto en español (máx. 60 caracteres), sin comillas;
 "resumen": 1-2 frases si el texto es largo o confuso (más de 3 frases); si no, "";
@@ -3250,7 +3249,7 @@ async function procesarIA(){
       try {
         const r = await enriquecerNota(n), cambios = aplicarIA(n, r);
         delete n._ia; delete n._intentosIA; await guardarNotaLocal(n); refrescar();
-        if (cambios.length) toast(`Chispa ordenó tu nota: ${cambios.join(", ")}`, "spark", 3500);
+        if (cambios.length) toast(`Visitario ordenó tu nota: ${cambios.join(", ")}`, "spark", 3500);
         if (n.ia?.contactoFoto?.nombre || n.ia?.contactoFoto?.empresa) ofrecerContacto(n);
       } catch(e){ n._intentosIA = (n._intentosIA || 0) + 1; if (n._intentosIA >= 3) delete n._ia; await idb.poner(n); }
     }
@@ -3278,7 +3277,7 @@ async function preguntarNotas(pregunta, persona){
   const ns = notasParaPregunta(pregunta, persona);
   const compacta = n => [`[${n.id}]`, isoDia(new Date(n.creada)), n.hecha ? "HECHA" : "PENDIENTE", n.fecha ? "para " + n.fecha + (n.hora ? " " + n.hora : "") : "", n.para?.nombre ? "con " + n.para.nombre : "", carpetaDe(n) ? "archivador " + carpetaDe(n).nombre : "",
     "|", (n.titulo ? n.titulo + ". " : "") + String(n.texto || n.transcripcion || "").replace(/\s+/g, " ").slice(0, 400), n.ia?.textoFotos ? "| fotos: " + n.ia.textoFotos.slice(0, 200) : ""].filter(Boolean).join(" ");
-  const sistema = `Eres el asistente de Chispa. Hoy es ${hoyLargo()}. Responde en español, breve y concreto, usando SOLO las notas del usuario que te paso (cada una empieza con su [id]). Si no está en las notas, dilo. Responde SOLO con un JSON: {"respuesta": texto (puedes usar saltos de línea y viñetas con «- »), "notas": [ids de las notas en que te basas, máx. 8]}.`;
+  const sistema = `Eres el asistente de Visitario. Hoy es ${hoyLargo()}. Responde en español, breve y concreto, usando SOLO las notas del usuario que te paso (cada una empieza con su [id]). Si no está en las notas, dilo. Responde SOLO con un JSON: {"respuesta": texto (puedes usar saltos de línea y viñetas con «- »), "notas": [ids de las notas en que te basas, máx. 8]}.`;
   const r = await llamarIA([{role: "system", content: sistema}, {role: "user", content: `NOTAS:\n${ns.map(compacta).join("\n")}\n\nPREGUNTA: ${pregunta}`}], {max: 700});
   return {respuesta: String(r.respuesta || "No he encontrado nada."), notas: (r.notas || []).map(id => notas.find(n => n.id === String(id).replace(/[\[\]]/g, ""))).filter(Boolean)};
 }
@@ -3323,7 +3322,7 @@ async function iniciarApp(){
   setTimeout(buscarVersionApp, 4000);
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") buscarVersionApp(); });
 }
-// Lo que llega desde el widget, un aviso o «Compartir con Chispa»
+// Lo que llega desde el widget, un aviso o «Compartir con Visitario»
 async function procesarEntrada(d){
   if (!d || !d.accion) return;
   cerrarHojas();
@@ -3363,7 +3362,7 @@ function deLlamada(d){
   tocado = true;
 }
 // ¿Hay una versión nueva de la app? Se mira como mucho cada 6 horas
-const DESCARGA = "https://github.com/jamormar/chispa/releases/latest/download/Chispa.apk";
+const DESCARGA = "https://github.com/jamormar/chispa/releases/latest/download/Visitario.apk";
 let appNueva = null;
 async function buscarVersionApp(forzar = false){
   if (infoApp && !infoApp.codigo) infoApp.codigo = +(String(infoApp.version || "").match(/(\d+)$/) || [])[1] || 0;   // apps antiguas
@@ -3458,12 +3457,12 @@ function htmlResumen(s, nombre, prueba){
     + (l.length > 25 ? `<div style="padding:10px 14px;color:#66728A">y ${l.length - 25} más…</div>` : "") + "</div>";
   const fecha = new Date().toLocaleDateString("es-ES", {weekday: "long", day: "numeric", month: "long"});
   return `<div style="font-family:Segoe UI,Roboto,Arial,sans-serif;max-width:640px;margin:0 auto;color:#16213A">
-    <div style="background:#16213A;color:#fff;border-radius:16px;padding:18px 22px"><div style="font-size:20px;font-weight:700"><span style="color:#F4B63E">&#9889;</span> Chispa${nombre ? " · " + nombre : ""}</div><div style="opacity:.8;margin-top:4px">${capital(fecha)}</div></div>
+    <div style="background:#16213A;color:#fff;border-radius:16px;padding:18px 22px"><div style="font-size:20px;font-weight:700"><span style="color:#B5D334">&#10003;</span> Visitario${nombre ? " · " + nombre : ""}</div><div style="opacity:.8;margin-top:4px">${capital(fecha)}</div></div>
     ${bloque("Para hoy", s.hoy, true)}${bloque("Atrasado", s.atrasado, true, true)}${bloque("Próximos 7 días", s.proximos, true)}${bloque("Anotado ayer", s.ayer)}${bloque("Anclas por completar", s.anclas)}
     ${!s.hay ? `<p style="margin:22px 4px">No tienes nada pendiente. ¡Buen día!</p>` : ""}
     ${s.sinFecha ? `<p style="margin:18px 4px;color:#66728A">Además tienes ${s.sinFecha} ${s.sinFecha === 1 ? "nota pendiente" : "notas pendientes"} sin fecha.</p>` : ""}
-    <p style="margin:24px 4px"><a href="${REDIRECT}" style="background:#F4B63E;color:#3A2700;text-decoration:none;font-weight:700;padding:11px 18px;border-radius:12px;display:inline-block">Abrir Chispa</a></p>
-    <p style="font-size:12px;color:#A3ACBD;margin:18px 4px">Resumen automático de Chispa${prueba ? " (prueba)" : ""}. Solo se envía si hay algo que contar.</p></div>`;
+    <p style="margin:24px 4px"><a href="${REDIRECT}" style="background:#B5D334;color:#16213A;text-decoration:none;font-weight:700;padding:11px 18px;border-radius:12px;display:inline-block">Abrir Visitario</a></p>
+    <p style="font-size:12px;color:#A3ACBD;margin:18px 4px">Resumen automático de Visitario${prueba ? " (prueba)" : ""}. Solo se envía si hay algo que contar.</p></div>`;
 }
 function asuntoResumen(s, nombre, prueba){
   const p = [];
@@ -3471,7 +3470,7 @@ function asuntoResumen(s, nombre, prueba){
   if (s.atrasado.length) p.push(`${s.atrasado.length} ${s.atrasado.length === 1 ? "atrasada" : "atrasadas"}`);
   if (!p.length && s.proximos.length) p.push(`${s.proximos.length} esta semana`);
   if (!p.length && s.ayer.length) p.push(`${s.ayer.length} ${s.ayer.length === 1 ? "idea de ayer" : "ideas de ayer"}`);
-  return `${prueba ? "[Prueba] " : ""}Chispa${nombre ? " · " + nombre : ""}: ${p.length ? p.join(", ") : s.hay ? "tu resumen" : "nada pendiente"}`;
+  return `${prueba ? "[Prueba] " : ""}Visitario${nombre ? " · " + nombre : ""}: ${p.length ? p.join(", ") : s.hay ? "tu resumen" : "nada pendiente"}`;
 }
 async function enviarResumenWeb(prueba = false){
   const anotar = r => { lsSet("chispa.resumenUltimo", `${new Date().toLocaleString("es-ES", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"})} · ${r}`); return r; };
@@ -3523,8 +3522,8 @@ async function sincronizarCalendario(){
       try {
         if (!quiere){ await graph(`${API}/${n.evento.id}`, {method: "DELETE"}); delete n.evento; await guardarNotaLocal(n); continue; }
         const ini = new Date(`${n.fecha}T${n.hora}:00`), fin = new Date(ini.getTime() + 30 * 60000), p = partesNota(n);
-        const cuerpo = {subject: "⚡ " + (tituloPlano(n) || "Nota de Chispa").slice(0, 120),
-          body: {contentType: "text", content: [p.desc, ...partirLista(n.texto).items.filter(i => !i.hecho).map(i => "• " + i.texto), n.para?.nombre ? "Para: " + n.para.nombre : "", "", "Creado desde Chispa"].filter(x => x !== undefined).join("\n")},
+        const cuerpo = {subject: (tituloPlano(n) || "Nota de Visitario").slice(0, 120),
+          body: {contentType: "text", content: [p.desc, ...partirLista(n.texto).items.filter(i => !i.hecho).map(i => "• " + i.texto), n.para?.nombre ? "Para: " + n.para.nombre : "", "", "Creado desde Visitario"].filter(x => x !== undefined).join("\n")},
           start: {dateTime: ini.toISOString().replace("Z", ""), timeZone: "UTC"}, end: {dateTime: fin.toISOString().replace("Z", ""), timeZone: "UTC"},
           isReminderOn: true, reminderMinutesBeforeStart: 15, showAs: "free"};
         let r = n.evento?.id ? await graph(`${API}/${n.evento.id}`, {method: "PATCH", headers: {"Content-Type": "application/json"}, body: JSON.stringify(cuerpo)}) : null;
@@ -3597,9 +3596,9 @@ function pintarCorreoWeb(){
   const caja = $("#kCorreoWeb"); if (!caja) return;
   const ok = lsGet("chispa.permCorreo"), ult = lsGet("chispa.resumenUltimo");
   caja.innerHTML = ok
-    ? `<div class="ajuste">${ic(esApp() ? "nube" : "movil")}<div class="lbl">Envío al abrir Chispa${esApp() ? "" : " en este equipo"}<small>Si a la hora del resumen nadie lo ha enviado, lo envía este dispositivo${ult ? " · Último: " + esc(ult) : ""}</small></div></div>
+    ? `<div class="ajuste">${ic(esApp() ? "nube" : "movil")}<div class="lbl">Envío al abrir Visitario${esApp() ? "" : " en este equipo"}<small>Si a la hora del resumen nadie lo ha enviado, lo envía este dispositivo${ult ? " · Último: " + esc(ult) : ""}</small></div></div>
        <div class="ajuste"><button class="btn sec" id="kWebProbar">${ic("mail")}Enviar prueba desde aquí</button></div>`
-    : `<div class="ajuste">${ic("mail")}<div class="lbl">Envío al abrir Chispa${esApp() ? "" : " en este equipo"}<small>${esApp() ? "Respaldo por si el móvil no lo envía en segundo plano." : "El PC envía el resumen cuando abres Chispa después de la hora."} Pide permiso a Microsoft una vez</small></div><button class="btn" id="kWebPermiso">Dar permiso</button></div>`;
+    : `<div class="ajuste">${ic("mail")}<div class="lbl">Envío al abrir Visitario${esApp() ? "" : " en este equipo"}<small>${esApp() ? "Respaldo por si el móvil no lo envía en segundo plano." : "El PC envía el resumen cuando abres Visitario después de la hora."} Pide permiso a Microsoft una vez</small></div><button class="btn" id="kWebPermiso">Dar permiso</button></div>`;
   if ($("#kWebPermiso")) $("#kWebPermiso").onclick = () => { lsSet("chispa.permCorreo", true); irALogin(false); };
   if ($("#kWebProbar")) $("#kWebProbar").onclick = async () => {
     const b = $("#kWebProbar"); b.disabled = true; b.textContent = "Enviando…";
@@ -3632,7 +3631,7 @@ function programarAvisos(){
         const t = new Date(`${n.fecha}T${n.hora}:00`).getTime();
         if (!(t > ahora) || t - ahora > 60 * 864e5) continue;
         lista.push({id: idAviso(n.id), title: tituloPlano(n), body: `${n.hora}${n.para?.nombre ? ", " + n.para.nombre : ""}`,
-          schedule: {at: new Date(t), allowWhileIdle: true}, extra: {nota: n.id}, smallIcon: "ic_stat_chispa", iconColor: "#F4B63E"});
+          schedule: {at: new Date(t), allowWhileIdle: true}, extra: {nota: n.id}, smallIcon: "ic_stat_chispa", iconColor: "#8BA91A"});
       }
       lista.sort((a, b) => a.schedule.at - b.schedule.at);
       if (lista.length) await ln.schedule({notifications: lista.slice(0, 60)});
@@ -3647,9 +3646,9 @@ async function revisarAvisos(){
   for (const n of deNotas()){
     if (n.hecha || n.fecha !== hoy || !n.hora || n.hora > hm || avisadas[n.id] === n.fecha + n.hora) continue;
     avisadas[n.id] = n.fecha + n.hora; lsSet("chispa.avisadas", avisadas);
-    const titulo = tituloPlano(n) || "Recordatorio de Chispa";
+    const titulo = tituloPlano(n) || "Recordatorio de Visitario";
     toast(`${n.hora}: ${titulo}`, "campana", 8000); vibrar([80, 60, 80]);
-    if (!esApp()) try { if (Notification.permission === "granted"){ const reg = await navigator.serviceWorker?.getRegistration(); reg ? reg.showNotification("Chispa", {body: `${n.hora} · ${titulo}`, icon: "icon-192.png", tag: n.id}) : new Notification("Chispa", {body: titulo}); } } catch(e){}
+    if (!esApp()) try { if (Notification.permission === "granted"){ const reg = await navigator.serviceWorker?.getRegistration(); reg ? reg.showNotification("Visitario", {body: `${n.hora} · ${titulo}`, icon: "icon-192.png", tag: n.id}) : new Notification("Visitario", {body: titulo}); } } catch(e){}
   }
 }
 setInterval(revisarAvisos, 30000);
@@ -3709,10 +3708,10 @@ function prepararCorreo(ambito){
   const vence = del.filter(n => !n.hecha && n.fecha && n.fecha <= hoy), nuevas = del.filter(n => isoDia(new Date(n.creada)) === hoy);
   if (!vence.length && !nuevas.length){ toast(`Hoy no hay nada ${ambito === "trabajo" ? "de trabajo" : "personal"} que enviar`, "mail"); return; }
   const linea = n => `- ${n.ancla ? "(ancla de las " + hora(n.creada) + ") " + (n.texto || "") : (n.titulo ? n.titulo + (n.texto ? ": " + n.texto : "") : n.texto)}${n.para?.nombre ? " [" + n.para.nombre + "]" : ""}${n.fecha ? " (" + fechaCorta(n.fecha) + ")" : ""}`;
-  let cuerpo = `Resumen de Chispa, ${fechaLarga(hoy)}\n\n`;
+  let cuerpo = `Resumen de Visitario, ${fechaLarga(hoy)}\n\n`;
   if (vence.length) cuerpo += `Para hoy y vencidas\n${vence.map(linea).join("\n")}\n\n`;
   if (nuevas.length) cuerpo += `Capturado hoy\n${nuevas.map(linea).join("\n")}\n`;
-  location.href = `mailto:${encodeURIComponent(dest || "")}?subject=${encodeURIComponent("Chispa: " + (ambito === "trabajo" ? "trabajo" : "personal") + ", " + fechaCorta(hoy))}&body=${encodeURIComponent(cuerpo)}`;
+  location.href = `mailto:${encodeURIComponent(dest || "")}?subject=${encodeURIComponent("Visitario: " + (ambito === "trabajo" ? "trabajo" : "personal") + ", " + fechaCorta(hoy))}&body=${encodeURIComponent(cuerpo)}`;
 }
 
 // Notas: buscador y filtros desplegables (una o varias opciones en cada uno; ninguna marcada = todas)
@@ -3903,14 +3902,14 @@ function pintarFicha(nombre){
   $("#listaNotas").innerHTML = html; cargarMinis($("#listaNotas"));
   const nuevaPara = voz => { ver("anotar"); borrador.para = {categoria: p.cat || "", nombre: p.nombre}; tocado = true; pintarDetectado(); toast(`Nota para ${p.nombre}`, "user", 2500); if (voz){ if (!rec) empezarVoz(); } else setTimeout(() => $("#cTexto").focus(), 250); };
   $("#fNueva").onclick = () => nuevaPara(false); if ($("#fPreg")) $("#fPreg").onclick = () => abrirPregunta(p.nombre); $("#fVoz").onclick = () => nuevaPara(true);
-  if ($("#fPdf")) $("#fPdf").onclick = async () => { const b = $("#fPdf"); b.disabled = true; try { await compartirArchivo(await fichaEnPdf(p), `Chispa - ${p.nombre.replace(/[\\/:*?"<>|]+/g, " ")} - ${hoyISO()}.pdf`, `Seguimiento de ${p.nombre}`); } catch(e){ toast(e.message || "No se pudo preparar el PDF", "alerta"); } finally { b.disabled = false; } };
+  if ($("#fPdf")) $("#fPdf").onclick = async () => { const b = $("#fPdf"); b.disabled = true; try { await compartirArchivo(await fichaEnPdf(p), `Visitario - ${p.nombre.replace(/[\\/:*?"<>|]+/g, " ")} - ${hoyISO()}.pdf`, `Seguimiento de ${p.nombre}`); } catch(e){ toast(e.message || "No se pudo preparar el PDF", "alerta"); } finally { b.disabled = false; } };
 }
 // Informe de seguimiento de una persona: lo pendiente y el historial, en un PDF
 async function fichaEnPdf(p){
   const jsPDF = await cargarJsPdf(), doc = new jsPDF({unit: "mm", format: "a4"}), W = 210, H = 297, M = 18, AN = W - 2 * M, TINTA = [22, 33, 58], GRIS = [102, 114, 138];
   let y = 0;
-  const cab = () => { doc.setFillColor(...TINTA); doc.rect(0, 0, W, 20, "F"); doc.setFillColor(244, 182, 62); doc.lines([[-4.2, 6.2], [3.2, 0], [-1, 5.6], [5, -7.4], [-3.4, 0], [1.6, -4.4]], M + 3.4, 5.2, [1, 1], "F", true);
-    doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(13); doc.text("Chispa", M + 9, 12.6); doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(200, 208, 222); doc.text("Seguimiento", W - M, 12.6, {align: "right"}); y = 32; };
+  const cab = () => { doc.setFillColor(...TINTA); doc.rect(0, 0, W, 20, "F"); doc.setDrawColor(181, 211, 52); doc.setLineWidth(1.4); doc.setLineCap("round"); doc.setLineJoin("round"); doc.lines([[2.1, 2.3], [4.3, -5.4]], M + 0.6, 9.6, [1, 1], "S"); doc.setLineWidth(0.2);
+    doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(13); doc.text("Visitario", M + 9, 12.6); doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(200, 208, 222); doc.text("Seguimiento", W - M, 12.6, {align: "right"}); y = 32; };
   const sitio = h => { if (y + h > H - 18){ doc.addPage(); cab(); } };
   const txt = (t, {tam = 11, color = TINTA, estilo = "normal", sangria = 0} = {}) => { doc.setFont("helvetica", estilo); doc.setFontSize(tam); doc.setTextColor(...color); const a = tam * .3528 * 1.4;
     for (const l of doc.splitTextToSize(latin1(t), AN - sangria)){ sitio(a); doc.text(l, M + sangria, y + a * .75); y += a; } };
@@ -3921,7 +3920,7 @@ async function fichaEnPdf(p){
   const pend = p.notas.filter(n => !n.hecha && !enArchivo(n)), resto = p.notas.filter(n => !pend.includes(n)).sort((a, b) => b.creada.localeCompare(a.creada));
   if (pend.length){ y += 4; txt("PENDIENTE", {tam: 10, estilo: "bold", color: GRIS}); pend.forEach(nota); }
   if (resto.length){ y += 6; txt("HISTORIAL", {tam: 10, estilo: "bold", color: GRIS}); resto.forEach(nota); }
-  const total = doc.getNumberOfPages(); for (let i = 1; i <= total; i++){ doc.setPage(i); doc.setFontSize(8); doc.setTextColor(163, 172, 189); doc.text("Compartido desde Chispa", M, H - 9); if (total > 1) doc.text(`${i} / ${total}`, W - M, H - 9, {align: "right"}); }
+  const total = doc.getNumberOfPages(); for (let i = 1; i <= total; i++){ doc.setPage(i); doc.setFontSize(8); doc.setTextColor(163, 172, 189); doc.text("Compartido desde Visitario", M, H - 9); if (total > 1) doc.text(`${i} / ${total}`, W - M, H - 9, {align: "right"}); }
   return doc.output("blob");
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-persona]"); if (!b) return; e.stopPropagation(); e.preventDefault(); lsSet("chispa.desdePersonas", false); cerrarHojas(); $("#q").value = ""; ver("notas"); abrirBuzon("p:" + b.dataset.persona); }, true);
@@ -4090,7 +4089,7 @@ function pintarAjustes(){
       <div id="kCorreoWeb"></div>
     </div></div>
     <div class="grupo"><h3>Calendario de Outlook</h3><div class="caja" id="kCal"></div></div>
-    <div class="grupo"><h3>Nombres que Chispa reconoce</h3><div class="caja">
+    <div class="grupo"><h3>Nombres que Visitario reconoce</h3><div class="caja">
       <div class="ajuste"><div class="lbl">Clientes<small>Uno por línea</small></div><textarea id="kCli" rows="4">${esc((cont.cliente||[]).join("\n"))}</textarea></div>
       <div class="ajuste"><div class="lbl">Proveedores</div><textarea id="kPro" rows="4">${esc((cont.proveedor||[]).join("\n"))}</textarea></div>
       <div class="ajuste"><div class="lbl">Compañeros</div><textarea id="kCom" rows="4">${esc((cont.companero||[]).join("\n"))}</textarea></div>
@@ -4099,7 +4098,7 @@ function pintarAjustes(){
       ${esMovil() ? `<div class="ajuste">${ic("spark")}<div class="lbl">Azure OpenAI<small>${ia() ? "Activa: ordena tus notas, lee fotos y responde preguntas" : "Sin configurar. Se configura desde el PC"}</small></div></div>` : `
       <div class="ajuste">${ic("spark")}<div class="lbl">Punto de conexión<small>La dirección que acaba en .openai.azure.com/</small></div><input type="text" id="kIaUrl" value="${esc(c.ia?.endpoint || "")}" placeholder="https://chispa-ia.openai.azure.com/" autocomplete="off" spellcheck="false"></div>
       <div class="ajuste">${ic("ajustes")}<div class="lbl">Clave<small>Se guarda en tu OneDrive, nunca en GitHub</small></div><input type="text" id="kIaClave" value="${esc(c.ia?.clave || "")}" placeholder="Pega aquí la clave 1" autocomplete="off" spellcheck="false"></div>
-      <div class="ajuste">${ic("tag")}<div class="lbl">Nombre de la implementación</div><input type="text" id="kIaDep" value="${esc(c.ia?.despliegue || "chispa")}" style="max-width:180px"><button class="btn sec" id="kIaProbar">Probar</button><span class="estado-t" id="kIaEstado"></span></div>`}
+      <div class="ajuste">${ic("tag")}<div class="lbl">Nombre de la implementación</div><input type="text" id="kIaDep" value="${esc(c.ia?.despliegue || "gpt-4.1-mini")}" style="max-width:180px"><button class="btn sec" id="kIaProbar">Probar</button><span class="estado-t" id="kIaEstado"></span></div>`}
       <div class="ajuste">${ic("spark")}<div class="lbl">Ordenar las notas solas<small>Título, resumen, tareas, para quién y fecha al guardar o al transcribir; también lee las fotos</small></div><select id="kIaAuto"><option value="1">Sí</option><option value="0">No</option></select></div>
     </div></div>
     <div class="grupo"><h3>Transcripción de voz</h3><div class="caja">
@@ -4113,9 +4112,9 @@ function pintarAjustes(){
       <div id="qr" style="text-align:center"></div>
     </div></div>`}
     <div class="grupo"><h3>Cuenta</h3><div class="caja">
-      <div class="ajuste">${ic("user")}<div class="lbl">${esc(lsGet("chispa.usuario") || "Cuenta de Microsoft")}<small>Tus datos están en OneDrive, en Aplicaciones › Chispa</small></div><button class="btn sec" id="kSalir">${ic("salir")}Salir</button></div>
+      <div class="ajuste">${ic("user")}<div class="lbl">${esc(lsGet("chispa.usuario") || "Cuenta de Microsoft")}<small>Tus datos están en tu OneDrive, en la carpeta Aplicaciones</small></div><button class="btn sec" id="kSalir">${ic("salir")}Salir</button></div>
     </div></div>
-    <div class="cuenta" style="text-align:center;margin:20px 0">Chispa ${VERSION}${esApp() ? ` · app Android ${esc(infoApp?.version || "")}` : ""}</div>`;
+    <div class="cuenta" style="text-align:center;margin:20px 0">Visitario ${VERSION}${esApp() ? ` · app Android ${esc(infoApp?.version || "")}` : ""}</div>`;
   pintarTelefono(); pintarCorreo(); pintarCorreoWeb(); pintarCalendario(); pintarSuenos();
   $("#kResAct").value = c.resumenActivo === false ? "0" : "1"; $("#kIaAuto").value = c.ia?.auto === false ? "0" : "1";
   $("#kAmb").value = disp.ambito || "trabajo"; $("#kTrans").value = disp.trans === false ? "0" : "1"; $("#kUbi").value = disp.ubi ? "1" : "0"; $("#kTema").value = disp.tema || "auto";
@@ -4128,7 +4127,7 @@ function pintarAjustes(){
     Object.assign(config, {nocheDesde: $("#kDesde").value || "23:00", nocheHasta: $("#kHasta").value || "06:00", correoTrabajo: $("#kCT").value.trim(), correoPersonal: $("#kCP").value.trim(), resumenActivo: $("#kResAct").value === "1", resumenHora: $("#kResHora").value || "07:30",
       contactos: {cliente: lineas("#kCli"), proveedor: lineas("#kPro"), companero: lineas("#kCom")}});
     if ($("#kVozClave")) config.voz = {clave: $("#kVozClave").value.trim(), region: ($("#kVozRegion").value.trim() || "westeurope").toLowerCase()};
-    if ($("#kIaUrl")) config.ia = {endpoint: $("#kIaUrl").value.trim(), clave: $("#kIaClave").value.trim(), despliegue: $("#kIaDep").value.trim() || "chispa", auto: $("#kIaAuto").value === "1"};
+    if ($("#kIaUrl")) config.ia = {endpoint: $("#kIaUrl").value.trim(), clave: $("#kIaClave").value.trim(), despliegue: $("#kIaDep").value.trim() || "gpt-4.1-mini", auto: $("#kIaAuto").value === "1"};
     else if (config.ia) config.ia.auto = $("#kIaAuto").value === "1";
     guardarConfig(); aplicarTema(); setAmbito(disp.ambito); toast("Guardado", "check", 1200);
   };
@@ -4162,26 +4161,26 @@ function pintarAjustes(){
 }
 
 function pintarAyuda(){
-  $("#vAyuda").innerHTML = cab("Ayuda", `Chispa ${VERSION}`) + `
+  $("#vAyuda").innerHTML = cab("Ayuda", `Visitario ${VERSION}`) + `
   <h3>Anotar</h3><p>Escribe con el teclado en el recuadro de arriba (en el móvil, también con el botón del teclado), dicta con el botón amarillo o escribe a mano en la zona de puntos. Abajo a la izquierda tienes las herramientas: <b>deshacer</b> y <b>rehacer</b> trazo a trazo, el <b>pincel</b> (toca el punto de color para elegir grosor y color), la <b>goma</b> para borrar solo por donde pases y la <b>papelera</b> para borrar el dibujo entero (se puede deshacer). El botón ↺ de arriba descarta toda la nota y empieza de nuevo. En el PC, el botón del lápiz muestra u oculta la zona para escribir a mano. Pulsa <b>✓</b> para guardar. Con la cámara añades fotos. Al dictar se guarda <b>el audio original</b>: si la transcripción no cuadra, escúchalo al abrir la nota.</p>
-  <p>Mientras escribes, Chispa detecta <b>fechas</b> («mañana», «el jueves», «el 25 de noviembre», «en 3 días»), <b>nombres</b> de tus listas y el <b>tipo</b> de nota, y te los muestra en etiquetas amarillas. Si alguna no es correcta, quítala con la ✕.</p>
+  <p>Mientras escribes, Visitario detecta <b>fechas</b> («mañana», «el jueves», «el 25 de noviembre», «en 3 días»), <b>nombres</b> de tus listas y el <b>tipo</b> de nota, y te los muestra en etiquetas de color. Si alguna no es correcta, quítala con la ✕.</p>
   <h3>Título</h3><p>Cada nota tiene un título opcional, arriba del texto. Es lo que se ve destacado en «Hoy» y en «Notas». Si no le pones título, se usa la primera línea del texto.</p>
   <h3>El ancla</h3><p>Para cuando no puedes anotar: guarda la hora y, si quieres, una palabra. En «Hoy» aparece en «Por recordar» para que lo completes.</p>
   <h3>Hoy</h3><p>Tu agenda de acciones: lo que tienes por recordar, lo vencido, lo de hoy, las ideas de anoche y los próximos días. Toca el círculo para marcar algo como hecho; toca la nota para abrirla.</p>
   <h3>Notas</h3><p>Todo lo anotado, agrupado por día. Busca por texto, nombre o fecha y filtra con las etiquetas de arriba.</p>
   <h3>Editar una nota</h3><p>Al abrirla ves el dictado, escuchas el audio, amplías las fotos y cambias ámbito, tipo, para quién y fecha. Puedes quitar adjuntos o añadir fotos.</p>
   <h3>Sincronización</h3><p>Cada nota se guarda primero en el dispositivo y se sube sola a tu OneDrive. Sin cobertura se sube al volver. El indicador de la nube te dice si está todo guardado; si pide <b>volver a entrar</b>, tócalo.</p>
-  <h3>Modo noche</h3><p>En tu horario la pantalla del móvil se pone negra. Si abres Chispa y la cierras sin escribir, queda un ancla con la hora.</p>
+  <h3>Modo noche</h3><p>En tu horario la pantalla del móvil se pone negra. Si abres Visitario y lo cierras sin escribir, queda un ancla con la hora.</p>
   <h3>En el móvil</h3><p>Instálala desde Chrome con «Añadir a pantalla de inicio». Si mantienes pulsado el icono tienes los atajos <b>Grabar voz</b> y <b>Ancla rápida</b>.</p>
-  <h3>Tus datos</h3><p>En OneDrive, dentro de Aplicaciones › Chispa: Notas (un fichero legible por nota), Audios, Fotos, Configuracion y Papelera.</p>
+  <h3>Tus datos</h3><p>En tu OneDrive, dentro de la carpeta Aplicaciones (la carpeta de la app conserva su nombre original): Notas (un fichero legible por nota), Audios, Fotos, Configuracion y Papelera.</p>
   <h3>En iPhone</h3><p>Abre <b>jamormar.github.io/chispa</b> en Safari, entra con tu cuenta y pulsa <b>Compartir › Añadir a pantalla de inicio</b>. Funciona igual que en Android salvo el widget, el aviso al colgar y el modo coche, que son exclusivos de la app de Android.</p>
   <h3>Gestos</h3><p>En las listas, desliza una nota a la derecha para marcarla hecha y a la izquierda para archivarla (o sacarla del archivo). Para borrar, ábrela y pulsa la papelera. Siempre puedes <b>deshacer</b> desde el aviso que aparece arriba.</p>
-  <h3>Hora y avisos</h3><p>Si escribes «a las 5» o «a las 17:30», Chispa pone la hora. Mientras Chispa esté abierta o en segundo plano, te avisa a esa hora.</p>
+  <h3>Hora y avisos</h3><p>Si escribes «a las 5» o «a las 17:30», Visitario pone la hora. Mientras Visitario esté abierto o en segundo plano, te avisa a esa hora.</p>
   <h3>Transcripción</h3><p>Con Azure Speech configurado en Ajustes, las notas de voz se pasan a texto solas al guardarlas. El audio original siempre se conserva.</p>
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
-  <h3>Novedades</h3><p><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Chispa (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Chispa se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y archivadores propios. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Chispa»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
-  <b>0.3</b>: una sola Chispa para móvil y PC sincronizada con OneDrive.</p>`;
+  <h3>Novedades</h3><p><b>0.21</b>: nuevo nombre e imagen: ahora es <b>Visitario</b>, tu cuaderno de visitas. Tus notas y ajustes siguen igual.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Visitario (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Visitario se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y archivadores propios. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Visitario»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <b>0.3</b>: un solo Visitario para móvil y PC sincronizada con OneDrive.</p>`;
 }
 
 /* ================= Arranque ================= */

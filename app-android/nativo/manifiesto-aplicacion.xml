@@ -3,7 +3,7 @@
         <receiver
             android:name=".ChispaWidget"
             android:exported="true"
-            android:label="Chispa">
+            android:label="Visitario">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

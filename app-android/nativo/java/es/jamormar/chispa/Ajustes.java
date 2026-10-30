@@ -11,7 +11,7 @@ import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
 
-/** Ajustes del teléfono (aviso al colgar y modo coche) y los avisos propios de Chispa. */
+/** Ajustes del teléfono (aviso al colgar y modo coche) y los avisos propios de Visitario. */
 final class Ajustes {
 
     static final String LLAMADAS = "llamadas";
@@ -35,7 +35,7 @@ final class Ajustes {
         return prefs(ctx).getBoolean(EN_COCHE, false);
     }
 
-    /** Abre Chispa con una acción concreta (voz, anotar, llamada…). */
+    /** Abre Visitario con una acción concreta (voz, anotar, llamada…). */
     static PendingIntent abrir(Context ctx, int codigo, String accion, String quien, String duracion) {
         Intent i = new Intent(ctx, MainActivity.class);
         i.setAction(Intent.ACTION_VIEW);
@@ -65,7 +65,7 @@ final class Ajustes {
         String texto = (quien != null ? "Con " + quien : "Llamada terminada") + (duracion != null ? " · " + duracion : "");
         NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CANAL_LLAMADAS)
                 .setSmallIcon(R.drawable.ic_stat_chispa)
-                .setColor(0xFFF4B63E)
+                .setColor(0xFF8BA91A)
                 .setContentTitle("¿Algo que anotar de la llamada?")
                 .setContentText(texto)
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
@@ -86,7 +86,7 @@ final class Ajustes {
             String coche = prefs(ctx).getString(COCHE_NOMBRE, "");
             NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CANAL_COCHE)
                     .setSmallIcon(R.drawable.ic_stat_chispa)
-                    .setColor(0xFFF4B63E)
+                    .setColor(0xFF8BA91A)
                     .setContentTitle("Modo coche")
                     .setContentText("Toca para dictar una idea" + (coche.isEmpty() ? "" : " · " + coche))
                     .setOngoing(true)

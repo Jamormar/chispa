@@ -1,6 +1,6 @@
 {
   "appId": "es.jamormar.chispa",
-  "appName": "Chispa",
+  "appName": "Visitario",
   "webDir": "www",
   "server": {
     "url": "https://jamormar.github.io/chispa/",

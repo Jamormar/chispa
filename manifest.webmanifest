@@ -1,7 +1,7 @@
 {
-  "name": "Chispa",
-  "short_name": "Chispa",
-  "description": "Captura rápida de ideas, tareas y recordatorios",
+  "name": "Visitario",
+  "short_name": "Visitario",
+  "description": "Tu cuaderno de visitas: clientes, notas y pendientes",
   "lang": "es",
   "start_url": "./",
   "scope": "./",
