@@ -1,0 +1,193 @@
+// Servidor de Cuaderna (Azure Functions, Node 20+).
+// - Registra a cada persona que entra y deja que el administrador la autorice o la bloquee.
+// - Hace de puente con Azure OpenAI y Azure Speech: las claves viven aquí, nunca en el móvil.
+// - Recoge las sugerencias que se envían desde la app.
+// Ajustes de la Function App: ADMIN_EMAIL, AOAI_ENDPOINT, AOAI_CLAVE, AOAI_DESPLIEGUE,
+// SPEECH_CLAVE, SPEECH_REGION, ORIGENES (opcional), MAX_IA_DIA (opcional), MAX_VOZ_MIN_DIA (opcional).
+const { app } = require("@azure/functions");
+const { TableClient } = require("@azure/data-tables");
+const crypto = require("crypto");
+
+const CLIENT_ID = process.env.CLIENT_ID || "3dc57230-4cdb-4e60-bb83-2def7cd5441f";
+const EMISOR = "https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304b66dad/v2.0";   // cuentas personales de Microsoft
+const ADMIN = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+const ORIGENES = (process.env.ORIGENES || "https://jamormar.github.io").split(",").map(s => s.trim());
+const MAX_IA = +process.env.MAX_IA_DIA || 300;
+const MAX_VOZ = +process.env.MAX_VOZ_MIN_DIA || 60;
+const hayIA = () => !!(process.env.AOAI_ENDPOINT && process.env.AOAI_CLAVE);
+const hayVoz = () => !!(process.env.SPEECH_CLAVE && process.env.SPEECH_REGION);
+
+// ---------- tablas ----------
+const tablas = {};
+async function tabla(nombre){
+  if (!tablas[nombre]){
+    const t = TableClient.fromConnectionString(process.env.AzureWebJobsStorage, nombre);
+    try { await t.createTable(); } catch(e){}
+    tablas[nombre] = t;
+  }
+  return tablas[nombre];
+}
+async function leer(t, p, r){ try { return await t.getEntity(p, r); } catch(e){ if (e.statusCode === 404) return null; throw e; } }
+
+// ---------- identidad: el id_token de Microsoft que ya tiene la app ----------
+let jwks = null, jwksT = 0;
+async function clavesMS(forzar){
+  if (forzar || !jwks || Date.now() - jwksT > 6 * 3600e3){
+    const r = await fetch("https://login.microsoftonline.com/consumers/discovery/v2.0/keys");
+    jwks = (await r.json()).keys || []; jwksT = Date.now();
+  }
+  return jwks;
+}
+const b64 = s => Buffer.from(s.replace(/-/g, "+").replace(/_/g, "/"), "base64");
+class NoAutorizado extends Error {}
+async function quienEs(request){
+  const h = request.headers.get("authorization") || "";
+  const tok = h.startsWith("Bearer ") ? h.slice(7).trim() : "";
+  const partes = tok.split(".");
+  if (partes.length !== 3) throw new NoAutorizado("Falta la identificación");
+  const [h64, p64, f64] = partes;
+  const cab = JSON.parse(b64(h64).toString()), dat = JSON.parse(b64(p64).toString());
+  if (cab.alg !== "RS256") throw new NoAutorizado("Firma no válida");
+  let k = (await clavesMS()).find(x => x.kid === cab.kid);
+  if (!k) k = (await clavesMS(true)).find(x => x.kid === cab.kid);
+  if (!k) throw new NoAutorizado("Firma desconocida");
+  const ok = crypto.verify("RSA-SHA256", Buffer.from(h64 + "." + p64), crypto.createPublicKey({key: k, format: "jwk"}), b64(f64));
+  if (!ok) throw new NoAutorizado("Firma no válida");
+  if (dat.aud !== CLIENT_ID || dat.iss !== EMISOR) throw new NoAutorizado("Identificación de otra aplicación");
+  if (dat.exp * 1000 < Date.now() - 60e3) throw new NoAutorizado("Identificación caducada");
+  return { id: dat.oid || dat.sub, email: String(dat.email || dat.preferred_username || "").toLowerCase(), nombre: dat.name || "" };
+}
+
+// ---------- utilidades HTTP ----------
+function cors(request){
+  const o = request.headers.get("origin") || "";
+  const h = {"Access-Control-Allow-Headers": "Authorization, Content-Type", "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Max-Age": "86400", "Vary": "Origin"};
+  if (ORIGENES.includes(o) || /^https?:\/\/localhost(:\d+)?$/.test(o)) h["Access-Control-Allow-Origin"] = o;
+  return h;
+}
+const json = (request, cuerpo, status = 200, extra = {}) => ({status, headers: {...cors(request), "Content-Type": "application/json", ...extra}, body: JSON.stringify(cuerpo)});
+const hoy = () => new Date().toISOString().slice(0, 10);
+
+async function usuarioDe(yo){
+  const t = await tabla("usuarios");
+  let u = await leer(t, "u", yo.id);
+  const ahora = new Date().toISOString();
+  if (!u){
+    u = {partitionKey: "u", rowKey: yo.id, email: yo.email, nombre: yo.nombre, estado: yo.email === ADMIN ? "autorizado" : "pendiente", creado: ahora, ultimo: ahora, iaTotal: 0, vozSegTotal: 0};
+    await t.createEntity(u);
+  } else if (Date.now() - new Date(u.ultimo).getTime() > 10 * 60e3 || u.email !== yo.email || (yo.nombre && u.nombre !== yo.nombre)){
+    u.ultimo = ahora; u.email = yo.email; if (yo.nombre) u.nombre = yo.nombre;
+    if (yo.email === ADMIN) u.estado = "autorizado";
+    await t.updateEntity(u, "Merge");
+  }
+  return u;
+}
+async function contar(u, campo, cantidad){
+  const t = await tabla("usuarios");
+  const dia = hoy(); const c = {partitionKey: "u", rowKey: u.rowKey};
+  if (u.dia !== dia){ u.dia = dia; u.iaHoy = 0; u.vozSegHoy = 0; }
+  if (campo === "ia"){ u.iaHoy = (u.iaHoy || 0) + cantidad; u.iaTotal = (u.iaTotal || 0) + cantidad; Object.assign(c, {dia, iaHoy: u.iaHoy, iaTotal: u.iaTotal, vozSegHoy: u.vozSegHoy || 0}); }
+  else { u.vozSegHoy = (u.vozSegHoy || 0) + cantidad; u.vozSegTotal = (u.vozSegTotal || 0) + cantidad; Object.assign(c, {dia, vozSegHoy: u.vozSegHoy, vozSegTotal: u.vozSegTotal, iaHoy: u.iaHoy || 0}); }
+  try { await t.updateEntity(c, "Merge"); } catch(e){}
+}
+
+// ---------- rutas ----------
+const rutas = {
+  async "POST registro"(request, yo){
+    const u = await usuarioDe(yo);
+    return {estado: u.estado, admin: yo.email === ADMIN && !!ADMIN, ia: hayIA(), voz: hayVoz()};
+  },
+
+  async "POST ia"(request, yo){
+    const u = await usuarioDe(yo);
+    if (u.estado !== "autorizado") return [{error: "Tu acceso aún no está autorizado"}, 403];
+    if (!hayIA()) return [{error: "La IA no está configurada en el servidor"}, 503];
+    if (u.dia === hoy() && (u.iaHoy || 0) >= MAX_IA) return [{error: "Has llegado al límite de IA de hoy"}, 429];
+    const e = await request.json();
+    let base = process.env.AOAI_ENDPOINT.trim(); try { base = new URL(base).origin; } catch(err){}
+    const url = `${base}/openai/deployments/${encodeURIComponent(process.env.AOAI_DESPLIEGUE || "gpt-4.1-mini")}/chat/completions?api-version=2024-10-21`;
+    const cuerpo = {messages: e.messages, temperature: e.temperature ?? 0.2, max_tokens: Math.min(+e.max_tokens || 900, 4000), ...(e.response_format ? {response_format: e.response_format} : {})};
+    const r = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json", "api-key": process.env.AOAI_CLAVE.trim()}, body: JSON.stringify(cuerpo)});
+    const texto = await r.text();
+    if (r.ok) await contar(u, "ia", 1);
+    const extra = {}; for (const h of ["retry-after", "retry-after-ms"]) if (r.headers.get(h)) extra[h] = r.headers.get(h);
+    return {crudo: texto, status: r.status, extra};
+  },
+
+  async "POST voz"(request, yo){
+    const u = await usuarioDe(yo);
+    if (u.estado !== "autorizado") return [{error: "Tu acceso aún no está autorizado"}, 403];
+    if (!hayVoz()) return [{error: "La voz no está configurada en el servidor"}, 503];
+    if (u.dia === hoy() && (u.vozSegHoy || 0) >= MAX_VOZ * 60) return [{error: "Has llegado al límite de voz de hoy"}, 429];
+    const audio = Buffer.from(await request.arrayBuffer());
+    const url = `https://${process.env.SPEECH_REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=es-ES&format=simple`;
+    const r = await fetch(url, {method: "POST", headers: {"Ocp-Apim-Subscription-Key": process.env.SPEECH_CLAVE, "Content-Type": "audio/wav; codecs=audio/pcm; samplerate=16000", "Accept": "application/json"}, body: audio});
+    const texto = await r.text();
+    if (r.ok) await contar(u, "voz", Math.round(Math.max(0, audio.length - 44) / 32000));
+    return {crudo: texto, status: r.status};
+  },
+
+  async "POST sugerencia"(request, yo){
+    const e = await request.json();
+    const texto = String(e.texto || "").trim().slice(0, 4000);
+    if (!texto) return [{error: "Escribe tu sugerencia"}, 400];
+    const t = await tabla("sugerencias");
+    const id = new Date().toISOString().replace(/[-:.TZ]/g, "") + crypto.randomBytes(3).toString("hex");
+    await t.createEntity({partitionKey: "s", rowKey: id, email: yo.email, nombre: yo.nombre, tipo: String(e.tipo || "idea").slice(0, 20), texto, version: String(e.version || "").slice(0, 40), dispositivo: String(e.dispositivo || "").slice(0, 80), fecha: new Date().toISOString(), leida: false});
+    return {ok: true};
+  },
+
+  async "GET admin/usuarios"(request, yo){
+    soloAdmin(yo);
+    const t = await tabla("usuarios"), lista = [];
+    for await (const u of t.listEntities()) lista.push({id: u.rowKey, email: u.email, nombre: u.nombre, estado: u.estado, creado: u.creado, ultimo: u.ultimo, iaHoy: u.dia === hoy() ? u.iaHoy || 0 : 0, iaTotal: u.iaTotal || 0, vozMinTotal: Math.round((u.vozSegTotal || 0) / 60)});
+    lista.sort((a, b) => (a.estado === "pendiente" ? 0 : 1) - (b.estado === "pendiente" ? 0 : 1) || String(b.creado).localeCompare(a.creado));
+    return {usuarios: lista};
+  },
+  async "POST admin/usuario"(request, yo){
+    soloAdmin(yo);
+    const e = await request.json();
+    if (!["autorizado", "bloqueado", "pendiente"].includes(e.estado)) return [{error: "Estado no válido"}, 400];
+    const t = await tabla("usuarios"); const u = await leer(t, "u", String(e.id));
+    if (!u) return [{error: "No existe"}, 404];
+    if (u.email === ADMIN) return [{error: "No puedes cambiar tu propio acceso"}, 400];
+    await t.updateEntity({partitionKey: "u", rowKey: u.rowKey, estado: e.estado, cambiado: new Date().toISOString()}, "Merge");
+    return {ok: true};
+  },
+  async "GET admin/sugerencias"(request, yo){
+    soloAdmin(yo);
+    const t = await tabla("sugerencias"), lista = [];
+    for await (const s of t.listEntities()) lista.push({id: s.rowKey, email: s.email, nombre: s.nombre, tipo: s.tipo, texto: s.texto, version: s.version, dispositivo: s.dispositivo, fecha: s.fecha, leida: !!s.leida});
+    lista.sort((a, b) => b.id.localeCompare(a.id));
+    return {sugerencias: lista.slice(0, 300)};
+  },
+  async "POST admin/sugerencia"(request, yo){
+    soloAdmin(yo);
+    const e = await request.json(); const t = await tabla("sugerencias");
+    if (e.borrar) await t.deleteEntity("s", String(e.id)); else await t.updateEntity({partitionKey: "s", rowKey: String(e.id), leida: !!e.leida}, "Merge");
+    return {ok: true};
+  }
+};
+function soloAdmin(yo){ if (!ADMIN || yo.email !== ADMIN) throw new NoAutorizado("Solo el administrador"); }
+
+app.http("api", {
+  methods: ["GET", "POST", "OPTIONS"], authLevel: "anonymous", route: "{*ruta}",
+  handler: async (request, context) => {
+    if (request.method === "OPTIONS") return {status: 204, headers: cors(request)};
+    const ruta = String(request.params.ruta || "").replace(/^\/+|\/+$/g, "");
+    if (request.method === "GET" && ruta === "salud") return json(request, {ok: true, ia: hayIA(), voz: hayVoz(), admin: !!ADMIN});
+    const f = rutas[`${request.method} ${ruta}`];
+    if (!f) return json(request, {error: "No existe"}, 404);
+    try {
+      const yo = await quienEs(request);
+      const r = await f(request, yo);
+      if (Array.isArray(r)) return json(request, r[0], r[1]);
+      if (r && r.crudo !== undefined) return {status: r.status, headers: {...cors(request), "Content-Type": "application/json", ...(r.extra || {})}, body: r.crudo};
+      return json(request, r);
+    } catch(e){
+      if (e instanceof NoAutorizado) return json(request, {error: e.message}, 401);
+      context.error(e);
+      return json(request, {error: "Error del servidor"}, 500);
+    }
+  }
+});

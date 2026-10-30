@@ -52,6 +52,10 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 /* ===== Entrada ===== */
 #login{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
 #login .marca{width:96px;height:96px;border-radius:28px;box-shadow:0 18px 50px -12px rgba(126,33,29,.4)}
+#espera{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}#espera .marca{width:96px;height:96px;border-radius:28px}#espera h1{font-family:var(--display);font-weight:700;font-size:42px;margin:20px 0 6px}#espera p{color:var(--muted);max-width:360px;margin:6px 0}
+.adm-u{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--line)}.adm-u:last-child{border:0}.adm-u .q{flex:1 1 100%;min-width:0}.adm-u .q b{display:block}.adm-u .q small{color:var(--muted);display:block}
+.adm-est{font-size:12px;font-weight:600;border-radius:8px;padding:3px 8px;background:var(--raise)}.adm-est.pendiente{background:var(--spark-soft);color:var(--spark-text)}.adm-est.autorizado{background:var(--home-soft);color:var(--home)}.adm-est.bloqueado{background:var(--danger-soft);color:var(--danger)}
+.adm-s{padding:12px 4px;border-bottom:1px solid var(--line)}.adm-s:last-child{border:0}.adm-s.leida{opacity:.6}.adm-s p{margin:6px 0;white-space:pre-wrap}.adm-s small{color:var(--muted)}
 #login h1{font-family:var(--display);font-weight:700;font-size:46px;letter-spacing:-.02em;margin:22px 0 4px}
 #login p{color:var(--muted);max-width:340px;margin:6px 0}
 .btn-ms{display:inline-flex;align-items:center;gap:12px;margin-top:26px;background:var(--ink);color:var(--on-ink);padding:14px 22px;border-radius:16px;font-weight:600}
@@ -510,7 +514,7 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .persona-c small{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .persona-c.ver-todas{border-style:dashed;background:transparent}.persona-c.ver-todas>svg{width:22px;height:22px;color:var(--muted);flex:none}
 .avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:13.5px;flex:none;background:var(--raise);color:var(--text)}
-.av-cliente{background:color-mix(in srgb,var(--cw) 18%,transparent);color:var(--cw)}.av-proveedor{background:color-mix(in srgb,var(--cp) 18%,transparent);color:var(--cp)}
+.av-persona{background:color-mix(in srgb,var(--home) 18%,transparent);color:var(--home)}.av-asunto{background:color-mix(in srgb,var(--work) 18%,transparent);color:var(--work)}.av-cliente{background:color-mix(in srgb,var(--cw) 18%,transparent);color:var(--cw)}.av-proveedor{background:color-mix(in srgb,var(--cp) 18%,transparent);color:var(--cp)}
 .av-companero{background:var(--spark-soft);color:var(--spark-text)}
 .bz-tit .avatar{width:34px;height:34px}
 .ficha-cab{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;margin:4px 0 6px}
@@ -666,6 +670,17 @@ html.lz-on,html.lz-on body{overflow:hidden}
   <div class="firma-login"><img src="autor-cara.jpg" alt="">Una creación de José Antonio Morián</div>
 </section>
 
+<section id="espera" class="oculto">
+  <img class="marca" src="icon-512.png" alt="">
+  <h1>Cuaderna</h1>
+  <p id="esperaMsg">Tu solicitud de acceso está enviada.</p>
+  <p id="esperaQuien" style="font-size:14px"></p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:22px">
+    <button class="btn-ms" id="esperaOtra" style="margin:0">Comprobar de nuevo</button>
+    <button class="btn sec" id="esperaMsjBtn">Escribir un mensaje</button>
+    <button class="btn sec" id="esperaSalir">Salir</button></div>
+</section>
+
 <div id="app" class="oculto">
   <aside id="side">
     <div class="logo"><img src="icon-192.png" alt="">Cuaderna</div>
@@ -788,7 +803,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
         <div class="prop"><span data-i="sun"></span><span class="lbl">Ámbito</span><div class="val"><div class="segm" id="eAmbito"></div></div></div>
         <div class="prop"><span data-i="tag"></span><span class="lbl">Tipo</span><div class="val"><div class="segm" id="eTipo"></div></div></div>
         <div class="prop"><span data-i="user"></span><span class="lbl">Para quién</span><div class="val">
-          <select id="eCat"><option value="">Sin indicar</option><option value="cliente">Cliente</option><option value="proveedor">Proveedor</option><option value="companero">Compañero</option><option value="personal">Personal</option></select>
+          <select id="eCat"><option value="">Sin indicar</option></select>
           <input type="text" id="eNombre" placeholder="Nombre" autocomplete="off" autocapitalize="words" enterkeyhint="done"><button class="opc" id="eVerFicha" type="button">Ver ficha</button><button class="opc oculto" id="eAgenda" type="button"><span data-i="user"></span>Agenda</button><div class="sugs" id="eSugs" role="listbox" aria-label="Contactos"></div></div></div>
         <div class="prop"><span data-i="carpeta"></span><span class="lbl">Archivador</span><div class="val">
           <select id="eCarpeta" aria-label="Archivador"></select><button class="opc" id="eArchivar" type="button"></button></div></div>
@@ -816,6 +831,15 @@ html.lz-on,html.lz-on body{overflow:hidden}
   <div class="pq-campo"><textarea id="pqIn" class="crece" rows="1" placeholder="¿Qué quedé con Pérez la semana pasada?" enterkeyhint="send"></textarea><button class="btn" id="pqOk">Preguntar</button></div>
   <div class="pq-ideas" id="pqIdeas"></div>
   <div id="pqRes"></div>
+</div>
+
+<div class="hoja mini enviar" id="hSugerencia" role="dialog" aria-label="Enviar una sugerencia">
+  <div class="asa" id="sgCerrar"></div>
+  <h3><span data-i="idea"></span>Sugerencias y mejoras</h3>
+  <p class="as-ayuda">¿Qué echas en falta, qué cambiarías o qué no funciona? Le llega directamente a quien hace Cuaderna.</p>
+  <div class="segm" id="sgTipo"><button class="opc on" data-t="idea">Idea</button><button class="opc" data-t="mejora">Mejora</button><button class="opc" data-t="fallo">Algo falla</button><button class="opc" data-t="otro">Otro</button></div>
+  <textarea id="sgTexto" class="crece" rows="4" placeholder="Cuéntalo con tus palabras"></textarea>
+  <div class="hpie"><div class="esp"></div><button class="btn" id="sgEnviar"><span data-i="mail"></span>Enviar</button></div>
 </div>
 
 <div class="hoja mini enviar" id="hEnviar" role="dialog" aria-label="Compartir la nota">
@@ -938,7 +962,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.22.2";
+const VERSION = "0.23";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M12 3.5c.7 4.3 2.7 6.3 7 7-4.3.7-6.3 2.7-7 7-.7-4.3-2.7-6.3-7-7 4.3-.7 6.3-2.7 7-7z"/><path d="M19 3v3M17.5 4.5h3"/>',
@@ -1015,6 +1039,8 @@ const ic = (n, cls = "") => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidd
 const CLIENT_ID = "3dc57230-4cdb-4e60-bb83-2def7cd5441f";
 const AUTH = "https://login.microsoftonline.com/consumers/oauth2/v2.0";
 const SCOPES = "openid profile offline_access Files.ReadWrite.AppFolder";
+// Servidor de Cuaderna (Azure Functions): acceso autorizado, IA y voz sin repartir claves, y sugerencias. Vacío = sin servidor.
+const API = "";
 const REDIRECT = location.origin + location.pathname.replace(/index\.html$/, "");
 const GRAPH = "https://graph.microsoft.com/v1.0/me/drive/special/approot";
 const DRIVE = "https://graph.microsoft.com/v1.0/me/drive";
@@ -1084,6 +1110,7 @@ async function pedirToken(datos){
   if (!r.ok) throw Object.assign(new Error(j.error_description || j.error || "Error de inicio de sesión"), {codigo: j.error});
   token = { access: j.access_token, refresh: j.refresh_token || token?.refresh, exp: Date.now() + (j.expires_in - 120) * 1000 };
   lsSet("chispa.token", token);
+  if (j.id_token) lsSet("chispa.idt", j.id_token);
   try { const idt = JSON.parse(atob(j.id_token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); if (idt.preferred_username) lsSet("chispa.usuario", idt.preferred_username); } catch(e){}
   necesitaLogin = false;
   return token.access;
@@ -1193,7 +1220,7 @@ async function aPapelera(ruta){
 
 /* ================= Estado ================= */
 let notas = [];
-let config = { nocheDesde: "23:00", nocheHasta: "06:00", correoTrabajo: "", correoPersonal: "", contactos: {cliente: [], proveedor: [], companero: []} };
+let config = { nocheDesde: "23:00", nocheHasta: "06:00", correoTrabajo: "", correoPersonal: "", contactos: {persona: [], asunto: [], cliente: [], proveedor: [], companero: []} };
 let disp = { terminal: "", ambito: "trabajo", trans: true, ubi: false };
 const esMovil = () => matchMedia("(max-width:899px)").matches;
 
@@ -1385,7 +1412,7 @@ function sugerir(texto, base = new Date()){
   s.fecha = detectarFecha(texto, base);
   s.hora = detectarHora(texto);
   if (s.hora && !s.fecha){ const ahora = `${pad(base.getHours())}:${pad(base.getMinutes())}`; s.fecha = s.hora > ahora ? isoDia(base) : (() => { const d = new Date(base); d.setDate(d.getDate() + 1); return isoDia(d); })(); }
-  for (const cat of ["cliente", "proveedor", "companero"]){
+  for (const cat of LISTAS){
     for (const nom of config.contactos?.[cat] || []){ const nn = norm(nom).trim(); if (nn.length > 2 && t.includes(nn)){ s.cat = cat; s.nombre = nom; break; } }
     if (s.cat) break;
   }
@@ -1395,7 +1422,18 @@ function sugerir(texto, base = new Date()){
   return s;
 }
 const TIPOS = {nota: ["Nota", "nota"], tarea: ["Tarea", "tarea"], idea: ["Idea", "idea"], recordatorio: ["Recordatorio", "campana"]};
-const CAT = {cliente: "Cliente", proveedor: "Proveedor", companero: "Compañero", personal: "Personal"};
+const CATS = [["persona", "Persona", "Personas"], ["asunto", "Asunto", "Asuntos"], ["cliente", "Cliente", "Clientes"], ["proveedor", "Proveedor", "Proveedores"], ["companero", "Compañero", "Compañeros"], ["personal", "Personal", "Personal"]];
+const CAT = Object.fromEntries(CATS.map(c => [c[0], c[1]]));
+const LISTAS = ["persona", "asunto", "cliente", "proveedor", "companero"];   // categorías con lista de nombres
+// Persona y Asunto siempre; las antiguas (cliente, proveedor…) solo si ya se usan
+function catsVisibles(){
+  const usadas = new Set(notas.map(n => n.para?.categoria).filter(Boolean));
+  return CATS.filter(([k]) => k === "persona" || k === "asunto" || (config.contactos?.[k] || []).length || usadas.has(k));
+}
+function pintarOpcionesCat(actual){
+  const l = catsVisibles(); if (actual && !l.some(c => c[0] === actual) && CAT[actual]) l.push(CATS.find(c => c[0] === actual));
+  $("#eCat").innerHTML = `<option value="">Sin indicar</option>` + l.map(([k, t]) => `<option value="${k}">${t}</option>`).join("");
+}
 
 /* ================= Anotar ================= */
 let borrador = null, tocado = false, anclaAbierta = null, ignorar = {};
@@ -2461,7 +2499,7 @@ function abrirEdicion(n, original){
   $("#eTitulo").value = n.ancla && !n.titulo ? "" : titulo; requestAnimationFrame(() => crecerTitulo($("#eTitulo")));
   const conLista = eItems.length > 0;
   $("#eTexto").placeholder = conLista ? "Notas sobre la lista (opcional)" : "Escribe la nota"; $("#eTexto").classList.toggle("corto", conLista && !$("#eTexto").value); $("#eTexto").rows = conLista && !$("#eTexto").value ? 1 : 3;
-  $("#eCat").value = n.para?.categoria || ""; $("#eNombre").value = n.para?.nombre || ""; pintarVerFicha(); $("#eFecha").value = n.fecha || ""; $("#eHora").value = n.hora || "";
+  pintarOpcionesCat(n.para?.categoria); $("#eCat").value = n.para?.categoria || ""; $("#eNombre").value = n.para?.nombre || ""; pintarVerFicha(); $("#eFecha").value = n.fecha || ""; $("#eHora").value = n.hora || "";
   $("#eTransBtn").innerHTML = n.audio && !n.transcripcion && voz() ? `<button class="btn sec" id="eTranscribir" style="margin-top:10px">${ic("mic")}${n._transcribir ? "Transcribiendo…" : "Transcribir el audio"}</button>` : "";
   if ($("#eTranscribir")) $("#eTranscribir").onclick = async () => { $("#eTranscribir").textContent = "Transcribiendo…"; const ok = await transcribirNota(n, true); if (ok){ cerrarHojas(); abrirEdicion(n); } else $("#eTranscribir").textContent = "No se pudo. Reintentar"; };
   $("#eInfo").innerHTML = `<span>${ic(n.ancla ? "ancla" : n.nocturna ? "luna" : "spark")}${capital(fechaLarga(n.creada))}, ${hora(n.creada)}</span>`
@@ -2496,7 +2534,7 @@ function abrirEdicion(n, original){
 // Sugerencias de contactos bajo el campo (sin tapar el teclado ni el campo)
 function contactosConocidos(){
   const m = new Map(), c = config.contactos || {};
-  for (const cat of ["cliente","proveedor","companero"]) for (const x of c[cat] || []) m.set(norm(x), {nombre: x, cat});
+  for (const cat of LISTAS) for (const x of c[cat] || []) m.set(norm(x), {nombre: x, cat});
   for (const n of notas) if (n.para?.nombre && !m.has(norm(n.para.nombre))) m.set(norm(n.para.nombre), {nombre: n.para.nombre, cat: n.para.categoria || ""});
   return [...m.values()];
 }
@@ -2630,7 +2668,92 @@ async function compartirPdfEditor(){
   } catch(e){ console.warn(e); toast(e.message || "No se pudo preparar el PDF", "alerta", 5000); }
   finally { b.disabled = false; b.classList.remove("cargando"); }
 };
-/* ================= Asignar notas a compañeros ================= */
+/* ================= Servidor de Cuaderna: acceso, IA y voz sin repartir claves, sugerencias ================= */
+const apiBase = () => (lsGet("chispa.api") || API || "").replace(/\/+$/, "");
+let acceso = lsGet("chispa.acceso") || null;      // {estado, admin, ia, voz, t}
+const expDe = t => { try { return JSON.parse(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).exp * 1000; } catch(e){ return 0; } };
+async function idToken(){
+  let t = lsGet("chispa.idt");
+  if ((!t || expDe(t) < Date.now() + 120e3) && token?.refresh){ try { await pedirToken({grant_type: "refresh_token", refresh_token: token.refresh}); } catch(e){} t = lsGet("chispa.idt"); }
+  if (!t) throw new Error("Vuelve a entrar para identificarte");
+  return t;
+}
+async function api(ruta, {metodo = "POST", cuerpo, tipo = "application/json", crudo = false} = {}){
+  const r = await fetch(`${apiBase()}/${ruta}`, {method: metodo, headers: {"Authorization": "Bearer " + await idToken(), ...(cuerpo !== undefined ? {"Content-Type": tipo} : {})},
+    body: cuerpo === undefined ? undefined : tipo === "application/json" ? JSON.stringify(cuerpo) : cuerpo});
+  if (crudo) return r;
+  let j = {}; try { j = await r.json(); } catch(e){}
+  if (!r.ok) throw Object.assign(new Error(j.error || `Servidor (${r.status})`), {status: r.status});
+  return j;
+}
+// false solo si el servidor ha dicho expresamente que esta cuenta está pendiente o bloqueada
+async function comprobarAcceso(){
+  if (!apiBase()) return true;
+  try { acceso = {...await api("registro", {cuerpo: {version: VERSION}}), t: Date.now()}; lsSet("chispa.acceso", acceso); } catch(e){ console.warn(e); }
+  return !acceso || acceso.estado === "autorizado";
+}
+function mostrarEspera(){
+  $("#app").classList.add("oculto"); $("#espera").classList.remove("oculto");
+  $("#esperaMsg").textContent = acceso?.estado === "bloqueado" ? "Esta cuenta no tiene acceso a Cuaderna." : "Tu solicitud de acceso está enviada. En cuanto te autoricen, vuelve a abrir Cuaderna.";
+  $("#esperaQuien").textContent = lsGet("chispa.usuario") || "";
+  $("#esperaOtra").onclick = async () => { $("#esperaOtra").textContent = "Comprobando…"; if (await comprobarAcceso()) location.reload(); else { $("#esperaOtra").textContent = "Comprobar de nuevo"; toast("Todavía no está autorizada", "alerta", 3000); } };
+  $("#esperaMsjBtn").onclick = abrirSugerencia;
+  $("#esperaSalir").onclick = () => { ["chispa.token", "chispa.idt", "chispa.acceso"].forEach(k => localStorage.removeItem(k)); location.href = `${AUTH}/logout?post_logout_redirect_uri=${encodeURIComponent(REDIRECT)}`; };
+}
+// ---------- sugerencias ----------
+let sgTipo = "idea";
+function abrirSugerencia(){ $("#sgTexto").value = lsGet("chispa.sugBorrador") || ""; abrirHoja("#hSugerencia"); setTimeout(() => $("#sgTexto").focus(), 250); }
+$("#sgCerrar").onclick = () => { lsSet("chispa.sugBorrador", $("#sgTexto").value); cerrarHojas(); };
+$("#sgTipo").addEventListener("click", e => { const b = e.target.closest("[data-t]"); if (!b) return; sgTipo = b.dataset.t; $("#sgTipo").querySelectorAll(".opc").forEach(x => x.classList.toggle("on", x === b)); });
+async function enviarSugerencia(s){ await api("sugerencia", {cuerpo: s}); }
+$("#sgEnviar").onclick = async () => {
+  const texto = $("#sgTexto").value.trim(); if (!texto){ toast("Escribe tu sugerencia", "alerta"); return; }
+  const s = {tipo: sgTipo, texto, version: VERSION + (esApp() ? ` · app ${infoApp?.version || ""}` : ""), dispositivo: (disp.terminal || "") + " · " + navigator.userAgent.slice(0, 60)};
+  if (!apiBase()){ toast("Las sugerencias aún no están activadas", "alerta", 4000); return; }
+  const b = $("#sgEnviar"); b.disabled = true;
+  try { await enviarSugerencia(s); toast("¡Gracias! Sugerencia enviada", "check", 3500); }
+  catch(e){ lsSet("chispa.sugPend", [...(lsGet("chispa.sugPend") || []), s]); toast("Sin conexión: se enviará más tarde", "nube", 4000); }
+  finally { b.disabled = false; }
+  localStorage.removeItem("chispa.sugBorrador"); $("#sgTexto").value = ""; cerrarHojas();
+};
+async function enviarSugerenciasPendientes(){
+  const l = lsGet("chispa.sugPend") || []; if (!l.length || !apiBase()) return;
+  const quedan = []; for (const s of l){ try { await enviarSugerencia(s); } catch(e){ quedan.push(s); } }
+  lsSet("chispa.sugPend", quedan);
+}
+// ---------- administración (solo el administrador) ----------
+async function pintarAdmin(){
+  const caja = $("#kAdmin"); if (!caja) return;
+  caja.innerHTML = `<div class="ajuste"><div class="lbl">Cargando…</div></div>`;
+  try {
+    const [{usuarios}, {sugerencias}] = await Promise.all([api("admin/usuarios", {metodo: "GET"}), api("admin/sugerencias", {metodo: "GET"})]);
+    const fecha = d => d ? new Date(d).toLocaleDateString("es-ES", {day: "numeric", month: "short"}) : "";
+    const btn = (u, est, t) => u.estado === est ? "" : `<button class="btn ${est === "bloqueado" ? "sec" : ""}" data-adm="${esc(u.id)}" data-est="${est}">${t}</button>`;
+    caja.innerHTML = `<div style="padding:4px 14px 10px"><h4 style="margin:10px 0 2px">Personas (${usuarios.length})</h4>${usuarios.length ? usuarios.map(u => `<div class="adm-u"><div class="q"><b>${esc(u.nombre || u.email)}</b><small>${esc(u.email)} · alta ${fecha(u.creado)} · último uso ${fecha(u.ultimo)} · IA hoy ${u.iaHoy} (total ${u.iaTotal}) · voz ${u.vozMinTotal} min</small></div><span class="adm-est ${u.estado}">${u.estado}</span>${btn(u, "autorizado", "Autorizar")}${btn(u, "bloqueado", "Bloquear")}</div>`).join("") : `<p style="color:var(--muted)">Aún no ha entrado nadie más.</p>`}
+      <h4 style="margin:18px 0 2px">Sugerencias (${sugerencias.filter(x => !x.leida).length} sin leer)</h4>${sugerencias.length ? sugerencias.map(x => `<div class="adm-s ${x.leida ? "leida" : ""}"><small><b>${esc(x.tipo)}</b> · ${esc(x.nombre || x.email)} · ${fecha(x.fecha)} · ${esc(x.version)}</small><p>${esc(x.texto)}</p><button class="enl" data-sug="${esc(x.id)}" data-leida="${x.leida ? 0 : 1}">${x.leida ? "Marcar sin leer" : "Marcar leída"}</button> <button class="enl" data-sugb="${esc(x.id)}">Borrar</button></div>`).join("") : `<p style="color:var(--muted)">Todavía no hay sugerencias.</p>`}</div>`;
+  } catch(e){ caja.innerHTML = `<div class="ajuste"><div class="lbl">No se pudo cargar<small>${esc(e.message)}</small></div><button class="btn sec" id="kAdmOtra">Reintentar</button></div>`; $("#kAdmOtra").onclick = pintarAdmin; }
+}
+document.addEventListener("click", async e => {
+  const a = e.target.closest("[data-adm]"), sg = e.target.closest("[data-sug]"), sb = e.target.closest("[data-sugb]");
+  if (!a && !sg && !sb) return;
+  try {
+    if (a) await api("admin/usuario", {cuerpo: {id: a.dataset.adm, estado: a.dataset.est}});
+    if (sg) await api("admin/sugerencia", {cuerpo: {id: sg.dataset.sug, leida: sg.dataset.leida === "1"}});
+    if (sb){ if (!confirm("¿Borrar esta sugerencia?")) return; await api("admin/sugerencia", {cuerpo: {id: sb.dataset.sugb, borrar: true}}); }
+    pintarAdmin(); pintarBadges?.();
+  } catch(err){ toast(err.message, "alerta", 4000); }
+});
+async function avisarAdmin(){
+  if (!acceso?.admin) return;
+  try {
+    const [{usuarios}, {sugerencias}] = await Promise.all([api("admin/usuarios", {metodo: "GET"}), api("admin/sugerencias", {metodo: "GET"})]);
+    const p = usuarios.filter(u => u.estado === "pendiente").length, s = sugerencias.filter(x => !x.leida).length;
+    const partes = [p ? `${p} ${p === 1 ? "persona espera" : "personas esperan"} tu autorización` : "", s ? `${s} ${s === 1 ? "sugerencia nueva" : "sugerencias nuevas"}` : ""].filter(Boolean);
+    if (partes.length) toast(capital(partes.join(" y ")), "user", 8000, () => { ver("ajustes"); setTimeout(() => $("#kAdmin")?.scrollIntoView({block: "start"}), 400); }, "Ver");
+  } catch(e){}
+}
+
+/* ================= Pasar notas a otras personas ================= */
 // El paquete viaja dentro del enlace del correo (comprimido); no hace falta ningún servidor.
 const b64aBytes = t => Uint8Array.from(atob(t.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((t.length + 3) % 4)), c => c.charCodeAt(0));
 async function empaquetar(obj){
@@ -2921,7 +3044,7 @@ async function guardarEdicion(){
   for (const r of Object.keys(lienzos)) if (!n.fotos.includes(r)) delete lienzos[r];
   if (Object.keys(lienzos).length) n.lienzos = lienzos; else delete n.lienzos;
   const cat = n.para.categoria;
-  if (n.para.nombre && ["cliente","proveedor","companero"].includes(cat)){
+  if (n.para.nombre && LISTAS.includes(cat)){
     config.contactos[cat] = config.contactos[cat] || [];
     if (!config.contactos[cat].some(x => norm(x) === norm(n.para.nombre))){ config.contactos[cat].push(n.para.nombre); guardarConfig(); }
   }
@@ -2937,7 +3060,8 @@ async function borrarNota(n){
 function guardarConfig(){ lsSet("chispa.config", config); lsSet("chispa.cfgPend", true); pintarEstado(); sincronizar(true); }
 
 /* ================= Transcripción con Azure Speech ================= */
-const voz = () => !!(config.voz?.clave && config.voz?.region);
+const vozPropia = () => !!(config.voz?.clave && config.voz?.region);
+const voz = () => vozPropia() || !!(apiBase() && acceso?.estado === "autorizado" && acceso?.voz);
 async function aWav16k(blob){
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
   let buf; try { buf = await ctx.decodeAudioData(await blob.arrayBuffer()); } finally { try { ctx.close(); } catch(e){} }
@@ -2957,6 +3081,11 @@ function wavPCM(muestras, sr){
   return new Blob([b], {type: "audio/wav"});
 }
 async function reconocer(wav){
+  if (!vozPropia()){
+    const r = await api("voz", {cuerpo: wav, tipo: "audio/wav", crudo: true});
+    if (!r.ok){ let m = ""; try { m = (await r.json()).error || ""; } catch(e){} throw new Error(m || `Voz (${r.status})`); }
+    const j = await r.json(); return j.RecognitionStatus === "Success" ? (j.DisplayText || "") : "";
+  }
   const url = `https://${config.voz.region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=es-ES&format=simple`;
   let r;
   try { r = await fetch(url, {method: "POST", headers: {"Ocp-Apim-Subscription-Key": config.voz.clave, "Content-Type": "audio/wav; codecs=audio/pcm; samplerate=16000", "Accept": "application/json"}, body: wav}); }
@@ -3337,14 +3466,25 @@ $("#tjGuardar").onclick = async () => {
 
 /* ================= Inteligencia artificial (Azure OpenAI con la clave del usuario) ================= */
 // config.ia = {endpoint, clave, despliegue, auto}. La clave vive en Configuracion/config.json de tu OneDrive.
-const ia = () => !!(config.ia?.endpoint && config.ia?.clave);
-const iaAuto = () => ia() && config.ia.auto !== false;
+const iaPropia = () => !!(config.ia?.endpoint && config.ia?.clave);
+const iaServidor = () => !!(apiBase() && acceso?.estado === "autorizado" && acceso?.ia);
+const ia = () => iaPropia() || iaServidor();
+const iaAuto = () => ia() && config.ia?.auto !== false && config.iaAuto !== false;
+// Lo que el usuario cuenta de sí mismo en Ajustes; quien ya tenía su propia clave conserva el contexto de antes
+const sobreMi = () => (config.sobreMi ?? (iaPropia() ? "Delegado comercial de material eléctrico en Sevilla." : "")).trim();
 async function llamarIA(mensajes, {json = true, max = 900} = {}, intento = 0){
   // vale tanto «https://recurso.openai.azure.com/» como la dirección larga que muestra Azure
-  const c = config.ia; let base = c.endpoint.trim(); try { base = new URL(base).origin; } catch(e){ base = base.replace(/\/+$/, ""); }
-  const url = `${base}/openai/deployments/${encodeURIComponent(c.despliegue || "gpt-4.1-mini")}/chat/completions?api-version=2024-10-21`;
-  const r = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json", "api-key": c.clave.trim()},
-    body: JSON.stringify({messages: mensajes, temperature: 0.2, max_tokens: max, ...(json ? {response_format: {type: "json_object"}} : {})})});
+  const c = config.ia || {}, cuerpo = {messages: mensajes, temperature: 0.2, max_tokens: max, ...(json ? {response_format: {type: "json_object"}} : {})};
+  let r;
+  if (iaPropia()){
+    let base = c.endpoint.trim(); try { base = new URL(base).origin; } catch(e){ base = base.replace(/\/+$/, ""); }
+    const url = `${base}/openai/deployments/${encodeURIComponent(c.despliegue || "gpt-4.1-mini")}/chat/completions?api-version=2024-10-21`;
+    r = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json", "api-key": c.clave.trim()}, body: JSON.stringify(cuerpo)});
+  } else {
+    if (!iaServidor()) throw new Error("La IA no está activa");
+    r = await api("ia", {cuerpo, crudo: true});
+    if (r.status === 401 || r.status === 403){ let m = ""; try { m = (await r.json()).error || ""; } catch(e){} throw new Error(m || "Tu acceso a la IA no está activo"); }
+  }
   if ((r.status === 429 || r.status >= 500) && intento < 4){   // límite por minuto de Azure: espera lo que pida y reintenta
     const ms = +r.headers.get("retry-after-ms") || (+r.headers.get("retry-after") || 0) * 1000 || 4000 * 2 ** intento;
     await esperar(Math.min(60000, ms)); return llamarIA(mensajes, {json, max}, intento + 1);
@@ -3376,13 +3516,13 @@ async function enriquecerNota(n){
   }
   const todas = (n.fotos || []).filter(r => !r.includes("trazo")), fotos = todas.slice(0, 4);
   const texto = [n.titulo ? "Título: " + n.titulo : "", n.texto || "", n.transcripcion && n.transcripcion !== n.texto ? "Dictado: " + n.transcripcion : ""].filter(Boolean).join("\n").slice(0, 6000);
-  const sistema = `Eres el asistente de Cuaderna, la app de notas de un delegado comercial de material eléctrico en Sevilla. Hoy es ${hoyLargo()}.
+  const sistema = `Eres el asistente de Cuaderna, una app de notas para el día a día.${sobreMi() ? " Sobre quien la usa: " + sobreMi() : ""} Hoy es ${hoyLargo()}.
 Analiza la nota (y sus fotos, si las hay) y responde SOLO con un JSON con estas claves:
 "titulo": título breve y concreto en español (máx. 60 caracteres), sin comillas;
 "resumen": 1-2 frases si el texto es largo o confuso (más de 3 frases); si no, "";
 "tareas": lista de acciones concretas que se deducen (verbo en infinitivo, máx. 8); [] si no hay;
 "tipo": "tarea", "idea", "recordatorio" o "nota";
-"para": {"nombre": persona o empresa a la que se refiere, usando EXACTAMENTE el nombre de la lista de contactos si coincide, "categoria": "cliente", "proveedor", "companero", "personal" o ""};
+"para": {"nombre": persona o empresa a la que se refiere, usando EXACTAMENTE el nombre de la lista de contactos si coincide, "categoria": ${catsVisibles().map(c => `"${c[0]}"`).join(", ")} o "" (persona = alguien; asunto = un tema, proyecto o empresa que agrupa notas)};
 "fecha": "AAAA-MM-DD" si se menciona un día concreto o relativo (mañana, el jueves…), si no "";
 "hora": "HH:MM" o "";
 "textoFotos": texto legible en las fotos (tarjeta de visita, albarán, cartel…), resumido y ordenado; "" si no hay fotos o no tienen texto;
@@ -3460,7 +3600,7 @@ async function preguntarNotas(pregunta, persona){
   const ns = notasParaPregunta(pregunta, persona);
   const compacta = n => [`[${n.id}]`, isoDia(new Date(n.creada)), n.hecha ? "HECHA" : "PENDIENTE", n.fecha ? "para " + n.fecha + (n.hora ? " " + n.hora : "") : "", n.para?.nombre ? "con " + n.para.nombre : "", carpetaDe(n) ? "archivador " + carpetaDe(n).nombre : "",
     "|", (n.titulo ? n.titulo + ". " : "") + String(n.texto || n.transcripcion || "").replace(/\s+/g, " ").slice(0, 400), n.ia?.textoFotos ? "| fotos: " + n.ia.textoFotos.slice(0, 200) : ""].filter(Boolean).join(" ");
-  const sistema = `Eres el asistente de Cuaderna. Hoy es ${hoyLargo()}. Responde en español, breve y concreto, usando SOLO las notas del usuario que te paso (cada una empieza con su [id]). Si no está en las notas, dilo. Responde SOLO con un JSON: {"respuesta": texto (puedes usar saltos de línea y viñetas con «- »), "notas": [ids de las notas en que te basas, máx. 8]}.`;
+  const sistema = `Eres el asistente de Cuaderna.${sobreMi() ? " Sobre quien la usa: " + sobreMi() : ""} Hoy es ${hoyLargo()}. Responde en español, breve y concreto, usando SOLO las notas del usuario que te paso (cada una empieza con su [id]). Si no está en las notas, dilo. Responde SOLO con un JSON: {"respuesta": texto (puedes usar saltos de línea y viñetas con «- »), "notas": [ids de las notas en que te basas, máx. 8]}.`;
   const r = await llamarIA([{role: "system", content: sistema}, {role: "user", content: `NOTAS:\n${ns.map(compacta).join("\n")}\n\nPREGUNTA: ${pregunta}`}], {max: 700});
   return {respuesta: String(r.respuesta || "No he encontrado nada."), notas: (r.notas || []).map(id => notas.find(n => n.id === String(id).replace(/[\[\]]/g, ""))).filter(Boolean)};
 }
@@ -3538,7 +3678,7 @@ function deLlamada(d){
   const quien = (d.quien || "").trim();
   if (!$("#cTitulo").value){ $("#cTitulo").value = quien ? `Llamada con ${quien}` : "Llamada"; crecerTitulo($("#cTitulo")); }
   if (quien && /[a-záéíóúñ]/i.test(quien)){
-    const cont = config.contactos || {}, cat = ["cliente","proveedor","companero"].find(c => (cont[c] || []).some(x => norm(x) === norm(quien)));
+    const cont = config.contactos || {}, cat = LISTAS.find(c => (cont[c] || []).some(x => norm(x) === norm(quien)));
     borrador.para = {categoria: cat || "", nombre: quien};
   }
   if (d.duracion) borrador.duracionLlamada = d.duracion;
@@ -3902,7 +4042,7 @@ const GRUPOS = [
   {k: "estado", et: "Estado", todos: "Todas", ops: [["pend", "Pendientes"], ["hecha", "Hechas"]]},
   {k: "ambito", et: "Ámbito", todos: "Todos", ops: [["trabajo", "Trabajo"], ["personal", "Personal"]]},
   {k: "tipo", et: "Tipo", todos: "Todos", ops: [["nota", "Notas"], ["tarea", "Tareas"], ["idea", "Ideas"], ["recordatorio", "Recordatorios"], ["ancla", "Anclas"]]},
-  {k: "cat", et: "Para quién", todos: "Todos", ops: [["cliente", "Clientes"], ["proveedor", "Proveedores"], ["companero", "Compañeros"], ["personal", "Personal"], ["", "Sin indicar"]]}];
+  {k: "cat", et: "Para quién", todos: "Todos", get ops(){ return [...catsVisibles().map(c => [c[0], c[2]]), ["", "Sin indicar"]]; }}];
 let filtro = (() => { const g = lsGet("chispa.filtros"), f = {}; for (const x of GRUPOS) f[x.k] = Array.isArray(g?.[x.k]) ? g[x.k] : (x.k === "estado" ? ["pend"] : []); return f; })();
 let grupoAbierto = null;
 const resumenGrupo = g => { const sel = filtro[g.k]; if (!sel.length || sel.length === g.ops.length) return g.todos; if (sel.length === 1) return g.ops.find(o => o[0] === sel[0])?.[1] || g.todos; return g.ops.filter(o => sel.includes(o[0])).map(o => o[1]).join(", "); };
@@ -3993,7 +4133,7 @@ function pintarNotas(){
       <div class="dia">Mis archivadores</div>
       <div class="buzones">${cs}<button class="buzon bz-nuevo" id="bzNuevo">${ic("mas")}<span class="bz-t">Nuevo archivador</span><small>Por asunto, cliente u obra</small></button></div>`;
     const gente = personas().slice(0, 6);
-    if (gente.length) $("#listaNotas").insertAdjacentHTML("beforeend", `<div class="dia">Clientes y contactos</div><div class="gente">${gente.map(tarjetaPersona).join("")}<button class="persona-c ver-todas" data-buzon="personas">${ic("user")}<span><b>Ver todos</b><small>${personas().length} contactos</small></span></button></div>`);
+    if (gente.length) $("#listaNotas").insertAdjacentHTML("beforeend", `<div class="dia">Personas y asuntos</div><div class="gente">${gente.map(tarjetaPersona).join("")}<button class="persona-c ver-todas" data-buzon="personas">${ic("user")}<span><b>Ver todos</b><small>${personas().length} contactos</small></span></button></div>`);
     $("#bzNuevo").onclick = async () => { const c = await nuevaCarpeta(); if (c) abrirBuzon("c:" + c.id); };
     $("#bzPreguntar").onclick = () => abrirPregunta();
     return;
@@ -4044,7 +4184,7 @@ $("#listaNotas").addEventListener("click", e => { const b = e.target.closest("[d
 function personas(){
   const m = new Map(), cont = config.contactos || {};
   const meter = (nombre, cat) => { const k = norm(nombre.trim()); if (!k) return null; if (!m.has(k)) m.set(k, {nombre: nombre.trim(), cat: cat || "", notas: [], ultima: ""}); const p = m.get(k); if (!p.cat && cat) p.cat = cat; return p; };
-  for (const c of ["cliente", "proveedor", "companero"]) for (const x of cont[c] || []) meter(x, c);
+  for (const c of LISTAS) for (const x of cont[c] || []) meter(x, c);
   for (const n of deNotas()) if (n.para?.nombre){ const p = meter(n.para.nombre, n.para.categoria); p.notas.push(n); if (n.creada > p.ultima) p.ultima = n.creada; }
   return [...m.values()].sort((a, b) => (b.ultima || "").localeCompare(a.ultima || "") || a.nombre.localeCompare(b.nombre));
 }
@@ -4060,8 +4200,8 @@ function cabFicha(titulo, icono){
   $("#bzVolver").onclick = () => abrirBuzon(buzon?.startsWith("p:") && lsGet("chispa.desdePersonas") ? "personas" : null);
 }
 function pintarPersonas(){
-  cabFicha("Clientes y contactos", ic("user")); lsSet("chispa.desdePersonas", true);
-  const ps = personas(), grupos = [["cliente", "Clientes"], ["proveedor", "Proveedores"], ["companero", "Compañeros"], ["personal", "Personal"], ["", "Otros"]];
+  cabFicha("Personas y asuntos", ic("user")); lsSet("chispa.desdePersonas", true);
+  const ps = personas(), grupos = [...catsVisibles().map(c => [c[0], c[2]]), ["", "Otros"]];
   $("#listaNotas").innerHTML = ps.length ? grupos.map(([c, t]) => { const l = ps.filter(p => (p.cat || "") === c); return l.length ? `<div class="dia">${t} <span class="c">${l.length}</span></div><div class="gente">${l.map(tarjetaPersona).join("")}</div>` : ""; }).join("")
     : `<div class="vacio-grande"><div class="halo">${ic("user")}</div><b>Aún no hay contactos</b><span>Cuando asignes una nota a alguien (Para quién) o anotes tras una llamada, aparecerá aquí.</span></div>`;
 }
@@ -4273,19 +4413,20 @@ function pintarAjustes(){
     </div></div>
     <div class="grupo"><h3>Calendario de Outlook</h3><div class="caja" id="kCal"></div></div>
     <div class="grupo"><h3>Nombres que Cuaderna reconoce</h3><div class="caja">
-      <div class="ajuste"><div class="lbl">Clientes<small>Uno por línea</small></div><textarea id="kCli" rows="4">${esc((cont.cliente||[]).join("\n"))}</textarea></div>
-      <div class="ajuste"><div class="lbl">Proveedores</div><textarea id="kPro" rows="4">${esc((cont.proveedor||[]).join("\n"))}</textarea></div>
-      <div class="ajuste"><div class="lbl">Compañeros</div><textarea id="kCom" rows="4">${esc((cont.companero||[]).join("\n"))}</textarea></div>
+      ${catsVisibles().filter(([k]) => LISTAS.includes(k)).map(([k, , t], i) => `<div class="ajuste"><div class="lbl">${t}${i ? "" : "<small>Uno por línea</small>"}</div><textarea data-lista="${k}" rows="4">${esc((cont[k] || []).join("\n"))}</textarea></div>`).join("")}
     </div></div>
     <div class="grupo"><h3>Inteligencia artificial</h3><div class="caja">
-      ${esMovil() ? `<div class="ajuste">${ic("spark")}<div class="lbl">Azure OpenAI<small>${ia() ? "Activa: ordena tus notas, lee fotos y responde preguntas" : "Sin configurar. Se configura desde el PC"}</small></div></div>` : `
+      <div class="ajuste">${ic("user")}<div class="lbl">Sobre ti<small>Una frase para que la IA te entienda: a qué te dedicas, quién es quién en tus notas…</small></div><textarea id="kSobre" rows="2" placeholder="Ej.: Soy enfermera, tengo dos hijos y estoy reformando la casa">${esc(sobreMi())}</textarea></div>
+      ${iaServidor() && !iaPropia() ? `<div class="ajuste">${ic("spark")}<div class="lbl">IA incluida<small>Activa con tu acceso a Cuaderna: ordena tus notas, lee fotos y responde preguntas</small></div></div>` : ""}
+      ${esMovil() ? (iaServidor() && !iaPropia() ? "" : `<div class="ajuste">${ic("spark")}<div class="lbl">Azure OpenAI<small>${ia() ? "Activa: ordena tus notas, lee fotos y responde preguntas" : "Sin configurar. Se configura desde el PC"}</small></div></div>`) : `
       <div class="ajuste">${ic("spark")}<div class="lbl">Punto de conexión<small>La dirección que acaba en .openai.azure.com/</small></div><input type="text" id="kIaUrl" value="${esc(c.ia?.endpoint || "")}" placeholder="https://chispa-ia.openai.azure.com/" autocomplete="off" spellcheck="false"></div>
       <div class="ajuste">${ic("ajustes")}<div class="lbl">Clave<small>Se guarda en tu OneDrive, nunca en GitHub</small></div><input type="text" id="kIaClave" value="${esc(c.ia?.clave || "")}" placeholder="Pega aquí la clave 1" autocomplete="off" spellcheck="false"></div>
       <div class="ajuste">${ic("tag")}<div class="lbl">Nombre de la implementación</div><input type="text" id="kIaDep" value="${esc(c.ia?.despliegue || "gpt-4.1-mini")}" style="max-width:180px"><button class="btn sec" id="kIaProbar">Probar</button><span class="estado-t" id="kIaEstado"></span></div>`}
       <div class="ajuste">${ic("spark")}<div class="lbl">Ordenar las notas solas<small>Título, resumen, tareas, para quién y fecha al guardar o al transcribir; también lee las fotos</small></div><select id="kIaAuto"><option value="1">Sí</option><option value="0">No</option></select></div>
     </div></div>
     <div class="grupo"><h3>Transcripción de voz</h3><div class="caja">
-      ${esMovil() ? `<div class="ajuste">${ic("mic")}<div class="lbl">Azure Speech<small>${voz() ? "Activa: tus notas de voz se pasan a texto solas" : "Sin configurar. Se configura desde el PC"}</small></div></div>` : `
+      ${voz() && !vozPropia() ? `<div class="ajuste">${ic("mic")}<div class="lbl">Voz a texto incluida<small>Activa con tu acceso a Cuaderna: tus notas de voz se pasan a texto solas</small></div></div>` : ""}
+      ${esMovil() ? (voz() && !vozPropia() ? "" : `<div class="ajuste">${ic("mic")}<div class="lbl">Azure Speech<small>${voz() ? "Activa: tus notas de voz se pasan a texto solas" : "Sin configurar. Se configura desde el PC"}</small></div></div>`) : `
       <div class="ajuste">${ic("mic")}<div class="lbl">Clave de Azure Speech<small>Se guarda en tu OneDrive, nunca en GitHub</small></div><input type="text" id="kVozClave" value="${esc(c.voz?.clave || "")}" placeholder="Pega aquí la clave 1" autocomplete="off" spellcheck="false"></div>
       <div class="ajuste">${ic("pin")}<div class="lbl">Región</div><input type="text" id="kVozRegion" value="${esc(c.voz?.region || "westeurope")}" style="max-width:180px"><button class="btn sec" id="kVozProbar">Probar</button><span class="estado-t" id="kVozEstado"></span></div>`}
     </div></div>
@@ -4294,12 +4435,14 @@ function pintarAjustes(){
       <div class="ajuste">${ic("movil")}<input type="text" id="kMovNom" value="Móvil profesional"><select id="kMovAmb"><option value="trabajo">Trabajo</option><option value="personal">Personal</option></select><button class="btn sec" id="kQR">Ver código QR</button></div>
       <div id="qr" style="text-align:center"></div>
     </div></div>`}
+    <div class="grupo"><h3>Sugerencias y mejoras</h3><div class="caja"><div class="ajuste">${ic("idea")}<div class="lbl">¿Qué mejorarías?<small>Cuéntalo y le llega directamente a quien hace Cuaderna</small></div><button class="btn sec" id="kSug">Escribir</button></div></div></div>
+    ${acceso?.admin ? `<div class="grupo"><h3>Administración</h3><div class="caja" id="kAdmin"></div></div>` : ""}
     <div class="grupo"><h3>Cuenta</h3><div class="caja">
       <div class="ajuste">${ic("user")}<div class="lbl">${esc(lsGet("chispa.usuario") || "Cuenta de Microsoft")}<small>Tus datos están en tu OneDrive, en la carpeta Aplicaciones</small></div><button class="btn sec" id="kSalir">${ic("salir")}Salir</button></div>
     </div></div>
     <div class="autoria"><img src="autor.jpg" alt="Morián, José Antonio" loading="lazy"><div>Cuaderna ${VERSION}${esApp() ? ` · app Android ${esc(infoApp?.version || "")}` : ""}<small>Idea, diseño y desarrollo de José Antonio Morián</small></div></div>`;
   pintarTelefono(); pintarCorreo(); pintarCorreoWeb(); pintarCalendario(); pintarSuenos();
-  $("#kResAct").value = c.resumenActivo === false ? "0" : "1"; $("#kIaAuto").value = c.ia?.auto === false ? "0" : "1";
+  $("#kResAct").value = c.resumenActivo === false ? "0" : "1"; $("#kIaAuto").value = c.ia?.auto === false || c.iaAuto === false ? "0" : "1";
   $("#kAmb").value = disp.ambito || "trabajo"; $("#kTrans").value = disp.trans === false ? "0" : "1"; $("#kUbi").value = disp.ubi ? "1" : "0"; $("#kTema").value = disp.tema || "auto";
   document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => ver(b.dataset.ir));
   const lineas = id => [...new Set($(id).value.split("\n").map(s => s.trim()).filter(Boolean))];
@@ -4308,10 +4451,11 @@ function pintarAjustes(){
     lsSet("chispa.disp", disp);
     if (disp.ubi && navigator.geolocation) navigator.geolocation.getCurrentPosition(() => {}, () => {});
     Object.assign(config, {nocheDesde: $("#kDesde").value || "23:00", nocheHasta: $("#kHasta").value || "06:00", correoTrabajo: $("#kCT").value.trim(), correoPersonal: $("#kCP").value.trim(), resumenActivo: $("#kResAct").value === "1", resumenHora: $("#kResHora").value || "07:30",
-      contactos: {cliente: lineas("#kCli"), proveedor: lineas("#kPro"), companero: lineas("#kCom")}});
+      contactos: {...config.contactos, ...Object.fromEntries([...document.querySelectorAll("[data-lista]")].map(t => [t.dataset.lista, [...new Set(t.value.split("\n").map(x => x.trim()).filter(Boolean))]]))}});
     if ($("#kVozClave")) config.voz = {clave: $("#kVozClave").value.trim(), region: ($("#kVozRegion").value.trim() || "westeurope").toLowerCase()};
     if ($("#kIaUrl")) config.ia = {endpoint: $("#kIaUrl").value.trim(), clave: $("#kIaClave").value.trim(), despliegue: $("#kIaDep").value.trim() || "gpt-4.1-mini", auto: $("#kIaAuto").value === "1"};
     else if (config.ia) config.ia.auto = $("#kIaAuto").value === "1";
+    config.iaAuto = $("#kIaAuto").value === "1"; config.sobreMi = $("#kSobre").value.trim();
     guardarConfig(); aplicarTema(); setAmbito(disp.ambito); toast("Guardado", "check", 1200);
   };
   // los ajustes se guardan solos al cambiarlos
@@ -4328,10 +4472,11 @@ function pintarAjustes(){
     try { await probarVoz(); el.className = "estado-t ok"; el.textContent = "Funciona"; setTimeout(procesarTranscripciones, 300); }
     catch(e){ el.textContent = e.message; }
   };
+  $("#kSug").onclick = abrirSugerencia; if ($("#kAdmin")) pintarAdmin();
   $("#kSalir").onclick = () => {
     const pend = notas.filter(n => n._pend || n._borrar).length;
     if (pend && !confirm(`Hay ${pend} cambios sin subir que se perderán. ¿Salir igualmente?`)) return;
-    localStorage.removeItem("chispa.token"); indexedDB.deleteDatabase("chispa3"); location.href = `${AUTH}/logout?post_logout_redirect_uri=${encodeURIComponent(REDIRECT)}`;
+    ["chispa.token", "chispa.idt", "chispa.acceso"].forEach(k => localStorage.removeItem(k)); indexedDB.deleteDatabase("chispa3"); location.href = `${AUTH}/logout?post_logout_redirect_uri=${encodeURIComponent(REDIRECT)}`;
   };
   if ($("#kQR")) $("#kQR").onclick = async () => {
     const url = REDIRECT + "?" + new URLSearchParams({t: $("#kMovNom").value.trim() || "Móvil", a: $("#kMovAmb").value});
@@ -4344,7 +4489,7 @@ function pintarAjustes(){
 }
 
 function pintarAyuda(){
-  $("#vAyuda").innerHTML = cab("Ayuda", `Cuaderna ${VERSION}`) + `
+  $("#vAyuda").innerHTML = cab("Ayuda", `Cuaderna ${VERSION}`) + `<button class="preguntar" id="ayudaSug">${ic("idea")}<span><b>Sugerencias y mejoras</b><small>¿Qué echas en falta o qué cambiarías? Cuéntalo aquí</small></span></button>
   <h3>Anotar</h3><p>Escribe con el teclado en el recuadro de arriba (en el móvil, también con el botón del teclado), dicta con el sello rojo o escribe a mano en la zona de puntos. Abajo a la izquierda tienes las herramientas: <b>deshacer</b> y <b>rehacer</b> trazo a trazo, el <b>pincel</b> (toca el punto de color para elegir grosor y color), la <b>goma</b> para borrar solo por donde pases y la <b>papelera</b> para borrar el dibujo entero (se puede deshacer). El botón ↺ de arriba descarta toda la nota y empieza de nuevo. En el PC, el botón del lápiz muestra u oculta la zona para escribir a mano. Pulsa <b>✓</b> para guardar. Con la cámara añades fotos. Al dictar se guarda <b>el audio original</b>: si la transcripción no cuadra, escúchalo al abrir la nota.</p>
   <p>Mientras escribes, Cuaderna detecta <b>fechas</b> («mañana», «el jueves», «el 25 de noviembre», «en 3 días»), <b>nombres</b> de tus listas y el <b>tipo</b> de nota, y te los muestra en etiquetas de color. Si alguna no es correcta, quítala con la ✕.</p>
   <h3>Título</h3><p>Cada nota tiene un título opcional, arriba del texto. Es lo que se ve destacado en «Hoy» y en «Notas». Si no le pones título, se usa la primera línea del texto.</p>
@@ -4363,8 +4508,9 @@ function pintarAyuda(){
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
   <h3>Autoría</h3><div class="autoria izq"><img src="autor.jpg" alt="Morián, José Antonio" loading="lazy"><div>Cuaderna es una creación de <b>José Antonio Morián</b>: idea, diseño y desarrollo.<small>© ${new Date().getFullYear()} José Antonio Morián. Todos los derechos reservados.</small></div></div>
-  <h3>Novedades</h3><p><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y archivadores propios. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y archivadores propios. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Cuaderna para móvil y PC, sincronizada con OneDrive.</p>`;
+  $("#ayudaSug").onclick = abrirSugerencia;
 }
 
 /* ================= Arranque ================= */
@@ -4395,6 +4541,7 @@ function pintarAyuda(){
   if (Date.now() >= token.exp && navigator.onLine){
     try { await accessToken(); } catch(e){ if (e.login && !["login_required", "interaction_required"].includes(vuelta)){ if (accion) lsSet("chispa.accion", accion); return irALogin(true); } }
   }
+  if (apiBase() && !(await comprobarAcceso())) return mostrarEspera();
   notas = (await idb.todas()) || []; ordenar();
   $("#app").classList.remove("oculto");
   ver(esMovil() ? "anotar" : "hoy");
@@ -4408,6 +4555,7 @@ function pintarAyuda(){
   if (accion === "voz"){ tocado = true; empezarVoz(); }
   sincronizar(true);
   setTimeout(procesarAsignaciones, 1200);
+  setTimeout(() => { avisarAdmin(); enviarSugerenciasPendientes(); }, 3000);
   setTimeout(() => { procesarTranscripciones(); revisarAvisos(); }, 2500);
   iniciarApp();
 })();
