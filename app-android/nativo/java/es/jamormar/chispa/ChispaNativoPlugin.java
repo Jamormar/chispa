@@ -33,9 +33,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 /**
- * Puente entre Android y la web de Visitario.
+ * Puente entre Android y la web de Cuaderna.
  * Envía a la web un evento «entrada» cuando la app se abre desde el widget,
- * desde un aviso o desde «Compartir con Visitario».
+ * desde un aviso o desde «Compartir con Cuaderna».
  */
 @CapacitorPlugin(
     name = "ChispaNativo",
@@ -242,7 +242,7 @@ public class ChispaNativoPlugin extends Plugin {
     /** Muestra el aviso de «después de una llamada» para probarlo. */
     @PluginMethod
     public void probarLlamada(PluginCall call) {
-        Ajustes.avisoLlamada(getContext(), "Prueba de Visitario", "2 min");
+        Ajustes.avisoLlamada(getContext(), "Prueba de Cuaderna", "2 min");
         call.resolve();
     }
 
@@ -311,7 +311,7 @@ public class ChispaNativoPlugin extends Plugin {
     /** Guarda el archivo (en base64) en la caché y abre el menú «Compartir» de Android. */
     @PluginMethod
     public void compartirArchivo(PluginCall call) {
-        String nombre = call.getString("nombre", "Visitario.pdf").replaceAll("[\\\\/:*?\"<>|]", " ");
+        String nombre = call.getString("nombre", "Cuaderna.pdf").replaceAll("[\\\\/:*?\"<>|]", " ");
         String datos = call.getString("datos", "");
         String tipo = call.getString("tipo", "application/pdf");
         String asunto = call.getString("asunto", "");

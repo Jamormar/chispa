@@ -7,7 +7,7 @@ import android.os.Bundle;
 import com.getcapacitor.BridgeActivity;
 
 /**
- * Pantalla principal de Visitario: carga la web y le pasa lo que llega
+ * Pantalla principal de Cuaderna: carga la web y le pasa lo que llega
  * desde el widget, desde «Compartir» o desde los avisos.
  */
 public class MainActivity extends BridgeActivity {

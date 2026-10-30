@@ -1,14 +1,14 @@
 {
-  "name": "Visitario",
-  "short_name": "Visitario",
-  "description": "Tu cuaderno de visitas: clientes, notas y pendientes",
+  "name": "Cuaderna",
+  "short_name": "Cuaderna",
+  "description": "Tus notas, clientes y pendientes, bien guardados",
   "lang": "es",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#16213A",
-  "theme_color": "#16213A",
+  "background_color": "#2B1D14",
+  "theme_color": "#2B1D14",
   "icons": [
     {
       "src": "icon-192.png",

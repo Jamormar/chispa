@@ -150,7 +150,7 @@ final class Correo {
             String acceso = acceso(ctx);
             String raiz = new JSONObject(pedir("GET", GRAPH + "/me/drive/special/approot", acceso, null, null).cuerpo).getString("id");
             JSONObject conf = buscar(acceso, raiz, "Configuracion");
-            if (conf == null) return "Aún no hay datos de Visitario en OneDrive";
+            if (conf == null) return "Aún no hay datos de Cuaderna en OneDrive";
             String confId = conf.getString("id");
             List<JSONObject> ficheros = hijos(acceso, confId);
             JSONObject config = leerJson(buscarEn(ficheros, "config.json"));
@@ -241,9 +241,9 @@ final class Correo {
         String nombre = ambito == null ? "" : ("trabajo".equals(ambito) ? "Trabajo" : "Personal");
         String fecha = new SimpleDateFormat("EEEE d 'de' MMMM", ES).format(ahora.getTime());
         StringBuilder h = new StringBuilder();
-        h.append("<div style=\"font-family:Segoe UI,Roboto,Arial,sans-serif;max-width:640px;margin:0 auto;color:#16213A\">")
-         .append("<div style=\"background:#16213A;color:#fff;border-radius:16px;padding:18px 22px\">")
-         .append("<div style=\"font-size:20px;font-weight:700\"><span style=\"color:#B5D334\">&#10003;</span> Visitario").append(nombre.isEmpty() ? "" : " · " + nombre).append("</div>")
+        h.append("<div style=\"font-family:Segoe UI,Roboto,Arial,sans-serif;max-width:640px;margin:0 auto;color:#2B1D14\">")
+         .append("<div style=\"background:#2B1D14;color:#FBF3E4;border-radius:16px;padding:18px 22px\">")
+         .append("<div style=\"font-size:21px;font-weight:700;font-family:Georgia,serif\"><span style=\"display:inline-block;width:24px;height:24px;border-radius:50%;background:#A8322D;color:#FBF3E4;text-align:center;font-family:Georgia,serif;font-size:15px;line-height:24px;vertical-align:2px\">C</span> Cuaderna").append(nombre.isEmpty() ? "" : " · " + nombre).append("</div>")
          .append("<div style=\"opacity:.8;margin-top:4px;text-transform:capitalize\">").append(esc(fecha)).append("</div></div>");
         seccion(h, "Para hoy", paraHoy, true, false);
         seccion(h, "Atrasado", atrasado, true, true);
@@ -252,15 +252,15 @@ final class Correo {
         if (!anclas.isEmpty()) seccion(h, "Anclas por completar", anclas, false, false);
         if (!hay) h.append("<p style=\"margin:22px 4px\">No tienes nada pendiente. ¡Buen día!</p>");
         if (sinFecha > 0) h.append("<p style=\"margin:18px 4px;color:#66728A\">Además tienes ").append(sinFecha).append(sinFecha == 1 ? " nota pendiente" : " notas pendientes").append(" sin fecha.</p>");
-        h.append("<p style=\"margin:24px 4px\"><a href=\"").append(WEB).append("\" style=\"background:#B5D334;color:#16213A;text-decoration:none;font-weight:700;padding:11px 18px;border-radius:12px;display:inline-block\">Abrir Visitario</a></p>")
-         .append("<p style=\"font-size:12px;color:#A3ACBD;margin:18px 4px\">Resumen automático de Visitario. Solo se envía si hay algo que contar.</p></div>");
+        h.append("<p style=\"margin:24px 4px\"><a href=\"").append(WEB).append("\" style=\"background:#A8322D;color:#FBF3E4;text-decoration:none;font-weight:700;padding:11px 18px;border-radius:12px;display:inline-block\">Abrir Cuaderna</a></p>")
+         .append("<p style=\"font-size:12px;color:#A3ACBD;margin:18px 4px\">Resumen automático de Cuaderna. Solo se envía si hay algo que contar.</p></div>");
 
         List<String> partes = new ArrayList<>();
         if (!paraHoy.isEmpty()) partes.add(paraHoy.size() + " para hoy");
         if (!atrasado.isEmpty()) partes.add(atrasado.size() + (atrasado.size() == 1 ? " atrasada" : " atrasadas"));
         if (partes.isEmpty() && !proximos.isEmpty()) partes.add(proximos.size() + " esta semana");
         if (partes.isEmpty() && !deAyer.isEmpty()) partes.add(deAyer.size() + (deAyer.size() == 1 ? " idea de ayer" : " ideas de ayer"));
-        String asunto = (prueba ? "[Prueba] " : "") + "Visitario" + (nombre.isEmpty() ? "" : " · " + nombre)
+        String asunto = (prueba ? "[Prueba] " : "") + "Cuaderna" + (nombre.isEmpty() ? "" : " · " + nombre)
                 + (partes.isEmpty() ? (hay ? ": tu resumen" : ": nada pendiente") : ": " + TextUtils.join(", ", partes));
 
         JSONObject msg = new JSONObject()
@@ -274,7 +274,7 @@ final class Correo {
 
     private static void seccion(StringBuilder h, String titulo, List<JSONObject> lista, boolean conFecha, boolean rojo) {
         if (lista.isEmpty()) return;
-        h.append("<h3 style=\"margin:24px 4px 8px;font-size:16px;color:").append(rojo ? "#C2412D" : "#16213A").append("\">")
+        h.append("<h3 style=\"margin:24px 4px 8px;font-size:16px;color:").append(rojo ? "#C2412D" : "#2B1D14").append("\">")
          .append(esc(titulo)).append(" <span style=\"color:#A3ACBD;font-weight:400\">").append(lista.size()).append("</span></h3>")
          .append("<div style=\"border:1px solid #E4E8EF;border-radius:14px;overflow:hidden\">");
         int i = 0;

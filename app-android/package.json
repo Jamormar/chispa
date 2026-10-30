@@ -2,7 +2,7 @@
   "name": "chispa-android",
   "version": "1.0.0",
   "private": true,
-  "description": "App Android de Visitario: envuelve la web de GitHub Pages y añade widget, avisos, compartir, llamadas y modo coche",
+  "description": "App Android de Cuaderna: envuelve la web de GitHub Pages y añade widget, avisos, compartir, llamadas y modo coche",
   "scripts": {
     "aplicar": "node scripts/aplicar.mjs"
   },
