@@ -17,12 +17,12 @@
     "errorPath": "sin-conexion.html"
   },
   "android": {
-    "backgroundColor": "#16213A"
+    "backgroundColor": "#F4ECDD"
   },
   "plugins": {
     "LocalNotifications": {
       "smallIcon": "ic_stat_chispa",
-      "iconColor": "#F4B63E"
+      "iconColor": "#A8322D"
     }
   }
 }

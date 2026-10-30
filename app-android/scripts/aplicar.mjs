@@ -1,4 +1,4 @@
-// Aplica las piezas propias de Chispa sobre el proyecto Android que genera Capacitor.
+// Aplica las piezas propias de Cuaderna sobre el proyecto Android que genera Capacitor.
 // Se ejecuta en GitHub Actions después de «npx cap add android».
 import fs from "node:fs";
 import path from "node:path";
@@ -24,7 +24,7 @@ function cambiar(fichero, fn) {
 // 1) Código Java y recursos
 copiar(path.join(nativo, "java"), path.join(main, "java"));
 copiar(path.join(nativo, "res"), path.join(main, "res"));
-// iconos: usamos los PNG de la chispa en lugar de los adaptativos de Capacitor
+// iconos: usamos los PNG del icono de Cuaderna en lugar de los adaptativos de Capacitor
 fs.rmSync(path.join(main, "res", "mipmap-anydpi-v26"), {recursive: true, force: true});
 
 // 2) AndroidManifest: permisos, compartir y widget
@@ -95,4 +95,4 @@ cambiar(gradle, g => {
   return g;
 });
 
-console.log("Piezas de Chispa aplicadas");
+console.log("Piezas de Cuaderna aplicadas");
