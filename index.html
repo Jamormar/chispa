@@ -479,6 +479,38 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .hoja.enviar h3{display:flex;align-items:center;gap:8px}.hoja.enviar h3 svg{width:20px;height:20px}
 .ev-pdf{width:100%;justify-content:flex-start;gap:10px;height:48px}.ev-pdf svg{width:18px;height:18px}
 .ev-sep{color:var(--muted);font-size:13px;margin:14px 2px 8px}
+/* formato */
+.formato{display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 8px;padding:4px;border-radius:14px;background:var(--raise)}
+.formato button{width:40px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--text)}.formato button:active{background:var(--surface)}.formato svg{width:19px;height:19px}
+#eAa.on{color:var(--spark-text);font-weight:700}
+.rico{min-height:90px;outline:0;font-size:17px;line-height:1.5;word-break:break-word}
+.rico:empty::before{content:attr(data-ph);color:var(--faint)}
+.rico h3,.md h3{font-family:var(--display);font-size:20px;margin:10px 0 4px}
+.rico ul,.rico ol,.md ul,.md ol{margin:4px 0;padding-left:24px}
+.rico a,.md a{color:var(--work)}
+.rico table,.md table{border-collapse:collapse;margin:8px 0;width:100%;font-size:15px}.rico th,.rico td,.md th,.md td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top;min-width:40px}.rico th,.md th{background:var(--raise)}
+/* etiquetas */
+.etqs{display:flex;flex-wrap:wrap;gap:6px;width:100%}.etqs:empty{display:none}
+.etq-c{display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 6px 0 10px;border-radius:10px;background:var(--work-soft);color:var(--work);font-size:14px;font-weight:600}
+.etq-c.auto{padding-right:10px;opacity:.8}.etq-c button{width:22px;height:22px;display:grid;place-items:center;color:inherit}.etq-c svg{width:14px;height:14px}
+#eEtqIn{width:100%}
+.mt .etq-l{color:var(--work);font-weight:600}
+/* archivos */
+.archs{display:flex;flex-direction:column;gap:8px;margin-top:8px}.archs:empty{display:none}
+.arch{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--raise);text-align:left;width:100%}
+.arch .ext{flex:none;width:42px;height:42px;border-radius:10px;display:grid;place-items:center;background:var(--spark);color:#FBF3E4;font:700 11px var(--body);text-transform:uppercase}
+.arch .an{flex:1;min-width:0}.arch .an b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}.arch .an small{color:var(--muted)}
+/* biblioteca */
+.pila{margin-bottom:6px}.pila-t{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--muted);margin:10px 2px 8px}.pila-t svg{width:18px;height:18px}
+.libretas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.libreta{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:inset 6px 0 0 var(--spark)}
+.lib-abrir{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;padding:14px 40px 14px 18px;text-align:left}
+.lib-abrir svg{width:22px;height:22px;color:var(--spark)}.lib-abrir b{font-family:var(--display);font-size:17px;line-height:1.2}.lib-abrir small{color:var(--muted);font-size:13px}
+.lib-menu{position:absolute;top:6px;right:4px}
+.etq-nube{display:flex;flex-wrap:wrap;gap:8px}
+.etq{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:12px;background:var(--work-soft);color:var(--work);font-weight:600}.etq i{font-style:normal;font-size:12px;opacity:.75}
+.ayuda-b{color:var(--muted);margin:4px 2px 10px}
+#bNuevaLib{margin-top:12px}
 .autoria{display:flex;flex-direction:column;align-items:center;gap:10px;margin:26px auto 18px;max-width:300px;text-align:center;color:var(--muted);font-size:13px}
 .autoria img{width:100%;border-radius:14px;box-shadow:var(--float);border:3px solid var(--surface)}
 .autoria small{display:block;font-size:12px;color:var(--faint);margin-top:2px}
@@ -750,6 +782,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
     </section>
 
     <section id="vHoy" class="oculto" data-v="hoy"></section>
+    <section id="vBiblio" class="oculto" data-v="biblio"></section>
     <section id="vNotas" class="oculto" data-v="notas">
       <div class="cab"><div><h1>Notas</h1></div><div class="esp"></div><button class="sync cab-sync" data-sync></button></div>
       <div class="busca"><span id="icBusca"></span><input id="q" type="search" placeholder="Buscar por texto, nombre o fecha"></div>
@@ -788,8 +821,10 @@ html.lz-on,html.lz-on body{overflow:hidden}
       <div class="efield"><textarea id="eTitulo" rows="1" placeholder="Ponle un título para encontrarla fácil" autocomplete="off" enterkeyhint="next" aria-label="Título"></textarea></div>
     </section>
     <section class="esec">
-      <h4><span id="eTitTexto">Descripción</span><button class="enl" id="eAddLista"></button></h4>
-      <div class="efield"><textarea id="eTexto" rows="3" placeholder="Escribe la nota"></textarea></div>
+      <h4><span id="eTitTexto">Descripción</span><span class="h4-b"><button class="enl" id="eAa" title="Negritas, títulos, listas, enlaces y tablas">Aa Formato</button><button class="enl" id="eAddLista"></button></span></h4>
+      <div class="formato oculto" id="eFormato" role="toolbar" aria-label="Formato">
+        <button data-fmt="b" aria-label="Negrita"><span data-i="negrita"></span></button><button data-fmt="i" aria-label="Cursiva"><span data-i="cursiva"></span></button><button data-fmt="h" aria-label="Título"><span data-i="encabezado"></span></button><button data-fmt="ul" aria-label="Lista"><span data-i="lista"></span></button><button data-fmt="ol" aria-label="Lista numerada"><span data-i="numeros"></span></button><button data-fmt="a" aria-label="Enlace"><span data-i="enlace"></span></button><button data-fmt="tabla" aria-label="Tabla"><span data-i="tabla"></span></button></div>
+      <div class="efield"><div id="eRico" class="rico oculto" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Descripción con formato"></div><textarea id="eTexto" rows="3" placeholder="Escribe la nota"></textarea></div>
       <div class="transc oculto" id="eTransc"></div>
       <div id="eIA"></div>
       <div id="eTransBtn"></div>
@@ -801,10 +836,12 @@ html.lz-on,html.lz-on body{overflow:hidden}
       <div id="eHechos"></div>
     </section>
     <section class="esec">
-      <h4>Adjuntos<span class="h4-b"><button class="enl" id="eAddDibujo"></button><button class="enl" id="eAddFoto"></button></span></h4>
+      <h4>Adjuntos<span class="h4-b"><button class="enl" id="eAddDibujo"></button><button class="enl" id="eAddFoto"></button><button class="enl" id="eAddArch"></button></span></h4>
       <div id="eAudio"></div>
       <div class="galeria" id="eFotos"></div>
+      <div class="archs" id="eArchs"></div>
       <input type="file" id="eInFoto" accept="image/*" multiple class="oculto">
+      <input type="file" id="eInArch" multiple class="oculto">
     </section>
     <section class="esec">
       <h4>Detalles</h4>
@@ -814,8 +851,10 @@ html.lz-on,html.lz-on body{overflow:hidden}
         <div class="prop"><span data-i="user"></span><span class="lbl">Para quién</span><div class="val">
           <select id="eCat"><option value="">Sin indicar</option></select>
           <input type="text" id="eNombre" placeholder="Nombre" autocomplete="off" autocapitalize="words" enterkeyhint="done"><button class="opc" id="eVerFicha" type="button">Ver ficha</button><button class="opc oculto" id="eAgenda" type="button"><span data-i="user"></span>Agenda</button><div class="sugs" id="eSugs" role="listbox" aria-label="Contactos"></div></div></div>
-        <div class="prop"><span data-i="carpeta"></span><span class="lbl">Archivador</span><div class="val">
-          <select id="eCarpeta" aria-label="Archivador"></select><button class="opc" id="eArchivar" type="button"></button></div></div>
+        <div class="prop"><span data-i="carpeta"></span><span class="lbl">Libreta</span><div class="val">
+          <select id="eCarpeta" aria-label="Libreta"></select><button class="opc" id="eArchivar" type="button"></button></div></div>
+        <div class="prop"><span data-i="tag"></span><span class="lbl">Etiquetas</span><div class="val">
+          <div class="etqs" id="eEtq"></div><input type="text" id="eEtqIn" placeholder="Añadir etiqueta" list="eEtqLista" autocapitalize="none" autocomplete="off" enterkeyhint="done"><datalist id="eEtqLista"></datalist></div></div>
         <div class="prop"><span data-i="cal"></span><span class="lbl">Fecha y hora</span><div class="val">
           <div class="f-res" id="eFechaRes"></div>
           <input type="date" id="eFecha" aria-label="Fecha"><input type="time" id="eHora" aria-label="Hora (opcional)">
@@ -841,6 +880,15 @@ html.lz-on,html.lz-on body{overflow:hidden}
   <div class="pq-campo"><textarea id="pqIn" class="crece" rows="1" placeholder="¿Qué tengo pendiente esta semana?" enterkeyhint="send"></textarea><button class="pq-enviar" id="pqOk" aria-label="Preguntar"><span data-i="subir"></span></button></div>
   <div class="pq-ideas" id="pqIdeas"></div>
   <div id="pqRes"></div>
+</div>
+
+<div class="hoja mini enviar" id="hLibreta" role="dialog" aria-label="Libreta">
+  <div class="asa" id="lbCerrar"></div>
+  <h3><span data-i="libro"></span><span id="lbTit">Nueva libreta</span></h3>
+  <p class="as-ayuda">Agrupa tus libretas en pilas, por ejemplo una pila «Casa» con «Facturas», «Reforma» y «Garantías».</p>
+  <input type="text" id="lbNombre" class="as-campo" placeholder="Nombre: Viaje a Lisboa, Recetas, Facturas…" autocapitalize="sentences">
+  <input type="text" id="lbPila" class="as-campo" placeholder="Pila (opcional): Casa, Trabajo, Viajes…" list="lbPilas" autocapitalize="sentences"><datalist id="lbPilas"></datalist>
+  <div class="hpie"><button class="btn sec oculto" id="lbBorrar">Borrar libreta</button><div class="esp"></div><button class="btn" id="lbGuardar">Guardar</button></div>
 </div>
 
 <div class="hoja mini enviar" id="hSugerencia" role="dialog" aria-label="Enviar una sugerencia">
@@ -972,7 +1020,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.23.4";
+const VERSION = "0.24";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M12 3.5c.7 4.3 2.7 6.3 7 7-4.3.7-6.3 2.7-7 7-.7-4.3-2.7-6.3-7-7 4.3-.7 6.3-2.7 7-7z"/><path d="M19 3v3M17.5 4.5h3"/>',
@@ -992,6 +1040,14 @@ const ICONOS = {
   pluma: '<path d="M14.5 5.5l4 4M4 20l1-4.5L16 4.5a1.4 1.4 0 0 1 2 0l1.5 1.5a1.4 1.4 0 0 1 0 2L8.5 19z"/>',
   cal: '<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   user: '<circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/>',
+  clip: '<path d="M20 11.5 12 19.5a5 5 0 0 1-7-7l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7L9.7 17.2a1.6 1.6 0 0 1-2.3-2.3L15 7.3"/>',
+  libro: '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v16H6.5A1.5 1.5 0 0 0 5 20.5zM5 20.5A1.5 1.5 0 0 0 6.5 22H19"/><path d="M9 7.5h6"/>',
+  negrita: '<path d="M7 4.5h6a3.5 3.5 0 0 1 0 7H7zM7 11.5h7a3.75 3.75 0 0 1 0 7.5H7z"/>',
+  cursiva: '<path d="M10 4.5h8M6 19.5h8M14 4.5l-4 15"/>',
+  encabezado: '<path d="M5 5v14M14 5v14M5 12h9M17.5 10.5 20 9v10"/>',
+  numeros: '<path d="M10 6h10M10 12h10M10 18h10M4 5l1.5-1V9M3.5 15.5a1.5 1.5 0 1 1 2.2 1.3L3.5 19.5h3"/>',
+  enlace: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  tabla: '<rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M3.5 14.5h17M10 4.5v15"/>',
   tag: '<path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1.4 1.4 0 0 1 0 2l-6.2 6.2a1.4 1.4 0 0 1-2 0z"/><circle cx="8" cy="8" r="1.4"/>',
   idea: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3z"/>',
   campana: '<path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15zM10 21a2 2 0 0 0 4 0"/>',
@@ -1265,7 +1321,7 @@ async function sincronizar(forzar = false){
   try {
     for (const n of notas.filter(x => x._borrar && Date.now() - (x._borrarEn || 0) > 7000)){
       try {
-        if (n._etag) for (const r of [`Notas/${n.id}.json`, n.audio, ...(n.fotos || []), ...Object.values(n.lienzos || {})].filter(Boolean)) await aPapelera(r);
+        if (n._etag) for (const r of [`Notas/${n.id}.json`, n.audio, ...(n.fotos || []), ...Object.values(n.lienzos || {}), ...(n.archivos || []).map(a => a.ruta)].filter(Boolean)) await aPapelera(r);
         if (n.evento?.id && calActivo()) await graph(`https://graph.microsoft.com/v1.0/me/events/${n.evento.id}`, {method: "DELETE"}).catch(() => {});
         for (const r of n._subir || []) await idb.quitarBlob(r);
         await idb.quitar(n.id); notas = notas.filter(x => x !== n);
@@ -1495,7 +1551,7 @@ function crecerTitulo(el){
   el.style.height = h ? h + "px" : "";   // si aún no se ve (pantalla oculta), se deja su altura natural de una línea
 }
 for (const [t, sig] of [["#cTitulo", "#cTexto"], ["#eTitulo", "#eTexto"]]){
-  $(t).addEventListener("keydown", e => { if (e.key === "Enter" && !e.ctrlKey && !e.metaKey){ e.preventDefault(); $(sig).focus(); } });
+  $(t).addEventListener("keydown", e => { if (e.key === "Enter" && !e.ctrlKey && !e.metaKey){ e.preventDefault(); (sig === "#eTexto" && modoRico ? $("#eRico") : $(sig)).focus(); } });
   $(t).addEventListener("input", () => crecerTitulo($(t)));
 }
 $("#cTitulo").addEventListener("input", () => { tocado = true; pintarDetectado(); guardarCapturaPronto(); });
@@ -2225,7 +2281,7 @@ function avisoListaCompleta(n, items){
 }
 // Título y descripción que se ven en los listados
 function partesNota(n){
-  const {intro, items} = partirLista(n.texto), lineas = intro.split("\n").map(l => l.trim()).filter(Boolean);
+  const {intro, items} = partirLista(n.texto), lineas = planoMd(intro).split("\n").map(l => l.trim()).filter(Boolean);
   if (n.ancla) return {titulo: `Ancla de las ${hora(n.creada)}${n.titulo || n.texto ? ": " + (n.titulo || n.texto) : ""}`, desc: ""};
   if (n.titulo) return {titulo: n.titulo, desc: lineas.join(" ")};
   if (lineas.length) return {titulo: lineas[0], desc: lineas.slice(1).join(" ")};
@@ -2244,6 +2300,8 @@ function fila(n, opts = {}){
   if (lista.length){ const h = lista.filter(i => i.hecho).length; mt.push(`<span class="prog ${h === lista.length ? "completa" : ""}">${ic("tarea")}${h} de ${lista.length}</span>`); }
   if (n.asignada) mt.push(`<span class="asig" title="Asignada">${ic(n.asignada.estado === "hecha" ? "check" : "flecha")}${esc(n.asignada.a?.n || n.asignada.a?.e || "")}</span>`);
   if (n.recibida) mt.push(`<span class="asig" title="Te la asignó">${ic("mail")}De ${esc(n.recibida.de?.n || n.recibida.de?.e || "")}</span>`);
+  for (const e of etiquetasDe(n).slice(0, 3)) mt.push(`<span class="etq-l">#${esc(e)}</span>`);
+  if (n.archivos?.length) mt.push(`<span>${ic("clip")}${n.archivos.length}</span>`);
   if (n.tipo === "idea") mt.push(`<span>${ic("idea")}Idea</span>`);
   const cp = !opts.sinCarpeta && carpetaDe(n); if (cp) mt.push(`<span class="carp">${ic("carpeta")}${esc(cp.nombre)}</span>`);
   if (n.archivada) mt.push(`<span>${ic("archivo")}Archivada</span>`);
@@ -2417,7 +2475,7 @@ $("#eLista").addEventListener("keydown", e => {
 });
 let editando = null, eAdj = null, eTipoSel = "nota", eAmbSel = "trabajo", audioEl = null;
 document.querySelectorAll("[data-i]").forEach(s => s.outerHTML = ic(s.dataset.i));
-$("#eCerrar").innerHTML = ic("x"); $("#eBorrar").innerHTML = ic("borrar") + "<span>Borrar</span>"; $("#eAddFoto").innerHTML = ic("camara") + "Añadir foto";
+$("#eCerrar").innerHTML = ic("x"); $("#eBorrar").innerHTML = ic("borrar") + "<span>Borrar</span>"; $("#eAddFoto").innerHTML = ic("camara") + "Foto";
 $("#eAddFoto").onclick = e => {
   e.stopPropagation(); const m = $("#menuFotoE"); if (!m.classList.contains("oculto")){ m.classList.add("oculto"); return; }
   const r = $("#eAddFoto").getBoundingClientRect(); m.style.left = Math.max(8, Math.min(innerWidth - 228, r.right - 220)) + "px"; m.style.top = (r.bottom + 6) + "px"; m.style.bottom = "auto"; m.classList.remove("oculto");
@@ -2478,7 +2536,7 @@ $("#eFecha").addEventListener("input", pintarOpciones); $("#eHora").addEventList
 $("#eCat").addEventListener("change", () => { if ($("#eCat").value === "personal"){ eAmbSel = "personal"; pintarOpciones(); } });
 let firmaInicial = "", tEdicion = 0, eImp = false, eArch = false;
 function pintarCarpetaEdicion(sel){
-  $("#eCarpeta").innerHTML = `<option value="">Ninguno</option>${archivadores().map(c => `<option value="${esc(c.id)}">${esc(c.nombre)}</option>`).join("")}<option value="+">＋ Nuevo archivador…</option>`;
+  $("#eCarpeta").innerHTML = `<option value="">Ninguno</option>${archivadores().map(c => `<option value="${esc(c.id)}">${esc(c.nombre)}</option>`).join("")}<option value="+">＋ Nueva libreta…</option>`;
   $("#eCarpeta").value = archivadores().some(c => c.id === sel) ? sel : "";
 }
 function pintarMarcasEdicion(){
@@ -2496,10 +2554,10 @@ function camposEditor(){
   const nuevo = $("#eNuevoItem")?.value.trim(), items = nuevo ? [...eItems, {hecho: false, texto: nuevo}] : eItems;
   return {texto: items.length ? unirLista($("#eTexto").value, items) : $("#eTexto").value.trim(), titulo: $("#eTitulo").value.trim(), tipo: eTipoSel, ambito: eAmbSel,
     para: {categoria: $("#eCat").value, nombre: $("#eNombre").value.trim()}, fecha: $("#eFecha").value || null, hora: $("#eHora").value || null,
-    importante: eImp, archivada: eArch, carpeta: $("#eCarpeta").value.replace("+", "")};
+    importante: eImp, archivada: eArch, carpeta: $("#eCarpeta").value.replace("+", ""), etiquetas: eEtq.join(",")};
 }
 const firmaEditor = () => JSON.stringify(camposEditor());
-const hayCambiosEdicion = () => !!editando && $("#hEditar").classList.contains("on") && (firmaEditor() !== firmaInicial || eAdj.nuevas.length > 0 || eAdj.quitar.length > 0);
+const hayCambiosEdicion = () => !!editando && $("#hEditar").classList.contains("on") && (firmaEditor() !== firmaInicial || eAdj.nuevas.length > 0 || eAdj.quitar.length > 0 || (eAdj.nuevosArch || []).length > 0);
 // Copia de seguridad de los cambios mientras se edita (por si la app se cierra)
 function guardarEdicionPronto(){ clearTimeout(tEdicion); tEdicion = setTimeout(() => {
   if (!editando) return;
@@ -2519,15 +2577,17 @@ function abrirEdicion(n, original){
   if (!n) return;
   editando = n; eTipoSel = n.tipo || "nota"; eAmbSel = n.ambito || "trabajo";
   eImp = !!n.importante; eArch = enArchivo(n); pintarCarpetaEdicion(n.carpeta || ""); pintarMarcasEdicion();
-  eAdj = {audio: n.audio || null, fotos: [...(n.fotos || [])], nuevas: [], quitar: [], lienzos: {...(n.lienzos || {})}};
+  eAdj = {audio: n.audio || null, fotos: [...(n.fotos || [])], nuevas: [], quitar: [], lienzos: {...(n.lienzos || {})}, archivos: [...(n.archivos || [])], nuevosArch: []};
+  eEtq = [...(n.etiquetas || [])]; pintarEtqEdicion();
   const pl = partirLista(n.texto); eItems = ordenarItems(pl.items.map(i => ({...i}))); verHechos = false;
   $("#eTexto").value = pl.intro; pintarListaEdicion();
   // Título: el propio, o (en notas antiguas de lista) la línea que lo hacía de título
   let titulo = n.titulo || "";
   if (!titulo && eItems.length && pl.intro && !pl.intro.includes("\n")){ titulo = pl.intro; $("#eTexto").value = ""; }
-  $("#eTitulo").value = n.ancla && !n.titulo ? "" : titulo; requestAnimationFrame(() => crecerTitulo($("#eTitulo")));
+  $("#eTitulo").value = n.ancla && !n.titulo ? "" : titulo; requestAnimationFrame(() => crecerTitulo($("#eTitulo"))); pintarEtqEdicion();
   const conLista = eItems.length > 0;
-  $("#eTexto").placeholder = conLista ? "Notas sobre la lista (opcional)" : "Escribe la nota"; $("#eTexto").classList.toggle("corto", conLista && !$("#eTexto").value); $("#eTexto").rows = conLista && !$("#eTexto").value ? 1 : 3;
+  ponerModoRico(tieneFormato($("#eTexto").value) || lsGet("chispa.formato") === true);
+  $("#eTexto").placeholder = conLista ? "Notas sobre la lista (opcional)" : "Escribe la nota"; $("#eRico").dataset.ph = $("#eTexto").placeholder; $("#eTexto").classList.toggle("corto", conLista && !$("#eTexto").value); $("#eTexto").rows = conLista && !$("#eTexto").value ? 1 : 3;
   pintarOpcionesCat(n.para?.categoria); $("#eCat").value = n.para?.categoria || ""; $("#eNombre").value = n.para?.nombre || ""; pintarVerFicha(); $("#eFecha").value = n.fecha || ""; $("#eHora").value = n.hora || "";
   $("#eTransBtn").innerHTML = n.audio && !n.transcripcion && voz() ? `<button class="btn sec" id="eTranscribir" style="margin-top:10px">${ic("mic")}${n._transcribir ? "Transcribiendo…" : "Transcribir el audio"}</button>` : "";
   if ($("#eTranscribir")) $("#eTranscribir").onclick = async () => { $("#eTranscribir").textContent = "Transcribiendo…"; const ok = await transcribirNota(n, true); if (ok){ cerrarHojas(); abrirEdicion(n); } else $("#eTranscribir").textContent = "No se pudo. Reintentar"; };
@@ -2647,7 +2707,8 @@ function pintarAdjEdicion(){
   eAdj.nuevas.forEach((b, i) => tarjetaFoto(img => img.src = URL.createObjectURL(b instanceof Blob ? b : b.png), () => { eAdj.nuevas.splice(i, 1); pintarAdjEdicion(); },
     () => anotarFoto({nueva: b}), !(b instanceof Blob),
     async () => { const nuevo = await editarImagen(b); if (nuevo){ eAdj.nuevas[i] = await reducirFoto(nuevo); pintarAdjEdicion(); guardarEdicionPronto(); } }));
-  if (!eAdj.audio && !eAdj.fotos.length && !eAdj.nuevas.length) g.innerHTML = `<div class="sin-adj">Esta nota no tiene audio ni fotos.</div>`;
+  pintarArchEdicion();
+  if (!eAdj.audio && !eAdj.fotos.length && !eAdj.nuevas.length && !eAdj.archivos.length && !eAdj.nuevosArch.length) g.innerHTML = `<div class="sin-adj">Esta nota no tiene adjuntos.</div>`;
 }
 $("#eInFoto").onchange = async () => { for (const f of $("#eInFoto").files) eAdj.nuevas.push(await reducirFoto(f)); $("#eInFoto").value = ""; pintarAdjEdicion(); };
 $("#eBorrar").onclick = () => { if (confirm("¿Borrar esta nota? Irá a la Papelera de Cuaderna en tu OneDrive.")){ olvidarEdicion(); cerrarHojas(); borrarNota(editando); } };
@@ -2932,6 +2993,7 @@ function notaDelEditor(){
   const nuevo = $("#eNuevoItem")?.value.trim(), items = nuevo ? [...eItems, {hecho: false, texto: nuevo}] : eItems;
   const n = {...editando, texto: items.length ? unirLista($("#eTexto").value, items) : $("#eTexto").value.trim(), tipo: eTipoSel, ambito: eAmbSel,
     para: {categoria: $("#eCat").value, nombre: $("#eNombre").value.trim()}, fecha: $("#eFecha").value || null, hora: $("#eHora").value || null};
+  if (eEtq.length) n.etiquetas = [...eEtq];
   const t = $("#eTitulo").value.trim(); if (t) n.titulo = t; else delete n.titulo;
   n._imagenes = [...eAdj.fotos.map(r => ({ruta: r, dibujo: r.includes("trazo")})), ...eAdj.nuevas.map(b => b instanceof Blob ? {blob: b} : {blob: b.png, dibujo: true})];
   return n;
@@ -2972,7 +3034,7 @@ async function notaEnPdf(n){
   const subtitulo = t => { y += 5; sitio(12); doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(...GRIS); doc.text(latin1(t.toUpperCase()), M, y + 4); y += 8; };
   cabecera();
   // título y datos
-  const p = partesNota(n), {intro, items} = partirLista(n.texto);
+  const p = partesNota(n), {intro: intro0, items} = partirLista(n.texto), intro = planoMd(intro0);
   const titulo = n.titulo || (n.ancla ? `Ancla de las ${hora(n.creada)}` : (p.titulo || p.vacio || "Nota"));
   parrafo(titulo, {tam: 20, estilo: "bold", interlineado: 1.25}); y += 2;
   const datos = [`Anotada el ${fechaLarga(n.creada)} de ${new Date(n.creada).getFullYear()} a las ${hora(n.creada)}`];
@@ -3072,12 +3134,21 @@ async function guardarEdicion(){
   }
   for (const r of Object.keys(lienzos)) if (!n.fotos.includes(r)) delete lienzos[r];
   if (Object.keys(lienzos).length) n.lienzos = lienzos; else delete n.lienzos;
+  n.archivos = [...eAdj.archivos]; const paraLeer = [];
+  for (const a of eAdj.nuevosArch){
+    const r = `Archivos/${carpeta}/${n.id}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 4)}-${nombreSeguro(a.nombre)}`;
+    await idb.ponerBlob(r, a.blob); n.archivos.push({ruta: r, nombre: a.nombre, tipo: a.tipo, tam: a.blob.size}); nuevos.push(r); paraLeer.push({ruta: r, blob: a.blob, tipo: a.tipo, nombre: a.nombre});
+  }
+  if (!n.archivos.length) delete n.archivos;
+  if (n.textoArch){ for (const k of Object.keys(n.textoArch)) if (!(n.archivos || []).some(a => a.ruta === k)) delete n.textoArch[k]; if (!Object.keys(n.textoArch).length) delete n.textoArch; }
+  if (eEtq.length) n.etiquetas = [...eEtq]; else delete n.etiquetas;
   const cat = n.para.categoria;
   if (n.para.nombre && LISTAS.includes(cat)){
     config.contactos[cat] = config.contactos[cat] || [];
     if (!config.contactos[cat].some(x => norm(x) === norm(n.para.nombre))){ config.contactos[cat].push(n.para.nombre); guardarConfig(); }
   }
   cerrarHojas(); await guardarNotaLocal(n, nuevos); refrescar();
+  if (paraLeer.length) leerArchivos(n, paraLeer);
 }
 async function borrarNota(n){
   if (!n) return;
@@ -3627,7 +3698,7 @@ function notasParaPregunta(pregunta, persona){
 }
 async function preguntarNotas(pregunta, persona){
   const ns = notasParaPregunta(pregunta, persona);
-  const compacta = n => [`[${n.id}]`, isoDia(new Date(n.creada)), n.hecha ? "HECHA" : "PENDIENTE", n.fecha ? "para " + n.fecha + (n.hora ? " " + n.hora : "") : "", n.para?.nombre ? "con " + n.para.nombre : "", carpetaDe(n) ? "archivador " + carpetaDe(n).nombre : "",
+  const compacta = n => [`[${n.id}]`, isoDia(new Date(n.creada)), n.hecha ? "HECHA" : "PENDIENTE", n.fecha ? "para " + n.fecha + (n.hora ? " " + n.hora : "") : "", n.para?.nombre ? "con " + n.para.nombre : "", carpetaDe(n) ? "libreta " + carpetaDe(n).nombre : "",
     "|", (n.titulo ? n.titulo + ". " : "") + String(n.texto || n.transcripcion || "").replace(/\s+/g, " ").slice(0, 400), n.ia?.textoFotos ? "| fotos: " + n.ia.textoFotos.slice(0, 200) : ""].filter(Boolean).join(" ");
   const sistema = `Eres el asistente de Cuaderna.${sobreMi() ? " Sobre quien la usa: " + sobreMi() : ""} Hoy es ${hoyLargo()}. Responde en español, breve y concreto, usando SOLO las notas del usuario que te paso (cada una empieza con su [id]). Si no está en las notas, dilo. Responde SOLO con un JSON: {"respuesta": texto (puedes usar saltos de línea y viñetas con «- »), "notas": [ids de las notas en que te basas, máx. 8]}.`;
   const r = await llamarIA([{role: "system", content: sistema}, {role: "user", content: `NOTAS:\n${ns.map(compacta).join("\n")}\n\nPREGUNTA: ${pregunta}`}], {max: 700});
@@ -3657,6 +3728,221 @@ $("#pqIn").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftK
 $("#pqIdeas").addEventListener("click", e => { const b = e.target.closest("[data-pq]"); if (b){ $("#pqIn").value = b.dataset.pq; lanzarPregunta(); } });
 $("#hPregunta").addEventListener("click", e => { if (e.target.closest("[data-abrir]")) cerrarHojas(); }, true);
 $("#pqCerrar").onclick = () => cerrarHojas();
+
+/* ================= Biblioteca: formato, etiquetas, archivos, libretas y pilas ================= */
+// ---------- formato: Markdown sencillo, que en OneDrive sigue siendo texto legible ----------
+const RX_MD = /(\*\*[^*\n]+\*\*|^#{1,3} |^\s*[-*] |^\s*\d+\. |^\|.*\|\s*$|\[[^\]\n]+\]\([^)\s]+\))/m;
+const tieneFormato = t => RX_MD.test(t || "");
+function planoMd(t){
+  return String(t || "").replace(/^#{1,3}\s+/gm, "").replace(/\*\*([^*\n]+)\*\*/g, "$1").replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,;:!?]|$)/gm, "$1$2")
+    .replace(/\[([^\]\n]+)\]\(([^)\s]+)\)/g, "$1").replace(/^\|?\s*:?-{3,}[-|:\s]*$/gm, "").replace(/^\|(.*)\|\s*$/gm, (m, c) => c.split("|").map(x => x.trim()).filter(Boolean).join(" · ")).replace(/^\s*[-*]\s+/gm, "• ");
+}
+function mdEnLinea(t){
+  return esc(t).replace(/\[([^\]\n]+)\]\((https?:\/\/[^)\s]+)\)/g, (m, a, u) => `<a href="${u}" target="_blank" rel="noopener">${a}</a>`)
+    .replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>").replace(/(^|[\s(>])\*([^*\n]+)\*(?=[\s).,;:!?<]|$)/g, "$1<i>$2</i>");
+}
+function mdAHtml(md){
+  const l = String(md || "").split("\n"), out = []; let i = 0;
+  const es = (rx) => i < l.length && rx.test(l[i]);
+  while (i < l.length){
+    const x = l[i];
+    if (/^#{1,3}\s+/.test(x)){ out.push(`<h3>${mdEnLinea(x.replace(/^#{1,3}\s+/, ""))}</h3>`); i++; continue; }
+    if (/^\s*[-*]\s+/.test(x)){ const it = []; while (es(/^\s*[-*]\s+/)) it.push(`<li>${mdEnLinea(l[i++].replace(/^\s*[-*]\s+/, ""))}</li>`); out.push(`<ul>${it.join("")}</ul>`); continue; }
+    if (/^\s*\d+\.\s+/.test(x)){ const it = []; while (es(/^\s*\d+\.\s+/)) it.push(`<li>${mdEnLinea(l[i++].replace(/^\s*\d+\.\s+/, ""))}</li>`); out.push(`<ol>${it.join("")}</ol>`); continue; }
+    if (/^\|.*\|\s*$/.test(x)){ const filas = []; while (es(/^\|.*\|\s*$/)){ if (!/^\|?\s*:?-{3,}[-|:\s]*$/.test(l[i])) filas.push(l[i].trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim())); i++; }
+      out.push(`<table>${filas.map((f, k) => `<tr>${f.map(c => k ? `<td>${mdEnLinea(c) || "<br>"}</td>` : `<th>${mdEnLinea(c) || "<br>"}</th>`).join("")}</tr>`).join("")}</table>`); continue; }
+    out.push(x.trim() ? `<div>${mdEnLinea(x)}</div>` : "<div><br></div>"); i++;
+  }
+  return out.join("");
+}
+function htmlAMd(raiz){
+  const enLinea = nodo => [...nodo.childNodes].map(c => {
+    if (c.nodeType === 3) return c.nodeValue.replace(/ /g, " ");
+    if (c.nodeType !== 1) return "";
+    const t = c.tagName, d = enLinea(c), estilo = c.getAttribute("style") || "";
+    if (t === "BR") return "\n";
+    if ((t === "B" || t === "STRONG" || /font-weight:\s*(bold|[6-9]00)/.test(estilo)) && d.trim()) return `**${d.trim()}**`;
+    if ((t === "I" || t === "EM" || /font-style:\s*italic/.test(estilo)) && d.trim()) return `*${d.trim()}*`;
+    if (t === "A" && c.getAttribute("href")) return `[${d}](${c.getAttribute("href")})`;
+    if (["DIV", "P", "H1", "H2", "H3", "H4", "LI"].includes(t)) return "\n" + d + "\n";
+    return d;
+  }).join("");
+  const lineas = [];
+  for (const c of raiz.childNodes){
+    if (c.nodeType === 3){ if (c.nodeValue.trim()) lineas.push(...c.nodeValue.split("\n")); continue; }
+    if (c.nodeType !== 1) continue;
+    const t = c.tagName;
+    if (/^H[1-6]$/.test(t)) lineas.push("## " + enLinea(c).replace(/\n+/g, " ").trim());
+    else if (t === "UL") for (const li of c.querySelectorAll(":scope > li")) lineas.push("- " + enLinea(li).replace(/\n+/g, " ").trim());
+    else if (t === "OL") [...c.querySelectorAll(":scope > li")].forEach((li, k) => lineas.push(`${k + 1}. ` + enLinea(li).replace(/\n+/g, " ").trim()));
+    else if (t === "TABLE") [...c.querySelectorAll("tr")].forEach((tr, k) => { const cs = [...tr.children]; lineas.push("| " + cs.map(td => enLinea(td).replace(/\|/g, "/").replace(/\n+/g, " ").trim()).join(" | ") + " |"); if (k === 0) lineas.push("|" + cs.map(() => " --- ").join("|") + "|"); });
+    else if (t === "BR") lineas.push("");
+    else lineas.push(...enLinea(c).replace(/^\n+|\n+$/g, "").split(/\n+/));
+  }
+  return lineas.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+// el textarea sigue siendo la fuente de verdad: el editor con formato solo lo pinta y lo actualiza
+let modoRico = false, desdeRico = false;
+(() => {
+  const tx = $("#eTexto"), d = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value");
+  Object.defineProperty(tx, "value", {configurable: true, get(){ return d.get.call(this); }, set(v){ d.set.call(this, v); if (!desdeRico && modoRico) $("#eRico").innerHTML = mdAHtml(v); }});
+})();
+function ponerModoRico(on){
+  modoRico = on; const tx = $("#eTexto");
+  $("#eRico").classList.toggle("oculto", !on); tx.classList.toggle("oculto", on); $("#eFormato").classList.toggle("oculto", !on); $("#eAa").classList.toggle("on", on);
+  if (on){ $("#eRico").innerHTML = mdAHtml(tx.value); $("#eRico").dataset.ph = tx.placeholder; try { document.execCommand("styleWithCSS", false, false); } catch(e){} }
+  else requestAnimationFrame(() => { tx.style.height = "auto"; tx.style.height = Math.max(80, tx.scrollHeight) + "px"; });
+}
+$("#eAa").onclick = () => { ponerModoRico(!modoRico); lsSet("chispa.formato", modoRico); (modoRico ? $("#eRico") : $("#eTexto")).focus(); };
+$("#eRico").addEventListener("input", () => { desdeRico = true; $("#eTexto").value = htmlAMd($("#eRico")); desdeRico = false; });
+$("#eRico").addEventListener("paste", e => { const t = e.clipboardData?.getData("text/plain"); if (t !== undefined){ e.preventDefault(); document.execCommand("insertText", false, t); } });
+for (const ev of ["mousedown", "pointerdown"]) $("#eFormato").addEventListener(ev, e => { if (e.target.closest("[data-fmt]")) e.preventDefault(); });
+$("#eFormato").addEventListener("click", e => {
+  const b = e.target.closest("[data-fmt]"); if (!b) return; const r = $("#eRico"); r.focus();
+  const f = b.dataset.fmt, cmd = (c, v) => document.execCommand(c, false, v);
+  if (f === "b") cmd("bold"); else if (f === "i") cmd("italic");
+  else if (f === "h") cmd("formatBlock", /^h\d$/i.test(document.queryCommandValue("formatBlock")) ? "div" : "h3");
+  else if (f === "ul") cmd("insertUnorderedList"); else if (f === "ol") cmd("insertOrderedList");
+  else if (f === "a"){ const sel = String(getSelection()); const u = prompt(sel ? `Enlace para «${sel}»:` : "Dirección del enlace:", "https://"); if (u && u !== "https://"){ const url = /^https?:\/\//.test(u) ? u : "https://" + u; sel ? cmd("createLink", url) : cmd("insertHTML", `<a href="${esc(url)}">${esc(url)}</a>&nbsp;`); } }
+  else if (f === "tabla") cmd("insertHTML", "<table><tr><th>Columna 1</th><th>Columna 2</th></tr><tr><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td></tr></table><div><br></div>");
+  r.dispatchEvent(new Event("input", {bubbles: true}));
+});
+
+// ---------- etiquetas ----------
+const RX_ETQ = /(^|[\s(])#([\p{L}\p{N}_-]{2,40})/gu;
+const limpiarEtq = t => String(t || "").replace(/^#+/, "").trim().toLowerCase().replace(/\s+/g, "-").replace(/[^\p{L}\p{N}_-]/gu, "").slice(0, 40);
+// se comparan sin tildes (#garantia y #garantía son la misma) pero se muestran como se escribieron
+function etiquetasDe(n){
+  const m = new Map();
+  for (const e of [...(n.etiquetas || []), ...[...`${n.titulo || ""}\n${n.texto || ""}`.matchAll(RX_ETQ)].map(x => x[2])].map(limpiarEtq).filter(Boolean)) if (!m.has(norm(e))) m.set(norm(e), e);
+  return [...m.values()];
+}
+function todasEtiquetas(){ const m = new Map(); for (const n of deNotas()) for (const e of etiquetasDe(n)){ const k = norm(e), x = m.get(k) || [e, 0]; x[1]++; if (/[^\x00-\x7f]/.test(e)) x[0] = e; m.set(k, x); } return [...m.values()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); }
+let eEtq = [];
+function pintarEtqEdicion(){
+  const enTexto = [...`${$("#eTitulo").value}\n${$("#eTexto").value}`.matchAll(RX_ETQ)].map(m => limpiarEtq(m[2])).filter(e => !eEtq.some(x => norm(x) === norm(e)));
+  $("#eEtq").innerHTML = eEtq.map((e, i) => `<span class="etq-c">#${esc(e)}<button type="button" data-etqx="${i}" aria-label="Quitar etiqueta">${ic("x")}</button></span>`).join("")
+    + [...new Set(enTexto)].map(e => `<span class="etq-c auto" title="Escrita en el texto">#${esc(e)}</span>`).join("");
+  $("#eEtqLista").innerHTML = todasEtiquetas().map(([e]) => `<option value="${esc(e)}">`).join("");
+}
+function anadirEtq(v){ const e = limpiarEtq(v); if (e && !eEtq.some(x => norm(x) === norm(e))){ eEtq.push(e); pintarEtqEdicion(); guardarEdicionPronto(); } $("#eEtqIn").value = ""; }
+$("#eEtqIn").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === ","){ e.preventDefault(); anadirEtq(e.target.value); } });
+$("#eEtqIn").addEventListener("change", e => anadirEtq(e.target.value));
+$("#eEtqIn").addEventListener("blur", e => { if (e.target.value.trim()) anadirEtq(e.target.value); });
+for (const id of ["#eTexto", "#eTitulo", "#eRico"]) $(id).addEventListener("input", () => { clearTimeout(pintarEtqEdicion.t); pintarEtqEdicion.t = setTimeout(pintarEtqEdicion, 300); });
+$("#eEtq").addEventListener("click", e => { const b = e.target.closest("[data-etqx]"); if (b){ eEtq.splice(+b.dataset.etqx, 1); pintarEtqEdicion(); guardarEdicionPronto(); } });
+
+// ---------- archivos adjuntos (PDF, documentos, lo que sea) ----------
+const nombreSeguro = t => String(t || "archivo").normalize("NFC").replace(/[\\/:*?"<>|#%]+/g, " ").replace(/\s+/g, " ").trim().slice(-80) || "archivo";
+const tamLegible = b => b < 1024 ? b + " B" : b < 1048576 ? Math.round(b / 1024) + " KB" : (b / 1048576).toFixed(1).replace(".", ",") + " MB";
+const extDe = t => (String(t).match(/\.([a-z0-9]{1,5})$/i)?.[1] || "doc").toLowerCase();
+$("#eAddArch").innerHTML = ic("clip") + "Archivo";
+$("#eAddArch").onclick = () => $("#eInArch").click();
+$("#eInArch").onchange = () => {
+  for (const f of $("#eInArch").files){
+    if (f.size > 50 * 1048576){ toast(`«${f.name}» pasa de 50 MB`, "alerta", 4000); continue; }
+    eAdj.nuevosArch.push({blob: f, nombre: f.name, tipo: f.type || "application/octet-stream"});
+  }
+  $("#eInArch").value = ""; pintarAdjEdicion(); guardarEdicionPronto();
+};
+function pintarArchEdicion(){
+  const fila = (a, i, nuevo) => `<div class="arch"><button class="arch" style="padding:0;background:none" data-archv="${nuevo ? "n" : "e"}${i}"><span class="ext">${esc(extDe(a.nombre))}</span><span class="an"><b>${esc(a.nombre)}</b><small>${tamLegible(a.tam ?? a.blob?.size ?? 0)}${nuevo ? " · se subirá al guardar" : ""}</small></span></button><button class="ibtn" data-archx="${nuevo ? "n" : "e"}${i}" aria-label="Quitar archivo">${ic("x")}</button></div>`;
+  $("#eArchs").innerHTML = eAdj.archivos.map((a, i) => fila(a, i, false)).join("") + eAdj.nuevosArch.map((a, i) => fila(a, i, true)).join("");
+}
+$("#eArchs").addEventListener("click", async e => {
+  const v = e.target.closest("[data-archv]"), x = e.target.closest("[data-archx]");
+  if (x){ const k = x.dataset.archx, i = +k.slice(1);
+    if (k[0] === "n") eAdj.nuevosArch.splice(i, 1);
+    else if (confirm(`¿Quitar «${eAdj.archivos[i].nombre}» de esta nota?`)){ eAdj.quitar.push(eAdj.archivos[i].ruta); eAdj.archivos.splice(i, 1); }
+    pintarAdjEdicion(); return; }
+  if (v){ const k = v.dataset.archv, i = +k.slice(1); abrirArchivo(k[0] === "n" ? eAdj.nuevosArch[i] : eAdj.archivos[i]); }
+});
+async function abrirArchivo(a){
+  try {
+    toast("Abriendo…", "clip", 1500);
+    const blob = a.blob || await idb.blob(a.ruta) || await descargarRuta(a.ruta);
+    const f = new Blob([blob], {type: a.tipo || blob.type || "application/octet-stream"});
+    if (esApp()) return await compartirArchivo(f, a.nombre, a.nombre);
+    const url = URL.createObjectURL(f);
+    if (/pdf|image|text|video|audio/.test(f.type)) window.open(url, "_blank");
+    else { const l = document.createElement("a"); l.href = url; l.download = a.nombre; document.body.appendChild(l); l.click(); l.remove(); }
+    setTimeout(() => URL.revokeObjectURL(url), 120000);
+  } catch(e){ toast("No se pudo abrir el archivo", "alerta", 4000); }
+}
+// el texto de los PDF y documentos se guarda para que la búsqueda también encuentre lo de dentro
+let pdfjsP = null;
+function cargarPdfJs(){ return pdfjsP ||= new Promise((ok, ko) => { const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+  s.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; ok(window.pdfjsLib); };
+  s.onerror = () => { pdfjsP = null; ko(new Error("No se pudo cargar el lector de PDF")); }; document.head.appendChild(s); }); }
+async function textoDeArchivo(blob, tipo, nombre){
+  try {
+    if (/pdf/.test(tipo) || /\.pdf$/i.test(nombre)){
+      const pdfjs = await cargarPdfJs(), doc = await pdfjs.getDocument({data: new Uint8Array(await blob.arrayBuffer())}).promise; let t = "";
+      for (let p = 1; p <= Math.min(doc.numPages, 60) && t.length < 40000; p++){ const c = await (await doc.getPage(p)).getTextContent(); t += c.items.map(i => i.str).join(" ") + "\n"; }
+      return t.replace(/[ \t]+/g, " ").trim().slice(0, 40000);
+    }
+    if (/^text\//.test(tipo) || /\.(txt|md|csv|json)$/i.test(nombre)) return (await blob.text()).slice(0, 40000);
+  } catch(e){ console.warn(e); }
+  return "";
+}
+async function leerArchivos(n, lista){
+  let cambio = false;
+  for (const a of lista){ const t = await textoDeArchivo(a.blob, a.tipo, a.nombre); if (t){ n.textoArch = {...(n.textoArch || {}), [a.ruta]: t}; cambio = true; } }
+  if (cambio){ await guardarNotaLocal(n); }
+}
+
+// ---------- libretas y pilas ----------
+let libEditando = null;
+function abrirLibreta(c){
+  libEditando = c || null;
+  $("#lbTit").textContent = c ? "Libreta" : "Nueva libreta"; $("#lbNombre").value = c?.nombre || ""; $("#lbPila").value = c?.pila || "";
+  $("#lbPilas").innerHTML = [...new Set(archivadores().map(x => x.pila).filter(Boolean))].map(p => `<option value="${esc(p)}">`).join("");
+  $("#lbBorrar").classList.toggle("oculto", !c);
+  abrirHoja("#hLibreta"); setTimeout(() => $("#lbNombre").focus(), 250);
+}
+$("#lbCerrar").onclick = () => cerrarHojas();
+$("#lbGuardar").onclick = () => {
+  const nombre = $("#lbNombre").value.trim(), pila = $("#lbPila").value.trim();
+  if (!nombre){ toast("Ponle un nombre", "alerta"); $("#lbNombre").focus(); return; }
+  if (libEditando){ libEditando.nombre = nombre; if (pila) libEditando.pila = pila; else delete libEditando.pila; config.carpetas = [...archivadores()]; toast("Libreta guardada", "libro"); }
+  else { const c = {id: "c" + Date.now().toString(36), nombre, ...(pila ? {pila} : {})}; config.carpetas = [...archivadores(), c]; toast(`Libreta «${nombre}» creada`, "libro"); }
+  guardarConfig(); cerrarHojas(); refrescar();
+};
+$("#lbBorrar").onclick = () => {
+  const c = libEditando; if (!c || !confirm(`¿Borrar la libreta «${c.nombre}»? Las notas no se borran: solo salen de la libreta.`)) return;
+  config.carpetas = archivadores().filter(x => x.id !== c.id); guardarConfig();
+  for (const n of notas.filter(x => x.carpeta === c.id)){ delete n.carpeta; guardarNotaLocal(n); }
+  if (buzon === "c:" + c.id) buzon = null;
+  cerrarHojas(); toast(`Libreta «${c.nombre}» borrada`, "borrar"); refrescar();
+};
+
+// ---------- la pestaña Biblioteca ----------
+function buscarEnTodo(t){ $("#q").value = t; buzon = null; ver("notas"); }
+function pintarBiblio(){
+  const ns = deNotas(), libs = archivadores(), etq = todasEtiquetas();
+  const pilas = [...new Set(libs.map(c => c.pila || ""))].sort((a, b) => (a === "") - (b === "") || a.localeCompare(b));
+  const tarjeta = c => { const l = ns.filter(n => n.carpeta === c.id), p = l.filter(n => !n.hecha && !enArchivo(n)).length;
+    return `<div class="libreta"><button class="lib-abrir" data-lib="${esc(c.id)}">${ic("libro")}<b>${esc(c.nombre)}</b><small>${l.length} nota${l.length === 1 ? "" : "s"}${p ? ` · ${p} pendiente${p > 1 ? "s" : ""}` : ""}</small></button><button class="ibtn lib-menu" data-libm="${esc(c.id)}" aria-label="Editar la libreta">${ic("puntos")}</button></div>`; };
+  const conArch = ns.filter(n => n.archivos?.length).sort((a, b) => (b.actualizada || b.creada).localeCompare(a.actualizada || a.creada)).slice(0, 8);
+  $("#vBiblio").innerHTML = cab("Biblioteca", "Todo lo que quieres conservar, ordenado") + `
+    <div class="busca"><span>${ic("buscar")}</span><input id="qB" type="search" placeholder="Buscar en todo: textos, fotos, PDF y #etiquetas" enterkeyhint="search"></div>
+    <div class="dia">Libretas <span class="c">${libs.length}</span></div>
+    ${pilas.map(p => { const l = libs.filter(c => (c.pila || "") === p); return `<div class="pila">${p || pilas.length > 1 ? `<div class="pila-t">${ic("carpeta")}${esc(p || "Sin pila")}<span class="c">${l.length}</span></div>` : ""}<div class="libretas">${l.map(tarjeta).join("")}</div></div>`; }).join("")}
+    ${libs.length ? "" : `<p class="ayuda-b">Crea libretas para lo que quieras guardar: recetas, facturas, un viaje… Y agrúpalas en pilas.</p>`}
+    <button class="btn sec" id="bNuevaLib">${ic("mas")}Nueva libreta</button>
+    <div class="dia">Etiquetas <span class="c">${etq.length}</span></div>
+    ${etq.length ? `<div class="etq-nube">${etq.map(([e, c]) => `<button class="etq" data-etq="${esc(e)}">#${esc(e)}<i>${c}</i></button>`).join("")}</div>` : `<p class="ayuda-b">Escribe #algo en cualquier nota, o añádelas en el editor (Detalles › Etiquetas), y aparecerán aquí.</p>`}
+    <div class="dia">Últimos archivos</div>
+    ${conArch.length ? `<div class="lista">${conArch.map(n => fila(n)).join("")}</div>` : `<p class="ayuda-b">Adjunta PDF, documentos o cualquier archivo desde una nota, con el botón «Archivo» de Adjuntos. También se busca dentro de los PDF.</p>`}`;
+  $("#qB").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.value.trim()) buscarEnTodo(e.target.value.trim()); });
+  $("#bNuevaLib").onclick = () => abrirLibreta(null);
+}
+$("#main").addEventListener("click", e => {
+  const a = e.target.closest("[data-lib]"), m = e.target.closest("[data-libm]"), t = e.target.closest("[data-etq]");
+  if (a){ $("#q").value = ""; ver("notas"); abrirBuzon("c:" + a.dataset.lib); }
+  else if (m){ const c = archivadores().find(x => x.id === m.dataset.libm); if (c) abrirLibreta(c); }
+  else if (t) buscarEnTodo("#" + t.dataset.etq);
+});
 
 /* ================= App Android (Capacitor) ================= */
 const CAP = window.Capacitor;
@@ -4007,9 +4293,9 @@ async function revisarAvisos(){
 setInterval(revisarAvisos, 30000);
 
 /* ================= Navegación ================= */
-const VISTAS = [["anotar", "spark", "Anotar"], ["hoy", "sun", "Hoy"], ["notas", "lista", "Notas"], ["estad", "grafico", "Estadísticas"], ["ajustes", "ajustes", "Ajustes"], ["ayuda", "ayuda", "Ayuda"]];
+const VISTAS = [["anotar", "spark", "Anotar"], ["hoy", "sun", "Hoy"], ["notas", "lista", "Notas"], ["biblio", "libro", "Biblioteca"], ["estad", "grafico", "Estadísticas"], ["ajustes", "ajustes", "Ajustes"], ["ayuda", "ayuda", "Ayuda"]];
 $("#sideNav").innerHTML = VISTAS.map(([v, i, t]) => `<button data-v="${v}">${ic(i)}<span>${t}</span>${v === "hoy" ? '<span class="badge oculto"></span>' : ""}</button>`).join("");
-$("#tabs").innerHTML = [["anotar", "spark", "Anotar"], ["hoy", "sun", "Hoy"], ["notas", "lista", "Notas"], ["ajustes", "ajustes", "Más"]]
+$("#tabs").innerHTML = [["anotar", "spark", "Anotar"], ["hoy", "sun", "Hoy"], ["notas", "lista", "Notas"], ["biblio", "libro", "Biblioteca"], ["ajustes", "ajustes", "Más"]]
   .map(([v, i, t]) => `<button data-v="${v}">${ic(i)}<span>${t}</span>${v === "hoy" ? '<span class="badge oculto"></span>' : ""}</button>`).join("");
 let vista = "anotar";
 function ver(v){
@@ -4020,7 +4306,7 @@ function ver(v){
   refrescar(); scrollTo(0, 0);
 }
 document.querySelectorAll("#sideNav button,#tabs button").forEach(b => b.onclick = () => ver(b.dataset.v));
-function refrescar(){ ({anotar: () => {}, hoy: pintarHoy, notas: pintarNotas, estad: pintarEstad, ajustes: pintarAjustes, ayuda: pintarAyuda})[vista](); pintarEstado(); pintarBadges(); }
+function refrescar(){ ({anotar: () => {}, hoy: pintarHoy, notas: pintarNotas, biblio: pintarBiblio, estad: pintarEstad, ajustes: pintarAjustes, ayuda: pintarAyuda})[vista](); pintarEstado(); pintarBadges(); }
 function pintarBadges(){
   const hoy = hoyISO(), n = deNotas().filter(x => !x.hecha && (x.ancla || (x.fecha && x.fecha <= hoy))).length;
   document.querySelectorAll(".badge").forEach(b => { b.textContent = n; b.classList.toggle("oculto", !n); });
@@ -4160,8 +4446,8 @@ function pintarNotas(){
       return tarjeta("c:" + c.id, "carpeta", c.nombre, p, l.length - p ? `${l.length - p} hecha${l.length - p > 1 ? "s" : ""}` : "", "bz-carpeta"); }).join("");
     $("#listaNotas").innerHTML = `<button class="preguntar" id="bzPreguntar">${ic("spark")}<span><b>Pregúntale a tus notas</b><small>${ia() ? "«¿Qué tengo esta semana?», «¿Qué hablé con el fontanero?»" : "Actívalo en Ajustes con tu clave de IA"}</small></span></button>
       <div class="buzones">${html}</div>
-      <div class="dia">Mis archivadores</div>
-      <div class="buzones">${cs}<button class="buzon bz-nuevo" id="bzNuevo">${ic("mas")}<span class="bz-t">Nuevo archivador</span><small>Por asunto, viaje o proyecto</small></button></div>`;
+      <div class="dia">Mis libretas</div>
+      <div class="buzones">${cs}<button class="buzon bz-nuevo" id="bzNuevo">${ic("mas")}<span class="bz-t">Nueva libreta</span><small>Por asunto, viaje o proyecto</small></button></div>`;
     const gente = personas().slice(0, 6);
     if (gente.length) $("#listaNotas").insertAdjacentHTML("beforeend", `<div class="dia">Personas y asuntos</div><div class="gente">${gente.map(tarjetaPersona).join("")}<button class="persona-c ver-todas" data-buzon="personas">${ic("user")}<span><b>Ver todos</b><small>${personas().length} contactos</small></span></button></div>`);
     $("#bzNuevo").onclick = async () => { const c = await nuevaCarpeta(); if (c) abrirBuzon("c:" + c.id); };
@@ -4175,18 +4461,18 @@ function pintarNotas(){
   const titulo = q.length ? "Resultados en todas las notas" : car ? car.nombre : bz.t;
   $("#buzonCab").innerHTML = `<div class="bz-cab"><button class="ibtn" id="bzVolver" aria-label="Volver a los buzones">${ic("atras")}</button>
     <div class="bz-tit">${ic(q.length ? "buscar" : car ? "carpeta" : bz.ic)}<span>${esc(titulo)}</span></div>
-    ${car ? `<button class="ibtn" id="bzMenu" aria-label="Opciones del archivador">${ic("puntos")}</button>` : ""}</div>`;
+    ${car ? `<button class="ibtn" id="bzMenu" aria-label="Opciones de la libreta">${ic("puntos")}</button>` : ""}</div>`;
   $("#bzVolver").onclick = () => { $("#q").value = ""; abrirBuzon(null); };
-  if ($("#bzMenu")) $("#bzMenu").onclick = () => menuCarpeta(car);
+  if ($("#bzMenu")) $("#bzMenu").onclick = () => abrirLibreta(car);
   const usarEstado = q.length || bz?.k === "todas";
   let lista = deNotas().filter(n => {
     if (!q.length){ if (car ? n.carpeta !== car.id : !bz.f(n)) return false; }
     for (const g of GRUPOS){ if (g.k === "estado" && !usarEstado) continue; if (filtro[g.k].length && !filtro[g.k].includes(valorFiltro(n, g.k))) return false; }
-    if (q.length){ const h = norm([n.titulo, n.texto, n.transcripcion, n.para?.nombre, CAT[n.para?.categoria], TIPOS[n.tipo]?.[0], n.terminal, fechaLarga(n.creada), n.fecha ? fechaLarga(n.fecha) : "", n.nocturna ? "noche nocturna" : "", n.ancla ? "ancla" : "", carpetaDe(n)?.nombre, n.importante ? "importante estrella" : "", n.ia?.textoFotos, n.ia?.resumen].join(" ")); if (!q.every(p => h.includes(p))) return false; }
+    if (q.length){ const h = norm([n.titulo, n.texto, n.transcripcion, etiquetasDe(n).map(e => "#" + e).join(" "), n.ia?.textoFotos, Object.values(n.textoArch || {}).join(" "), (n.archivos || []).map(a => a.nombre).join(" "), n.para?.nombre, CAT[n.para?.categoria], TIPOS[n.tipo]?.[0], n.terminal, fechaLarga(n.creada), n.fecha ? fechaLarga(n.fecha) : "", n.nocturna ? "noche nocturna" : "", n.ancla ? "ancla" : "", carpetaDe(n)?.nombre, n.importante ? "importante estrella" : "", n.ia?.textoFotos, n.ia?.resumen].join(" ")); if (!q.every(p => h.includes(p))) return false; }
     return true;
   });
   if (!lista.length){
-    $("#listaNotas").innerHTML = `<div class="vacio-grande"><div class="halo">${ic(q.length ? "buscar" : car ? "carpeta" : bz.ic)}</div><b>${q.length ? "No hay notas con eso" : car ? "Archivador vacío" : "Nada por aquí"}</b><span>${q.length ? "Prueba con otra palabra o quita algún filtro." : car ? "Desde una nota, en Detalles › Archivador, elige este archivador." : bz.d + "."}</span></div>`;
+    $("#listaNotas").innerHTML = `<div class="vacio-grande"><div class="halo">${ic(q.length ? "buscar" : car ? "carpeta" : bz.ic)}</div><b>${q.length ? "No hay notas con eso" : car ? "Libreta vacía" : "Nada por aquí"}</b><span>${q.length ? "Prueba con otra palabra o quita algún filtro." : car ? "Desde una nota, en Detalles › Libreta, elige esta libreta." : bz.d + "."}</span></div>`;
     return;
   }
   // agrupación según el buzón
@@ -4278,9 +4564,9 @@ async function fichaEnPdf(p){
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-persona]"); if (!b) return; e.stopPropagation(); e.preventDefault(); lsSet("chispa.desdePersonas", false); cerrarHojas(); $("#q").value = ""; ver("notas"); abrirBuzon("p:" + b.dataset.persona); }, true);
 async function nuevaCarpeta(){
-  const nombre = (prompt("Nombre del archivador (por ejemplo, Casa nueva o Viaje a Lisboa):") || "").trim(); if (!nombre) return null;
+  const nombre = (prompt("Nombre de la libreta (por ejemplo, Casa nueva o Viaje a Lisboa):") || "").trim(); if (!nombre) return null;
   const ya = archivadores().find(c => norm(c.nombre) === norm(nombre)); if (ya) return ya;
-  const c = {id: "c" + Date.now().toString(36), nombre}; config.carpetas = [...archivadores(), c]; guardarConfig(); toast(`Archivador «${nombre}» creado`, "carpeta"); return c;
+  const c = {id: "c" + Date.now().toString(36), nombre}; config.carpetas = [...archivadores(), c]; guardarConfig(); toast(`Libreta «${nombre}» creada`, "libro"); return c;
 }
 function menuCarpeta(c){
   const op = prompt(`Archivador «${c.nombre}»\n\nEscribe un nombre nuevo para renombrarlo, o escribe BORRAR para eliminarlo (las notas no se borran, solo salen del archivador).`, c.nombre);
@@ -4538,7 +4824,7 @@ function pintarAyuda(){
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
   <h3>Autoría</h3><div class="autoria izq"><img src="autor.jpg" alt="Morián, José Antonio" loading="lazy"><div>Cuaderna es una creación de <b>José Antonio Morián</b>: idea, diseño y desarrollo.<small>© ${new Date().getFullYear()} José Antonio Morián. Todos los derechos reservados.</small></div></div>
-  <h3>Novedades</h3><p><b>0.23.4</b>: al anotar, el botón para descartar es ahora «Borrar», en rojo, y solo aparece cuando hay algo escrito.<br><b>0.23.3</b>: la fecha de una nota se ve escrita y tiene un botón claro para quitarla o anular la cita del calendario (con deshacer).<br><b>0.23.2</b>: avisos rediseñados, ahora abajo; campo de «Pregúntale a tus notas» más limpio.<br><b>0.23.1</b>: «Pregúntale a tus notas» con botón Cerrar; el botón «atrás» del móvil cierra la ventana abierta en vez de salir.<br><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y archivadores propios. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.24</b>: nueva pestaña <b>Biblioteca</b>: libretas agrupadas en pilas, etiquetas (#algo), descripción con formato (negritas, títulos, listas, enlaces y tablas), archivos adjuntos de cualquier tipo y búsqueda dentro de PDF, fotos y etiquetas. Los «archivadores» pasan a llamarse libretas.<br><b>0.23.4</b>: al anotar, el botón para descartar es ahora «Borrar», en rojo, y solo aparece cuando hay algo escrito.<br><b>0.23.3</b>: la fecha de una nota se ve escrita y tiene un botón claro para quitarla o anular la cita del calendario (con deshacer).<br><b>0.23.2</b>: avisos rediseñados, ahora abajo; campo de «Pregúntale a tus notas» más limpio.<br><b>0.23.1</b>: «Pregúntale a tus notas» con botón Cerrar; el botón «atrás» del móvil cierra la ventana abierta en vez de salir.<br><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y libretas propias. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Cuaderna para móvil y PC, sincronizada con OneDrive.</p>`;
   $("#ayudaSug").onclick = abrirSugerencia;
 }
