@@ -638,6 +638,21 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .menu-foto button:active{background:var(--raise)}.menu-foto svg{width:20px;height:20px;color:var(--muted)}
 #tj{z-index:96}
 .tj-paso{flex:1;display:flex;flex-direction:column;min-height:0}
+.tj-marco.doc{width:150px;height:205px}
+.doc-mins{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;margin-bottom:16px}
+.doc-min{position:relative;background:#fff;border-radius:8px;box-shadow:0 4px 14px rgba(10,16,32,.18);overflow:hidden}
+.doc-min img{display:block;width:100%;aspect-ratio:.707;object-fit:contain;background:#fff}
+.doc-min span{position:absolute;left:6px;bottom:6px;background:rgba(43,29,20,.8);color:#fff;border-radius:8px;padding:1px 8px;font-size:12px;font-weight:600}
+.doc-min button{position:absolute;top:4px;right:4px;width:30px;height:30px;border-radius:50%;background:rgba(43,29,20,.75);color:#fff;display:grid;place-items:center}.doc-min button svg{width:16px;height:16px}
+.doc-filtro{margin-bottom:14px}
+.doc-nombre{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)}.doc-nombre input{height:48px;border-radius:14px;border:1px solid var(--line);background:var(--bg);padding:0 14px;font-size:16px;color:var(--text)}
+.bib-acc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 4px}
+.bib-acc button{display:flex;align-items:center;gap:10px;padding:14px;border-radius:16px;background:var(--surface);border:1px solid var(--line);font-weight:600;text-align:left;line-height:1.2}
+.bib-acc svg{width:24px;height:24px;color:var(--spark);flex:none}
+.plantillas{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none}
+.plantilla{flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:128px;padding:12px;border-radius:16px;background:var(--surface);border:1px solid var(--line);text-align:left}
+.plantilla .pi{font-size:24px;line-height:1}.plantilla b{font-size:14.5px;line-height:1.2}.plantilla small{color:var(--muted);font-size:12px;line-height:1.25}
+.plantilla.mia{border-style:dashed}
 .tj-guia{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center;color:var(--muted);font-size:15px;line-height:1.5}
 .tj-marco{width:240px;height:152px;border:3px dashed var(--spark);border-radius:16px;display:grid;place-items:center;color:var(--spark-deep)}.tj-marco svg{width:40px;height:40px}
 .tj-guia p{max-width:420px;margin:0}
@@ -905,6 +920,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
   <h3><span data-i="compartir"></span>Compartir o asignar</h3>
   <button class="btn sec ev-pdf ev-asig" id="evAsignar"><span data-i="flecha"></span><span><b>Pasar a otra persona</b><small>Familia, amigos o colegas: le llega con el motivo y la añade a su Cuaderna</small></span></button>
   <button class="btn sec ev-pdf" id="evPdf"><span data-i="compartir"></span>PDF para WhatsApp, guardar o imprimir</button>
+  <button class="btn sec ev-pdf" id="evPlantilla"><span data-i="plantilla"></span>Guardar como plantilla</button>
   <div class="ev-sep">o envíala por correo, con el PDF adjunto</div>
   <input type="email" id="evPara" placeholder="correo@empresa.com" autocomplete="email" inputmode="email">
   <div class="pq-ideas" id="evRec"></div>
@@ -952,16 +968,24 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <!-- Tarjeta de visita -->
 <div id="tj" class="lz oculto" role="dialog" aria-label="Tarjeta de visita">
-  <div class="lz-top"><button class="lz-b" id="tjCerrar" aria-label="Cerrar"><span data-i="x"></span></button><div class="lz-tit">Tarjeta de visita · <span id="tjPaso"></span></div></div>
+  <div class="lz-top"><button class="lz-b" id="tjCerrar" aria-label="Cerrar"><span data-i="x"></span></button><div class="lz-tit"><span id="tjModo">Tarjeta de visita</span> · <span id="tjPaso"></span></div></div>
   <input type="file" id="tjIn" accept="image/*" class="oculto">
   <div class="tj-paso" id="tjElegir">
-    <div class="tj-guia"><div class="tj-marco"><span data-i="user"></span></div><p>Pon la tarjeta sobre una superficie que contraste (una mesa oscura si la tarjeta es clara) y hazle la foto. No hace falta que salga recta: Cuaderna la encuadra y la endereza.</p></div>
+    <div class="tj-guia"><div class="tj-marco" id="tjMarco"><span data-i="user"></span></div><p id="tjGuiaTxt">Pon la tarjeta sobre una superficie que contraste (una mesa oscura si la tarjeta es clara) y hazle la foto. No hace falta que salga recta: Cuaderna la encuadra y la endereza.</p></div>
     <div class="tj-bots"><button class="btn" id="tjCam"><span data-i="camara"></span>Hacer foto</button><button class="btn sec" id="tjGal"><span data-i="imagen"></span>Elegir de la galería</button></div>
   </div>
   <div class="tj-paso oculto" id="tjAjustar">
     <div class="tj-aviso" id="tjAviso"></div>
     <canvas id="tjCanvas"></canvas>
     <div class="lz-rec-b"><button class="btn sec" id="tjRepetir">Repetir foto</button><div class="esp"></div><button class="btn" id="tjUsar">Usar</button></div>
+  </div>
+  <div class="tj-paso oculto" id="tjPaginas">
+    <div class="tj-scroll">
+      <div class="doc-mins" id="tjMins"></div>
+      <div class="segm doc-filtro" id="tjFiltro"><button class="opc on" data-fil="color">Color</button><button class="opc" data-fil="gris">Gris</button><button class="opc" data-fil="bn">Blanco y negro</button></div>
+      <label class="doc-nombre">Nombre del documento<input id="tjDocNombre" autocomplete="off" placeholder="Por ejemplo: Factura del frigorífico"></label>
+    </div>
+    <div class="lz-rec-b tj-pie"><button class="btn sec" id="tjOtraPag"><span data-i="mas"></span>Añadir página</button><div class="esp"></div><button class="btn" id="tjPdf"><span data-i="check"></span>Guardar PDF</button></div>
   </div>
   <div class="tj-paso oculto" id="tjDatos">
     <div class="tj-scroll">
@@ -1013,14 +1037,14 @@ html.lz-on,html.lz-on body{overflow:hidden}
   </div>
 </div>
 
-<div id="menuFoto" class="menu-foto oculto" role="menu"><button data-mf="foto"><span data-i="camara"></span>Hacer foto</button><button data-mf="galeria"><span data-i="imagen"></span>Elegir de la galería</button><button data-mf="tarjeta"><span data-i="user"></span>Tarjeta de visita</button></div>
-<div id="menuFotoE" class="menu-foto oculto" role="menu"><button data-mfe="foto"><span data-i="camara"></span>Hacer foto</button><button data-mfe="galeria"><span data-i="imagen"></span>Elegir de la galería</button></div>
+<div id="menuFoto" class="menu-foto oculto" role="menu"><button data-mf="foto"><span data-i="camara"></span>Hacer foto</button><button data-mf="galeria"><span data-i="imagen"></span>Elegir de la galería</button><button data-mf="documento"><span data-i="doc"></span>Escanear documento</button><button data-mf="tarjeta"><span data-i="user"></span>Tarjeta de visita</button></div>
+<div id="menuFotoE" class="menu-foto oculto" role="menu"><button data-mfe="foto"><span data-i="camara"></span>Hacer foto</button><button data-mfe="galeria"><span data-i="imagen"></span>Elegir de la galería</button><button data-mfe="documento"><span data-i="doc"></span>Escanear documento</button></div>
 <div id="visor"><img alt=""></div>
 <div class="toast" id="toast"></div>
 
 <script>
 "use strict";
-const VERSION = "0.24";
+const VERSION = "0.25";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M12 3.5c.7 4.3 2.7 6.3 7 7-4.3.7-6.3 2.7-7 7-.7-4.3-2.7-6.3-7-7 4.3-.7 6.3-2.7 7-7z"/><path d="M19 3v3M17.5 4.5h3"/>',
@@ -1040,6 +1064,9 @@ const ICONOS = {
   pluma: '<path d="M14.5 5.5l4 4M4 20l1-4.5L16 4.5a1.4 1.4 0 0 1 2 0l1.5 1.5a1.4 1.4 0 0 1 0 2L8.5 19z"/>',
   cal: '<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   user: '<circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/>',
+  doc: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>',
+  web: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>',
+  plantilla: '<rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
   clip: '<path d="M20 11.5 12 19.5a5 5 0 0 1-7-7l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7L9.7 17.2a1.6 1.6 0 0 1-2.3-2.3L15 7.3"/>',
   libro: '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v16H6.5A1.5 1.5 0 0 0 5 20.5zM5 20.5A1.5 1.5 0 0 0 6.5 22H19"/><path d="M9 7.5h6"/>',
   negrita: '<path d="M7 4.5h6a3.5 3.5 0 0 1 0 7H7zM7 11.5h7a3.75 3.75 0 0 1 0 7.5H7z"/>',
@@ -2125,6 +2152,7 @@ document.addEventListener("click", e => { if (!e.target.closest("#menuFoto")) $(
 $("#menuFoto").onclick = e => { const b = e.target.closest("[data-mf]"); if (!b) return; $("#menuFoto").classList.add("oculto");
   if (b.dataset.mf === "foto"){ tocado = true; hacerFoto().then(async f => { if (!f) return; borrador.fotos.push(await reducirFoto(f)); pintarAdjuntos(); guardarCapturaPronto(); }); }
   else if (b.dataset.mf === "galeria"){ tocado = true; $("#inFoto").click(); }
+  else if (b.dataset.mf === "documento") abrirEscaner(null);
   else abrirTarjeta(); };
 $("#inFoto").onchange = async () => { for (const f of $("#inFoto").files) borrador.fotos.push(await reducirFoto(f)); $("#inFoto").value = ""; pintarAdjuntos(); guardarCapturaPronto(); };
 
@@ -2302,6 +2330,7 @@ function fila(n, opts = {}){
   if (n.recibida) mt.push(`<span class="asig" title="Te la asignó">${ic("mail")}De ${esc(n.recibida.de?.n || n.recibida.de?.e || "")}</span>`);
   for (const e of etiquetasDe(n).slice(0, 3)) mt.push(`<span class="etq-l">#${esc(e)}</span>`);
   if (n.archivos?.length) mt.push(`<span>${ic("clip")}${n.archivos.length}</span>`);
+  if (n.web) mt.push(`<span>${ic("web")}${esc(n.web.dominio || "web")}</span>`);
   if (n.tipo === "idea") mt.push(`<span>${ic("idea")}Idea</span>`);
   const cp = !opts.sinCarpeta && carpetaDe(n); if (cp) mt.push(`<span class="carp">${ic("carpeta")}${esc(cp.nombre)}</span>`);
   if (n.archivada) mt.push(`<span>${ic("archivo")}Archivada</span>`);
@@ -2483,6 +2512,7 @@ $("#eAddFoto").onclick = e => {
 document.addEventListener("click", e => { if (!e.target.closest("#menuFotoE")) $("#menuFotoE").classList.add("oculto"); });
 $("#menuFotoE").onclick = e => { const b = e.target.closest("[data-mfe]"); if (!b) return; $("#menuFotoE").classList.add("oculto");
   if (b.dataset.mfe === "foto") hacerFoto().then(async f => { if (!f) return; eAdj.nuevas.push(await reducirFoto(f)); pintarAdjEdicion(); guardarEdicionPronto(); });
+  else if (b.dataset.mfe === "documento") abrirEscaner("editor");
   else $("#eInFoto").click(); };
 $("#eAddDibujo").innerHTML = ic("pluma") + "Dibujo"; $("#eAddDibujo").title = "Dibujar o anotar en un lienzo nuevo";
 $("#eAddDibujo").onclick = () => abrirLienzo(null, {titulo: "Dibujo nuevo", alListo: async doc => { if (doc) await lienzoAEdicion(doc); }});
@@ -2724,6 +2754,7 @@ function prepararEnviar(){
 }
 $("#evRec").addEventListener("click", e => { const b = e.target.closest("[data-dest]"); if (b) $("#evPara").value = b.dataset.dest; });
 $("#evPdf").onclick = () => { cerrarHojaEnviar(); compartirPdfEditor(); };
+$("#evPlantilla").onclick = () => guardarComoPlantilla();
 $("#evPermiso").onclick = async () => { if (hayCambiosEdicion()) await guardarEdicion(); lsSet("chispa.permCorreo", true); irALogin(false); };
 function cerrarHojaEnviar(){ $("#hEnviar").classList.remove("on"); }
 $("#evCerrar").onclick = cerrarHojaEnviar;
@@ -3137,7 +3168,7 @@ async function guardarEdicion(){
   n.archivos = [...eAdj.archivos]; const paraLeer = [];
   for (const a of eAdj.nuevosArch){
     const r = `Archivos/${carpeta}/${n.id}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 4)}-${nombreSeguro(a.nombre)}`;
-    await idb.ponerBlob(r, a.blob); n.archivos.push({ruta: r, nombre: a.nombre, tipo: a.tipo, tam: a.blob.size}); nuevos.push(r); paraLeer.push({ruta: r, blob: a.blob, tipo: a.tipo, nombre: a.nombre});
+    await idb.ponerBlob(r, a.blob); n.archivos.push({ruta: r, nombre: a.nombre, tipo: a.tipo, tam: a.blob.size}); nuevos.push(r); paraLeer.push({ruta: r, blob: a.blob, tipo: a.tipo, nombre: a.nombre, ocr: a.ocr});
   }
   if (!n.archivos.length) delete n.archivos;
   if (n.textoArch){ for (const k of Object.keys(n.textoArch)) if (!(n.archivos || []).some(a => a.ruta === k)) delete n.textoArch[k]; if (!Object.keys(n.textoArch).length) delete n.textoArch; }
@@ -3420,12 +3451,13 @@ function homografia(dst, src){
   }
   return B.map((b, i) => b / A[i][i]);
 }
-function enderezar(src, quad){
+function enderezar(src, quad, doc = false){
   const L = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
   let ancho = (L(quad[0], quad[1]) + L(quad[3], quad[2])) / 2, alto = (L(quad[0], quad[3]) + L(quad[1], quad[2])) / 2;
   let ratio = ancho / alto; const horizontal = ratio >= 1, r = horizontal ? ratio : 1 / ratio;
-  const final = r > 1.35 && r < 1.85 ? 1.585 : r;   // medida estándar de tarjeta (85 × 54 mm) si se parece
-  const W = horizontal ? 1400 : Math.round(1400 / final), H = horizontal ? Math.round(1400 / final) : 1400;
+  const final = doc ? (r > 1.2 && r < 1.65 ? 1.414 : r) : r > 1.35 && r < 1.85 ? 1.585 : r;   // A4 o tarjeta estándar (85 × 54 mm) si se parece
+  const largo = doc ? 1754 : 1400;
+  const W = horizontal ? largo : Math.round(largo / final), H = horizontal ? Math.round(largo / final) : largo;
   const hm = homografia([[0, 0], [W, 0], [W, H], [0, H]], quad);
   const sd = src.getContext("2d", {willReadFrequently: true}).getImageData(0, 0, src.width, src.height), s = sd.data, sw = src.width, sh = src.height;
   const out = document.createElement("canvas"); out.width = W; out.height = H; const og = out.getContext("2d"), od = og.createImageData(W, H), o = od.data;
@@ -3444,21 +3476,23 @@ function enderezar(src, quad){
 }
 // ---------- Pantalla de la tarjeta
 function abrirTarjeta(){
+  TJ.modo = "tarjeta"; prepararModoTj();
   TJ.lado = "frontal"; TJ.caras = {frontal: null, reverso: null}; TJ.datos = {}; TJ.foto = null;
   $("#tj").classList.remove("oculto"); document.documentElement.classList.add("lz-on"); pasoTarjeta("elegir");
 }
 function cerrarTarjeta(){ $("#tj").classList.add("oculto"); document.documentElement.classList.remove("lz-on"); }
 function pasoTarjeta(p){
-  for (const id of ["tjElegir", "tjAjustar", "tjDatos"]) $("#" + id).classList.toggle("oculto", id !== {elegir: "tjElegir", ajustar: "tjAjustar", datos: "tjDatos"}[p]);
-  $("#tjPaso").textContent = p === "datos" ? "Revisa los datos" : TJ.lado === "frontal" ? "Frontal" : "Reverso";
+  for (const id of ["tjElegir", "tjAjustar", "tjDatos", "tjPaginas"]) $("#" + id).classList.toggle("oculto", id !== {elegir: "tjElegir", ajustar: "tjAjustar", datos: "tjDatos", paginas: "tjPaginas"}[p]);
+  $("#tjPaso").textContent = TJ.modo === "doc" ? (p === "paginas" ? `${DOC.paginas.length} página${DOC.paginas.length === 1 ? "" : "s"}` : `Página ${DOC.paginas.length + 1}`) : p === "datos" ? "Revisa los datos" : TJ.lado === "frontal" ? "Frontal" : "Reverso";
+  if (p === "paginas") pintarPaginasDoc();
   if (p === "datos") pintarDatosTarjeta();
 }
-$("#tjCam").onclick = () => hacerFoto({guia: true}).then(f => { if (f) fotoTarjeta(f); });
+$("#tjCam").onclick = () => hacerFoto({guia: TJ.modo !== "doc"}).then(f => { if (f) fotoTarjeta(f); });
 $("#tjGal").onclick = () => { const i = $("#tjIn"); i.removeAttribute("capture"); i.click(); };
 $("#tjIn").onchange = () => { const f = $("#tjIn").files[0]; $("#tjIn").value = ""; if (f) fotoTarjeta(f); };
 async function fotoTarjeta(f){
   try { TJ.foto = await cargarCanvas(f); const r = detectarTarjeta(TJ.foto); TJ.quad = r.quad; pasoTarjeta("ajustar");
-    $("#tjAviso").textContent = r.auto ? "He encuadrado la tarjeta. Para afinar, arrastra una esquina: verás una lupa encima." : "No he encontrado bien la tarjeta: arrastra las esquinas a sus bordes.";
+    $("#tjAviso").textContent = TJ.modo === "doc" ? (r.auto ? "He encuadrado la página. Si hace falta, arrastra una esquina: verás una lupa encima." : "Arrastra las esquinas a los bordes de la página.") : r.auto ? "He encuadrado la tarjeta. Para afinar, arrastra una esquina: verás una lupa encima." : "No he encontrado bien la tarjeta: arrastra las esquinas a sus bordes.";
     requestAnimationFrame(pintarAjuste); }
   catch(e){ toast("No se pudo abrir la foto", "alerta"); }
 }
@@ -3501,10 +3535,11 @@ function pintarAjuste(){
 $("#tjRepetir").onclick = () => pasoTarjeta("elegir");
 $("#tjUsar").onclick = async () => {
   const b = $("#tjUsar"); b.disabled = true; b.textContent = "Enderezando…"; await new Promise(r => setTimeout(r, 30));
+  if (TJ.modo === "doc"){ try { DOC.paginas.push(enderezar(TJ.foto, TJ.quad, true)); TJ.foto = null; pasoTarjeta("paginas"); } finally { b.disabled = false; b.textContent = "Usar"; } return; }
   try { TJ.caras[TJ.lado] = enderezar(TJ.foto, TJ.quad); TJ.foto = null; pasoTarjeta("datos"); leerTarjeta(); }   // con el reverso, completa lo que falte (dirección, web…)
   finally { b.disabled = false; b.textContent = "Usar"; }
 };
-$("#tjCerrar").onclick = () => { if ((TJ.caras.frontal || TJ.foto) && !confirm("¿Descartar esta tarjeta?")) return; cerrarTarjeta(); };
+$("#tjCerrar").onclick = () => { if (TJ.modo === "doc" ? (DOC.paginas.length || TJ.foto) && !confirm("¿Descartar este documento?") : (TJ.caras.frontal || TJ.foto) && !confirm("¿Descartar esta tarjeta?")) return; cerrarTarjeta(); };
 function pintarDatosTarjeta(){
   const cara = (lado, t) => TJ.caras[lado]
     ? `<div class="tj-cara"><img src="${TJ.caras[lado].toDataURL("image/jpeg", .8)}" alt="${t}"><span>${t}</span><button class="enl" data-rehacer="${lado}">Repetir</button></div>`
@@ -3887,7 +3922,7 @@ async function textoDeArchivo(blob, tipo, nombre){
 }
 async function leerArchivos(n, lista){
   let cambio = false;
-  for (const a of lista){ const t = await textoDeArchivo(a.blob, a.tipo, a.nombre); if (t){ n.textoArch = {...(n.textoArch || {}), [a.ruta]: t}; cambio = true; } }
+  for (const a of lista){ let t = await textoDeArchivo(a.blob, a.tipo, a.nombre); if (!t && a.ocr?.length && ia()) t = await ocrIA(a.ocr); if (t){ n.textoArch = {...(n.textoArch || {}), [a.ruta]: t}; cambio = true; } }
   if (cambio){ await guardarNotaLocal(n); }
 }
 
@@ -3916,33 +3951,169 @@ $("#lbBorrar").onclick = () => {
   cerrarHojas(); toast(`Libreta «${c.nombre}» borrada`, "borrar"); refrescar();
 };
 
-// ---------- la pestaña Biblioteca ----------
-function buscarEnTodo(t){ $("#q").value = t; buzon = null; ver("notas"); }
+// ---------- la pestaña Biblioteca (las libretas, etiquetas y búsquedas se abren dentro, sin salir de ella) ----------
+let bibSel = null;   // {tipo: "lib", id} | {tipo: "etq", e} | {tipo: "q", q}
+const textoBuscable = n => norm([n.titulo, n.texto, n.transcripcion, etiquetasDe(n).map(e => "#" + e).join(" "), n.ia?.textoFotos, Object.values(n.textoArch || {}).join(" "), n.textoWeb,
+  (n.archivos || []).map(a => a.nombre).join(" "), n.para?.nombre, carpetaDe(n)?.nombre].filter(Boolean).join(" "));
+function buscarEnTodo(t){ bibSel = {tipo: "q", q: t}; if (vista !== "biblio") ver("biblio"); else pintarBiblio(); scrollTo(0, 0); }
+function listaBiblio(){
+  const ns = deNotas();
+  let titulo, icono, lista;
+  if (bibSel.tipo === "lib"){ const c = archivadores().find(x => x.id === bibSel.id); if (!c){ bibSel = null; return pintarBiblio(); } titulo = c.nombre; icono = "libro"; lista = ns.filter(n => n.carpeta === c.id); }
+  else if (bibSel.tipo === "etq"){ titulo = "#" + bibSel.e; icono = "tag"; lista = ns.filter(n => etiquetasDe(n).some(e => norm(e) === norm(bibSel.e))); }
+  else { const q = norm(bibSel.q).split(/\s+/).filter(Boolean); titulo = `«${bibSel.q}»`; icono = "buscar"; lista = ns.filter(n => { const h = textoBuscable(n); return q.every(w => h.includes(w)); }); }
+  const orden = n => enArchivo(n) ? 2 : n.hecha ? 1 : 0;
+  lista.sort((a, b) => orden(a) - orden(b) || (b.actualizada || b.creada).localeCompare(a.actualizada || a.creada));
+  const grupos = ["Pendientes", "Hechas", "Archivadas"].map((g, k) => [g, lista.filter(n => orden(n) === k)]).filter(([, l]) => l.length);
+  const car = bibSel.tipo === "lib" ? archivadores().find(x => x.id === bibSel.id) : null;
+  $("#vBiblio").innerHTML = cab("Biblioteca") + `
+    <div class="bz-cab"><button class="ibtn" id="bibVolver" aria-label="Volver a la Biblioteca">${ic("atras")}</button><div class="bz-tit">${ic(icono)}<span>${esc(titulo)}</span></div>${car ? `<button class="ibtn" data-libm="${esc(car.id)}" aria-label="Editar la libreta">${ic("puntos")}</button>` : ""}</div>
+    ${car ? `<button class="btn sec" id="bibNuevaEn" style="margin:4px 0 10px">${ic("mas")}Nueva nota en esta libreta</button>` : ""}
+    ${lista.length ? grupos.map(([g, l]) => `<div class="dia">${g} <span class="c">${l.length}</span></div><div class="lista">${l.map(n => fila(n, {sinCarpeta: !!car})).join("")}</div>`).join("")
+      : `<div class="vacio-grande"><div class="halo">${ic(icono)}</div><b>${bibSel.tipo === "q" ? "No hay nada con eso" : "Aún no hay notas aquí"}</b><span>${car ? "Crea una nota aquí o, desde cualquier nota, elige esta libreta en Detalles." : bibSel.tipo === "q" ? "Prueba con otra palabra." : ""}</span></div>`}`;
+  $("#bibVolver").onclick = () => { bibSel = null; pintarBiblio(); scrollTo(0, 0); };
+  if ($("#bibNuevaEn")) $("#bibNuevaEn").onclick = () => { const n = notaBase(new Date()); n.carpeta = car.id; abrirEdicion(n); };
+  cargarMinis($("#vBiblio"));
+}
+const PLANTILLAS = [
+  {k: "reunion", ic: "👥", nombre: "Reunión", d: "Asistentes, temas y acuerdos", titulo: "Reunión: ", etq: ["reunión"], texto: "## Asistentes\n- Quién asiste\n## Temas\n1. Primer tema\n## Acuerdos\n- Lo que se decide\n[ ] Enviar el resumen"},
+  {k: "viaje", ic: "🧳", nombre: "Viaje", d: "Fechas, alojamiento y maleta", titulo: "Viaje a ", etq: ["viaje"], texto: "## Fechas\n- Ida: \n- Vuelta: \n## Alojamiento\n- Hotel o casa: \n## Transporte\n- Ida y vuelta: \n[ ] DNI o pasaporte\n[ ] Cargadores\n[ ] Reservas\n[ ] Seguro de viaje"},
+  {k: "compra", ic: "🛒", nombre: "Lista de la compra", d: "Para ir tachando", titulo: "Compra", etq: ["compra"], texto: "[ ] Pan\n[ ] Leche\n[ ] Fruta\n[ ] Verdura"},
+  {k: "receta", ic: "🍳", nombre: "Receta", d: "Ingredientes y pasos", titulo: "Receta: ", etq: ["receta"], texto: "## Ingredientes\n- Ingrediente y cantidad\n## Preparación\n1. Primer paso\n## Notas\nTrucos, tiempos, para cuántos…"},
+  {k: "coche", ic: "🚗", nombre: "Revisión del coche", d: "Mantenimiento con fechas y km", titulo: "Revisiones del coche", etq: ["coche"], texto: "| Concepto | Fecha | Km | Precio |\n| --- | --- | --- | --- |\n| Aceite y filtros |  |  |  |\n| Neumáticos |  |  |  |\n| ITV |  |  |  |"},
+  {k: "proyecto", ic: "🛠️", nombre: "Proyecto o reforma", d: "Objetivo, presupuesto y tareas", titulo: "Proyecto: ", etq: ["proyecto"], texto: "## Objetivo\nQué quieres conseguir\n## Presupuesto\n| Partida | Importe |\n| --- | --- |\n|  |  |\n## Contactos\n- Nombre y teléfono\n[ ] Pedir presupuestos"},
+  {k: "diario", ic: "📔", nombre: "Diario", d: "Lo mejor del día", titulo: "", etq: ["diario"], texto: "## Lo mejor del día\n…\n## Lo que he aprendido\n…\n## Para mañana\n…"},
+];
+function usarPlantilla(p){
+  const n = notaBase(new Date());
+  n.titulo = p.k === "diario" ? "Diario · " + capital(fechaLarga(hoyISO())) : p.titulo; n.texto = p.texto;
+  if (p.etq?.length) n.etiquetas = [...p.etq]; if (!n.titulo) delete n.titulo;
+  n.ambito = "personal";
+  if (bibSel?.tipo === "lib") n.carpeta = bibSel.id;
+  abrirEdicion(n); setTimeout(() => { const t = $("#eTitulo"); if (t.value.endsWith(" ")){ t.focus(); t.setSelectionRange(t.value.length, t.value.length); } }, 300);
+}
 function pintarBiblio(){
-  const ns = deNotas(), libs = archivadores(), etq = todasEtiquetas();
+  if (bibSel) return listaBiblio();
+  const ns = deNotas(), libs = archivadores(), etq = todasEtiquetas(), mias = config.plantillas || [];
   const pilas = [...new Set(libs.map(c => c.pila || ""))].sort((a, b) => (a === "") - (b === "") || a.localeCompare(b));
   const tarjeta = c => { const l = ns.filter(n => n.carpeta === c.id), p = l.filter(n => !n.hecha && !enArchivo(n)).length;
     return `<div class="libreta"><button class="lib-abrir" data-lib="${esc(c.id)}">${ic("libro")}<b>${esc(c.nombre)}</b><small>${l.length} nota${l.length === 1 ? "" : "s"}${p ? ` · ${p} pendiente${p > 1 ? "s" : ""}` : ""}</small></button><button class="ibtn lib-menu" data-libm="${esc(c.id)}" aria-label="Editar la libreta">${ic("puntos")}</button></div>`; };
-  const conArch = ns.filter(n => n.archivos?.length).sort((a, b) => (b.actualizada || b.creada).localeCompare(a.actualizada || a.creada)).slice(0, 8);
+  const conArch = ns.filter(n => n.archivos?.length || n.web).sort((a, b) => (b.actualizada || b.creada).localeCompare(a.actualizada || a.creada)).slice(0, 8);
   $("#vBiblio").innerHTML = cab("Biblioteca", "Todo lo que quieres conservar, ordenado") + `
     <div class="busca"><span>${ic("buscar")}</span><input id="qB" type="search" placeholder="Buscar en todo: textos, fotos, PDF y #etiquetas" enterkeyhint="search"></div>
+    <div class="bib-acc"><button id="bibEscanear">${ic("doc")}<span>Escanear documento</span></button><button id="bibWeb">${ic("web")}<span>Guardar página web</span></button></div>
+    <div class="dia">Empieza con una plantilla</div>
+    <div class="plantillas">${PLANTILLAS.map(p => `<button class="plantilla" data-pla="${p.k}"><span class="pi">${p.ic}</span><b>${esc(p.nombre)}</b><small>${esc(p.d)}</small></button>`).join("")}${mias.map((p, i) => `<button class="plantilla mia" data-plam="${i}"><span class="pi">${ic("plantilla")}</span><b>${esc(p.nombre)}</b><small>Tu plantilla</small></button>`).join("")}</div>
     <div class="dia">Libretas <span class="c">${libs.length}</span></div>
     ${pilas.map(p => { const l = libs.filter(c => (c.pila || "") === p); return `<div class="pila">${p || pilas.length > 1 ? `<div class="pila-t">${ic("carpeta")}${esc(p || "Sin pila")}<span class="c">${l.length}</span></div>` : ""}<div class="libretas">${l.map(tarjeta).join("")}</div></div>`; }).join("")}
     ${libs.length ? "" : `<p class="ayuda-b">Crea libretas para lo que quieras guardar: recetas, facturas, un viaje… Y agrúpalas en pilas.</p>`}
     <button class="btn sec" id="bNuevaLib">${ic("mas")}Nueva libreta</button>
     <div class="dia">Etiquetas <span class="c">${etq.length}</span></div>
     ${etq.length ? `<div class="etq-nube">${etq.map(([e, c]) => `<button class="etq" data-etq="${esc(e)}">#${esc(e)}<i>${c}</i></button>`).join("")}</div>` : `<p class="ayuda-b">Escribe #algo en cualquier nota, o añádelas en el editor (Detalles › Etiquetas), y aparecerán aquí.</p>`}
-    <div class="dia">Últimos archivos</div>
-    ${conArch.length ? `<div class="lista">${conArch.map(n => fila(n)).join("")}</div>` : `<p class="ayuda-b">Adjunta PDF, documentos o cualquier archivo desde una nota, con el botón «Archivo» de Adjuntos. También se busca dentro de los PDF.</p>`}`;
+    <div class="dia">Últimos documentos y páginas web</div>
+    ${conArch.length ? `<div class="lista">${conArch.map(n => fila(n)).join("")}</div>` : `<p class="ayuda-b">Escanea un documento, guarda una página web o adjunta un archivo a cualquier nota. También se busca dentro de ellos.</p>`}`;
   $("#qB").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.value.trim()) buscarEnTodo(e.target.value.trim()); });
   $("#bNuevaLib").onclick = () => abrirLibreta(null);
+  $("#bibEscanear").onclick = () => abrirEscaner(null);
+  $("#bibWeb").onclick = () => { const u = prompt("Pega la dirección de la página web:", ""); if (u && u.trim()) guardarPaginaWeb(u.trim()); };
+  cargarMinis($("#vBiblio"));
 }
 $("#main").addEventListener("click", e => {
-  const a = e.target.closest("[data-lib]"), m = e.target.closest("[data-libm]"), t = e.target.closest("[data-etq]");
-  if (a){ $("#q").value = ""; ver("notas"); abrirBuzon("c:" + a.dataset.lib); }
+  const a = e.target.closest("[data-lib]"), m = e.target.closest("[data-libm]"), t = e.target.closest("[data-etq]"), pl = e.target.closest("[data-pla]"), pm = e.target.closest("[data-plam]");
+  if (a){ bibSel = {tipo: "lib", id: a.dataset.lib}; pintarBiblio(); scrollTo(0, 0); }
   else if (m){ const c = archivadores().find(x => x.id === m.dataset.libm); if (c) abrirLibreta(c); }
-  else if (t) buscarEnTodo("#" + t.dataset.etq);
+  else if (t){ bibSel = {tipo: "etq", e: t.dataset.etq}; if (vista !== "biblio") ver("biblio"); else pintarBiblio(); scrollTo(0, 0); }
+  else if (pl) usarPlantilla(PLANTILLAS.find(p => p.k === pl.dataset.pla));
+  else if (pm){ const p = (config.plantillas || [])[+pm.dataset.plam]; if (p) usarPlantilla({...p, k: "mia"}); }
 });
+// guardar la nota abierta como plantilla propia (desde Compartir)
+function guardarComoPlantilla(){
+  const n = notaDelEditor(), nombre = (prompt("Nombre de la plantilla:", tituloPlano(n) || "") || "").trim(); if (!nombre) return;
+  config.plantillas = [...(config.plantillas || []).filter(p => norm(p.nombre) !== norm(nombre)), {nombre, titulo: n.titulo || "", texto: n.texto || "", etq: n.etiquetas || []}];
+  guardarConfig(); cerrarHojaEnviar(); toast(`Plantilla «${nombre}» guardada. La tienes en Biblioteca`, "plantilla", 4000);
+}
+
+// ---------- escáner de documentos de varias páginas → PDF ----------
+const DOC = {paginas: [], filtro: "color", destino: null};
+function prepararModoTj(){
+  const doc = TJ.modo === "doc";
+  $("#tjModo").textContent = doc ? "Escanear documento" : "Tarjeta de visita";
+  $("#tjGuiaTxt").textContent = doc ? "Pon el papel sobre una superficie que contraste y hazle la foto desde arriba. No hace falta que salga recto: Cuaderna lo encuadra y lo endereza. Después puedes añadir más páginas." : "Pon la tarjeta sobre una superficie que contraste (una mesa oscura si la tarjeta es clara) y hazle la foto. No hace falta que salga recta: Cuaderna la encuadra y la endereza.";
+  $("#tjMarco").innerHTML = ic(doc ? "doc" : "user"); $("#tjMarco").classList.toggle("doc", doc);
+}
+function abrirEscaner(destino){
+  TJ.modo = "doc"; prepararModoTj(); DOC.paginas = []; DOC.filtro = "color"; DOC.destino = destino; TJ.foto = null;
+  $("#tjDocNombre").value = ""; $("#tjFiltro").querySelectorAll(".opc").forEach(b => b.classList.toggle("on", b.dataset.fil === "color"));
+  $("#tj").classList.remove("oculto"); document.documentElement.classList.add("lz-on"); pasoTarjeta("elegir");
+}
+function filtrarPagina(c, f){
+  if (f === "color") return c;
+  const o = document.createElement("canvas"); o.width = c.width; o.height = c.height; const g = o.getContext("2d"); g.drawImage(c, 0, 0);
+  const d = g.getImageData(0, 0, o.width, o.height), p = d.data;
+  for (let i = 0; i < p.length; i += 4){ let v = p[i] * .299 + p[i + 1] * .587 + p[i + 2] * .114; if (f === "bn") v = v > 150 ? 255 : Math.max(0, (v - 40) * 1.6); p[i] = p[i + 1] = p[i + 2] = v; }
+  g.putImageData(d, 0, 0); return o;
+}
+function pintarPaginasDoc(){
+  $("#tjMins").innerHTML = DOC.paginas.map((c, i) => `<div class="doc-min"><img src="${filtrarPagina(c, DOC.filtro).toDataURL("image/jpeg", .5)}" alt="Página ${i + 1}"><span>${i + 1}</span><button data-docx="${i}" aria-label="Quitar página">${ic("x")}</button></div>`).join("");
+}
+$("#tjMins").addEventListener("click", e => { const b = e.target.closest("[data-docx]"); if (b){ DOC.paginas.splice(+b.dataset.docx, 1); DOC.paginas.length ? pasoTarjeta("paginas") : pasoTarjeta("elegir"); } });
+$("#tjFiltro").addEventListener("click", e => { const b = e.target.closest("[data-fil]"); if (!b) return; DOC.filtro = b.dataset.fil; $("#tjFiltro").querySelectorAll(".opc").forEach(x => x.classList.toggle("on", x === b)); pintarPaginasDoc(); });
+$("#tjOtraPag").onclick = () => pasoTarjeta("elegir");
+$("#tjPdf").onclick = async () => {
+  if (!DOC.paginas.length) return;
+  const b = $("#tjPdf"); b.disabled = true; b.textContent = "Creando PDF…";
+  try {
+    const jsPDF = await cargarJsPdf(), paginas = DOC.paginas.map(c => filtrarPagina(c, DOC.filtro));
+    let pdf = null;
+    for (const c of paginas){
+      const hz = c.width > c.height, W = hz ? 297 : 210, H = hz ? 210 : 297;
+      if (!pdf) pdf = new jsPDF({unit: "mm", format: "a4", orientation: hz ? "landscape" : "portrait"}); else pdf.addPage("a4", hz ? "landscape" : "portrait");
+      const k = Math.min(W / c.width, H / c.height), w = c.width * k, h = c.height * k;
+      pdf.addImage(c.toDataURL("image/jpeg", DOC.filtro === "bn" ? .7 : .8), "JPEG", (W - w) / 2, (H - h) / 2, w, h);
+    }
+    const base = ($("#tjDocNombre").value.trim() || `Documento ${new Date().toLocaleDateString("es-ES")}`).replace(/[\\/:*?"<>|]+/g, "-");
+    pdf.setProperties({title: latin1(base), creator: "Cuaderna"});
+    const blob = pdf.output("blob"), nombre = base + ".pdf";
+    const ocr = paginas.slice(0, 12).map(c => { const k = Math.min(1, 1400 / Math.max(c.width, c.height)), o = document.createElement("canvas"); o.width = c.width * k; o.height = c.height * k; o.getContext("2d").drawImage(c, 0, 0, o.width, o.height); return o.toDataURL("image/jpeg", .75); });
+    const a = {blob, nombre, tipo: "application/pdf", ocr};
+    cerrarTarjeta();
+    if (DOC.destino === "editor" && editando && $("#hEditar").classList.contains("on")){ eAdj.nuevosArch.push(a); pintarAdjEdicion(); guardarEdicionPronto(); toast("Documento añadido. Pulsa Guardar para conservarlo", "doc", 4000); }
+    else {
+      const n = notaBase(new Date()); n.titulo = base; n.etiquetas = ["documento"]; if (bibSel?.tipo === "lib") n.carpeta = bibSel.id;
+      const d = new Date(n.creada), r = `Archivos/${d.getFullYear()}/${pad(d.getMonth() + 1)}/${n.id}-${Date.now().toString(36)}-${nombreSeguro(nombre)}`;
+      await idb.ponerBlob(r, blob); n.archivos = [{ruta: r, nombre, tipo: "application/pdf", tam: blob.size}];
+      await guardarNotaLocal(n, [r]); refrescar(); leerArchivos(n, [{ruta: r, ...a}]);
+      toast(`«${base}» guardado${ia() ? ". Leyendo el texto…" : ""}`, "doc", 4000); abrirEdicion(n);
+    }
+  } catch(e){ console.warn(e); toast("No se pudo crear el PDF", "alerta", 4000); }
+  finally { b.disabled = false; b.innerHTML = ic("check") + "Guardar PDF"; }
+};
+// texto de las páginas escaneadas con la IA, para poder buscarlo
+async function ocrIA(urls){
+  const partes = [];
+  for (let i = 0; i < urls.length; i += 4){
+    try { partes.push(await llamarIA([{role: "system", content: "Transcribe fielmente todo el texto legible de estas páginas escaneadas, en orden y en su idioma original. Devuelve solo el texto, sin comentarios."},
+      {role: "user", content: [{type: "text", text: `Páginas ${i + 1} a ${Math.min(urls.length, i + 4)}:`}, ...urls.slice(i, i + 4).map(u => ({type: "image_url", image_url: {url: u, detail: "high"}}))]}], {json: false, max: 3500})); }
+    catch(e){ console.warn(e); }
+  }
+  return partes.join("\n\n").trim().slice(0, 40000);
+}
+
+// ---------- guardar páginas web ----------
+async function guardarPaginaWeb(url, asunto = ""){
+  if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+  let info = {};
+  if (apiBase()){ try { toast("Leyendo la página…", "web", 3000); info = await api("web", {cuerpo: {url}}); } catch(e){ console.warn(e); } }
+  let dominio = ""; try { dominio = new URL(url).hostname.replace(/^www\./, ""); } catch(e){}
+  const titulo = (info.titulo || asunto || dominio || "Página web").trim().slice(0, 140);
+  const n = notaBase(new Date()); n.titulo = titulo; n.web = {url, dominio, imagen: info.imagen || ""};
+  n.texto = [`[${titulo}](${url})`, info.descripcion || "", info.resumen ? "## Resumen\n" + info.resumen : ""].filter(Boolean).join("\n\n");
+  if (info.texto) n.textoWeb = info.texto.slice(0, 40000);
+  n.etiquetas = ["web"]; n.ambito = ambitoSel(); if (bibSel?.tipo === "lib") n.carpeta = bibSel.id;
+  await guardarNotaLocal(n); refrescar();
+  toast(info.titulo ? "Página guardada con su resumen" : apiBase() ? "Página guardada (no se pudo leer su contenido)" : "Página guardada con su enlace", "web", 4000);
+  abrirEdicion(n);
+}
 
 /* ================= App Android (Capacitor) ================= */
 const CAP = window.Capacitor;
@@ -3981,6 +4152,9 @@ async function procesarEntrada(d){
   else if (d.accion === "anotar"){ ver("anotar"); setTimeout(() => $("#cTexto").focus(), 250); }
   else if (d.accion === "nota"){ const n = notas.find(x => x.id === d.nota); if (n){ ver("hoy"); abrirEdicion(n); } }
   else if (d.accion === "compartir"){
+    // un enlace compartido desde el navegador se guarda como página web
+    const url = (d.texto || "").match(/https?:\/\/\S+/)?.[0];
+    if (url && !(d.imagenes || []).length && (d.texto || "").replace(url, "").trim().length < 160){ guardarPaginaWeb(url, d.asunto || (d.texto || "").replace(url, "").trim()); return; }
     ver("anotar");
     if (d.asunto && !$("#cTitulo").value){ $("#cTitulo").value = d.asunto; crecerTitulo($("#cTitulo")); }
     if (d.texto) $("#cTexto").value = ($("#cTexto").value ? $("#cTexto").value + "\n" : "") + d.texto;
@@ -4305,7 +4479,7 @@ function ver(v){
   if (v === "anotar"){ prepararTeclado(); requestAnimationFrame(() => { ajustarLienzo(); crecerTitulo($("#cTitulo")); }); if (!esMovil()) setTimeout(() => $("#cTexto").focus(), 50); }
   refrescar(); scrollTo(0, 0);
 }
-document.querySelectorAll("#sideNav button,#tabs button").forEach(b => b.onclick = () => ver(b.dataset.v));
+document.querySelectorAll("#sideNav button,#tabs button").forEach(b => b.onclick = () => { if (b.dataset.v === "biblio" && vista === "biblio") bibSel = null; ver(b.dataset.v); });
 function refrescar(){ ({anotar: () => {}, hoy: pintarHoy, notas: pintarNotas, biblio: pintarBiblio, estad: pintarEstad, ajustes: pintarAjustes, ayuda: pintarAyuda})[vista](); pintarEstado(); pintarBadges(); }
 function pintarBadges(){
   const hoy = hoyISO(), n = deNotas().filter(x => !x.hecha && (x.ancla || (x.fecha && x.fecha <= hoy))).length;
@@ -4468,7 +4642,7 @@ function pintarNotas(){
   let lista = deNotas().filter(n => {
     if (!q.length){ if (car ? n.carpeta !== car.id : !bz.f(n)) return false; }
     for (const g of GRUPOS){ if (g.k === "estado" && !usarEstado) continue; if (filtro[g.k].length && !filtro[g.k].includes(valorFiltro(n, g.k))) return false; }
-    if (q.length){ const h = norm([n.titulo, n.texto, n.transcripcion, etiquetasDe(n).map(e => "#" + e).join(" "), n.ia?.textoFotos, Object.values(n.textoArch || {}).join(" "), (n.archivos || []).map(a => a.nombre).join(" "), n.para?.nombre, CAT[n.para?.categoria], TIPOS[n.tipo]?.[0], n.terminal, fechaLarga(n.creada), n.fecha ? fechaLarga(n.fecha) : "", n.nocturna ? "noche nocturna" : "", n.ancla ? "ancla" : "", carpetaDe(n)?.nombre, n.importante ? "importante estrella" : "", n.ia?.textoFotos, n.ia?.resumen].join(" ")); if (!q.every(p => h.includes(p))) return false; }
+    if (q.length){ const h = norm([n.titulo, n.texto, n.transcripcion, etiquetasDe(n).map(e => "#" + e).join(" "), n.ia?.textoFotos, Object.values(n.textoArch || {}).join(" "), n.textoWeb, (n.archivos || []).map(a => a.nombre).join(" "), n.para?.nombre, CAT[n.para?.categoria], TIPOS[n.tipo]?.[0], n.terminal, fechaLarga(n.creada), n.fecha ? fechaLarga(n.fecha) : "", n.nocturna ? "noche nocturna" : "", n.ancla ? "ancla" : "", carpetaDe(n)?.nombre, n.importante ? "importante estrella" : "", n.ia?.textoFotos, n.ia?.resumen].join(" ")); if (!q.every(p => h.includes(p))) return false; }
     return true;
   });
   if (!lista.length){
@@ -4824,7 +4998,7 @@ function pintarAyuda(){
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
   <h3>Autoría</h3><div class="autoria izq"><img src="autor.jpg" alt="Morián, José Antonio" loading="lazy"><div>Cuaderna es una creación de <b>José Antonio Morián</b>: idea, diseño y desarrollo.<small>© ${new Date().getFullYear()} José Antonio Morián. Todos los derechos reservados.</small></div></div>
-  <h3>Novedades</h3><p><b>0.24</b>: nueva pestaña <b>Biblioteca</b>: libretas agrupadas en pilas, etiquetas (#algo), descripción con formato (negritas, títulos, listas, enlaces y tablas), archivos adjuntos de cualquier tipo y búsqueda dentro de PDF, fotos y etiquetas. Los «archivadores» pasan a llamarse libretas.<br><b>0.23.4</b>: al anotar, el botón para descartar es ahora «Borrar», en rojo, y solo aparece cuando hay algo escrito.<br><b>0.23.3</b>: la fecha de una nota se ve escrita y tiene un botón claro para quitarla o anular la cita del calendario (con deshacer).<br><b>0.23.2</b>: avisos rediseñados, ahora abajo; campo de «Pregúntale a tus notas» más limpio.<br><b>0.23.1</b>: «Pregúntale a tus notas» con botón Cerrar; el botón «atrás» del móvil cierra la ventana abierta en vez de salir.<br><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y libretas propias. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.25</b>: escáner de documentos de varias páginas que crea un PDF (con su texto leído por la IA para buscarlo); guardar páginas web (también compartiendo un enlace desde el navegador); plantillas (reunión, viaje, compra, receta, coche, proyecto, diario) y las tuyas propias; las libretas y etiquetas se abren dentro de Biblioteca.<br><b>0.24</b>: nueva pestaña <b>Biblioteca</b>: libretas agrupadas en pilas, etiquetas (#algo), descripción con formato (negritas, títulos, listas, enlaces y tablas), archivos adjuntos de cualquier tipo y búsqueda dentro de PDF, fotos y etiquetas. Los «archivadores» pasan a llamarse libretas.<br><b>0.23.4</b>: al anotar, el botón para descartar es ahora «Borrar», en rojo, y solo aparece cuando hay algo escrito.<br><b>0.23.3</b>: la fecha de una nota se ve escrita y tiene un botón claro para quitarla o anular la cita del calendario (con deshacer).<br><b>0.23.2</b>: avisos rediseñados, ahora abajo; campo de «Pregúntale a tus notas» más limpio.<br><b>0.23.1</b>: «Pregúntale a tus notas» con botón Cerrar; el botón «atrás» del móvil cierra la ventana abierta en vez de salir.<br><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y libretas propias. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Cuaderna para móvil y PC, sincronizada con OneDrive.</p>`;
   $("#ayudaSug").onclick = abrirSugerencia;
 }

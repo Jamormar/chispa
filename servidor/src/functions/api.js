@@ -127,6 +127,37 @@ const rutas = {
     return {crudo: texto, status: r.status};
   },
 
+  // Guarda una página web: título, descripción, imagen, texto y (si hay IA) un resumen
+  async "POST web"(request, yo){
+    const u = await usuarioDe(yo);
+    if (u.estado !== "autorizado") return [{error: "Tu acceso aún no está autorizado"}, 403];
+    const {url} = await request.json();
+    let dir; try { dir = new URL(String(url)); } catch(e){ return [{error: "Dirección no válida"}, 400]; }
+    if (!/^https?:$/.test(dir.protocol) || /^(localhost|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/.test(dir.hostname)) return [{error: "Dirección no permitida"}, 400];
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 9000);
+    let html = "";
+    try { const r = await fetch(dir.href, {signal: ctl.signal, redirect: "follow", headers: {"User-Agent": "Mozilla/5.0 (compatible; CuadernaBot/1.0)", "Accept-Language": "es-ES,es;q=0.9"}});
+      if (!/html|text/.test(r.headers.get("content-type") || "")) return {titulo: "", descripcion: "", imagen: "", texto: "", resumen: ""};
+      html = (await r.text()).slice(0, 1500000); } catch(e){ return [{error: "No se pudo abrir la página"}, 502]; } finally { clearTimeout(t); }
+    const ent = s => s.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").replace(/&#(\d+);/g, (m, n) => String.fromCharCode(+n));
+    const meta = k => ent((html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${k}["'][^>]*content=["']([^"']*)`, "i")) || html.match(new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]*(?:property|name)=["']${k}["']`, "i")) || [])[1] || "").trim();
+    const titulo = meta("og:title") || ent((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1] || "").trim();
+    const descripcion = meta("og:description") || meta("description");
+    let imagen = meta("og:image"); try { if (imagen) imagen = new URL(imagen, dir.href).href; } catch(e){ imagen = ""; }
+    const cuerpo = (html.match(/<article[\s\S]*?<\/article>/i) || html.match(/<main[\s\S]*?<\/main>/i) || html.match(/<body[\s\S]*<\/body>/i) || [html])[0];
+    const texto = ent(cuerpo.replace(/<(script|style|noscript|svg|nav|footer|header|form)[\s\S]*?<\/\1>/gi, " ").replace(/<br\s*\/?>|<\/(p|div|li|h\d)>/gi, "\n").replace(/<[^>]+>/g, " ")).replace(/[ \t]+/g, " ").replace(/\n\s*\n+/g, "\n").trim().slice(0, 40000);
+    let resumen = "";
+    if (hayIA() && texto.length > 200 && !(u.dia === hoy() && (u.iaHoy || 0) >= MAX_IA)){
+      try {
+        let base = process.env.AOAI_ENDPOINT.trim(); try { base = new URL(base).origin; } catch(e){}
+        const r = await fetch(`${base}/openai/deployments/${encodeURIComponent(process.env.AOAI_DESPLIEGUE || "gpt-4.1-mini")}/chat/completions?api-version=2024-10-21`, {method: "POST", headers: {"Content-Type": "application/json", "api-key": process.env.AOAI_CLAVE.trim()},
+          body: JSON.stringify({temperature: 0.2, max_tokens: 500, messages: [{role: "system", content: "Resume en español, en 3 a 5 viñetas breves que empiecen por «- », lo esencial de esta página web. Solo las viñetas."}, {role: "user", content: `${titulo}\n\n${texto.slice(0, 12000)}`}]})});
+        if (r.ok){ resumen = ((await r.json()).choices?.[0]?.message?.content || "").trim(); await contar(u, "ia", 1); }
+      } catch(e){}
+    }
+    return {titulo: titulo.slice(0, 200), descripcion: descripcion.slice(0, 600), imagen, texto, resumen};
+  },
+
   async "POST sugerencia"(request, yo){
     const e = await request.json();
     const texto = String(e.texto || "").trim().slice(0, 4000);
