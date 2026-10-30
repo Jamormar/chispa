@@ -1,0 +1,29 @@
+name: Voz del vídeo
+on:
+  push:
+    branches: [voz-video]
+jobs:
+  voz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Piper
+        run: |
+          pip install piper-tts==1.2.0
+          for v in es/es_ES/davefx/medium/es_ES-davefx-medium es/es_ES/sharvard/medium/es_ES-sharvard-medium; do
+            curl -sSL -o $(basename $v).onnx https://huggingface.co/rhasspy/piper-voices/resolve/main/$v.onnx
+            curl -sSL -o $(basename $v).onnx.json https://huggingface.co/rhasspy/piper-voices/resolve/main/$v.onnx.json
+          done
+          mkdir -p salida
+          python - <<'PY'
+          import json, subprocess
+          t = json.load(open("textos.json"))
+          for i, s in enumerate(t):
+              for voz, extra in (("es_ES-davefx-medium", []), ("es_ES-sharvard-medium", ["--speaker", "1"])):
+                  subprocess.run(["piper", "--model", voz + ".onnx", "--output_file", f"salida/{voz}-{i:02d}.wav", "--length_scale", "0.92", "--sentence_silence", "0.15"] + extra, input=s.encode(), check=True)
+          PY
+          ls -la salida
+      - uses: actions/upload-artifact@v4
+        with: { name: voz, path: salida }
