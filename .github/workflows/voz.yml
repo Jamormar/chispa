@@ -23,7 +23,10 @@ jobs:
           import json, subprocess
           t = json.load(open("textos.json"))
           for i, s in enumerate(t):
-              for voz, extra in (("es_ES-davefx-medium", []), ("es_ES-sharvard-medium", ["--speaker", "1"])):
+              mapa = json.load(open("es_ES-sharvard-medium.onnx.json")).get("speaker_id_map", {})
+              print("hablantes:", mapa)
+              f = str(mapa.get("F", 1))
+              for voz, extra in (("es_ES-sharvard-medium", ["--speaker", f]),):
                   subprocess.run(["piper", "--model", voz + ".onnx", "--output_file", f"salida/{voz}-{i:02d}.wav", "--length_scale", "0.92", "--sentence_silence", "0.15"] + extra, input=s.encode(), check=True)
           PY
           ls -la salida
