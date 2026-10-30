@@ -821,7 +821,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 <div class="hoja mini enviar" id="hEnviar" role="dialog" aria-label="Compartir la nota">
   <div class="asa" id="evCerrar"></div>
   <h3><span data-i="compartir"></span>Compartir o asignar</h3>
-  <button class="btn sec ev-pdf ev-asig" id="evAsignar"><span data-i="flecha"></span><span><b>Asignar a un compañero</b><small>Le llega con el motivo y puede añadirla a su Cuaderna</small></span></button>
+  <button class="btn sec ev-pdf ev-asig" id="evAsignar"><span data-i="flecha"></span><span><b>Pasar a otra persona</b><small>Familia, amigos o colegas: le llega con el motivo y la añade a su Cuaderna</small></span></button>
   <button class="btn sec ev-pdf" id="evPdf"><span data-i="compartir"></span>PDF para WhatsApp, guardar o imprimir</button>
   <div class="ev-sep">o envíala por correo, con el PDF adjunto</div>
   <input type="email" id="evPara" placeholder="correo@empresa.com" autocomplete="email" inputmode="email">
@@ -832,15 +832,15 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <div class="hoja mini enviar" id="hAsignar" role="dialog" aria-label="Asignar la nota">
   <div class="asa" id="asCerrar"></div>
-  <h3><span data-i="flecha"></span>Asignar a un compañero</h3>
+  <h3><span data-i="flecha"></span>Pasar a otra persona</h3>
   <p class="as-ayuda">Le llega un correo con el motivo, la nota en PDF y un botón para añadirla a su Cuaderna. Cuando la termine, te avisa.</p>
-  <input type="email" id="asPara" placeholder="Correo del compañero" autocomplete="email" inputmode="email">
+  <input type="email" id="asPara" placeholder="Su correo" autocomplete="email" inputmode="email">
   <div class="pq-ideas" id="asRec" style="margin-top:6px"></div>
-  <input type="text" id="asNombre" class="as-campo" placeholder="Su nombre (opcional): Lucía" autocapitalize="words">
-  <textarea id="asMotivo" class="crece" rows="2" placeholder="¿Por qué se la pasas? «Encárgate tú de la oferta, el cliente la quiere el viernes»"></textarea>
+  <input type="text" id="asNombre" class="as-campo" placeholder="Su nombre (opcional)" autocapitalize="words">
+  <textarea id="asMotivo" class="crece" rows="2" placeholder="¿Por qué se la pasas? «¿Te encargas tú de la tarta? Es para el sábado»"></textarea>
   <label class="as-fila"><span data-i="cal"></span><span>Para cuándo</span><input type="date" id="asLimite"></label>
   <input type="text" id="asYo" class="as-campo oculto" placeholder="Tu nombre, para que sepa quién se la manda" autocapitalize="words">
-  <div class="hpie"><div class="esp"></div><button class="btn sec oculto" id="asPermiso">Dar permiso para enviar</button><button class="btn" id="asEnviar"><span data-i="flecha"></span>Asignar y enviar</button></div>
+  <div class="hpie"><div class="esp"></div><button class="btn sec oculto" id="asPermiso">Dar permiso para enviar</button><button class="btn" id="asEnviar"><span data-i="flecha"></span>Enviar</button></div>
 </div>
 
 <!-- Cámara de Cuaderna: siempre la trasera -->
@@ -938,7 +938,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.22.1";
+const VERSION = "0.22.2";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M12 3.5c.7 4.3 2.7 6.3 7 7-4.3.7-6.3 2.7-7 7-.7-4.3-2.7-6.3-7-7 4.3-.7 6.3-2.7 7-7z"/><path d="M19 3v3M17.5 4.5h3"/>',
@@ -2643,7 +2643,7 @@ async function desempaquetar(t){
   if (t[0] === "z"){ const st = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw")); return JSON.parse(await new Response(st).text()); }
   return JSON.parse(new TextDecoder().decode(bytes));
 }
-const miNombre = () => config.miNombre || (lsGet("chispa.usuario") || "").split("@")[0] || "Un compañero";
+const miNombre = () => config.miNombre || (lsGet("chispa.usuario") || "").split("@")[0] || "Alguien";
 const SELLO_CORREO = '<span style="display:inline-block;width:24px;height:24px;border-radius:50%;background:#A8322D;color:#FBF3E4;text-align:center;font-family:Georgia,serif;font-size:15px;line-height:24px;vertical-align:2px">C</span>';
 const cabCorreo = t => `<div style="background:#2B1D14;color:#FBF3E4;border-radius:16px;padding:16px 20px;font-family:Georgia,serif;font-size:20px;font-weight:700">${SELLO_CORREO} Cuaderna<div style="font-family:Segoe UI,Roboto,Arial,sans-serif;font-size:14px;font-weight:400;opacity:.85;margin-top:4px">${esc(t)}</div></div>`;
 const botonCorreo = (url, t) => `<p style="margin:22px 0"><a href="${url}" style="background:#A8322D;color:#FBF3E4;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:12px;display:inline-block">${esc(t)}</a></p>`;
@@ -2675,7 +2675,7 @@ $("#asRec").addEventListener("click", e => { const b = e.target.closest("[data-a
 $("#asPermiso").onclick = async () => { if (hayCambiosEdicion()) await guardarEdicion(); lsSet("chispa.permCorreo", true); irALogin(false); };
 $("#asEnviar").onclick = async () => {
   const para = $("#asPara").value.trim(), nombre = $("#asNombre").value.trim(), motivo = $("#asMotivo").value.trim(), limite = $("#asLimite").value || null;
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(para)){ toast("Escribe el correo del compañero", "alerta"); $("#asPara").focus(); return; }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(para)){ toast("Escribe su correo", "alerta"); $("#asPara").focus(); return; }
   if (!motivo){ toast("Cuéntale por qué se la pasas", "alerta"); $("#asMotivo").focus(); return; }
   if (!config.miNombre){ const yo = $("#asYo").value.trim(); if (!yo){ toast("Escribe tu nombre", "alerta"); $("#asYo").classList.remove("oculto"); $("#asYo").focus(); return; } config.miNombre = yo; }
   const b = $("#asEnviar"); b.disabled = true; b.textContent = "Enviando…";
@@ -2686,7 +2686,7 @@ $("#asEnviar").onclick = async () => {
     const enlace = REDIRECT + "?asignacion=" + await empaquetar(paquete);
     const pdf = await notaEnPdf(n), datos = await new Promise(ok => { const f = new FileReader(); f.onload = () => ok(String(f.result).split(",")[1]); f.readAsDataURL(pdf); });
     const saludo = nombre ? esc(nombre.split(" ")[0]) + ", " : "";
-    const html = `<div style="font-family:Segoe UI,Roboto,Arial,sans-serif;color:#2B1D14;max-width:620px">${cabCorreo(`${config.miNombre} te asigna una tarea`)}
+    const html = `<div style="font-family:Segoe UI,Roboto,Arial,sans-serif;color:#2B1D14;max-width:620px">${cabCorreo(`${config.miNombre} te pasa una nota`)}
       <p style="font-size:16px;margin:20px 2px 6px">${saludo}<b>${esc(config.miNombre)}</b> te pasa esta nota:</p>
       <div style="border-left:3px solid #A8322D;background:#FBF6EC;padding:10px 14px;border-radius:8px;font-size:15.5px;font-style:italic">${esc(motivo).replace(/\n/g, "<br>")}</div>
       ${limite ? `<p style="margin:12px 2px 0;font-size:14px"><b>Para:</b> ${esc(fechaCorreo(limite))}</p>` : ""}
@@ -2697,23 +2697,23 @@ $("#asEnviar").onclick = async () => {
       ${botonCorreo(enlace, "Añadir a mi Cuaderna")}
       <p style="font-size:12.5px;color:#7A6652">Se añade a tu Cuaderna con el motivo; cuando la marques como hecha, ${esc(config.miNombre)} recibirá un aviso. Si no usas Cuaderna, tienes la nota completa en el PDF adjunto.</p></div>`;
     const r = await graph("https://graph.microsoft.com/v1.0/me/sendMail", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({message: {
-      subject: `Te asigno: ${(tituloPlano(n) || "una tarea").slice(0, 110)}`, body: {contentType: "HTML", content: html}, toRecipients: [{emailAddress: {address: para, name: nombre || undefined}}],
+      subject: `Te paso: ${(tituloPlano(n) || "una tarea").slice(0, 110)}`, body: {contentType: "HTML", content: html}, toRecipients: [{emailAddress: {address: para, name: nombre || undefined}}],
       attachments: [{"@odata.type": "#microsoft.graph.fileAttachment", name: nombrePdf(n), contentType: "application/pdf", contentBytes: datos}]}, saveToSentItems: true})});
     if (r.status === 401 || r.status === 403){ lsSet("chispa.permCorreo", false); throw new Error("Falta el permiso de correo. Pulsa «Dar permiso para enviar»"); }
     if (!r.ok) throw await errorDe(r, "al enviar el correo");
     config.companerosCorreo = [{e: para, n: nombre}, ...(config.companerosCorreo || []).filter(c => c.e.toLowerCase() !== para.toLowerCase())].slice(0, 8); guardarConfig();
     editando.asignada = {id, a: {e: para, n: nombre}, motivo, limite, en: new Date().toISOString(), estado: "enviada"};
     $("#hAsignar").classList.remove("on"); await guardarEdicion();
-    toast(`Asignada a ${nombre || para}. Te avisará cuando la termine`, "mail", 5000);
+    toast(`Enviada a ${nombre || para}. Te avisará cuando la termine`, "mail", 5000);
   } catch(e){ toast(e.message || "No se pudo enviar", "alerta", 6000); }
-  finally { b.disabled = false; b.innerHTML = ic("flecha") + "Asignar y enviar"; }
+  finally { b.disabled = false; b.innerHTML = ic("flecha") + "Enviar"; }
 };
 
 // Al recibir: el enlace del correo abre Cuaderna con ?asignacion=…
 async function mostrarAsignacionEnLogin(){
   const t = lsGet("chispa.asigPend"); if (!t) return;
   try { const d = await desempaquetar(t);
-    $("#loginAsig").innerHTML = `<small>${esc(d.de?.n || "Un compañero")} te ha asignado</small><b>${esc(d.t || (d.x || "").split("\n")[0].slice(0, 80) || "Una nota")}</b>${d.m ? `<q>${esc(d.m)}</q>` : ""}`;
+    $("#loginAsig").innerHTML = `<small>${esc(d.de?.n || "Alguien")} te ha pasado</small><b>${esc(d.t || (d.x || "").split("\n")[0].slice(0, 80) || "Una nota")}</b>${d.m ? `<q>${esc(d.m)}</q>` : ""}`;
     $("#loginAsig").classList.remove("oculto"); $("#loginMsg").textContent = "Entra con tu cuenta personal de Microsoft para añadirla a tu Cuaderna.";
   } catch(e){}
 }
@@ -2735,7 +2735,7 @@ async function recibirAsignacion(d){
       para: d.p || {categoria: "", nombre: ""}, recibida: {id: d.id, de: d.de || {}, motivo: d.m || "", limite: d.l || null, en: new Date().toISOString()}});
     if (d.t) n.titulo = d.t;
     await guardarNotaLocal(n); refrescar();
-    toast(`Añadida a tu Cuaderna la nota de ${d.de?.n || "tu compañero"}`, "mail", 4500);
+    toast(`Añadida a tu Cuaderna la nota de ${d.de?.n || "quien te la mandó"}`, "mail", 4500);
   }
   ver(esMovil() ? "hoy" : "notas"); abrirEdicion(n);
 }
@@ -2746,7 +2746,7 @@ async function recibirHecho(d){
     if (!n.hecha){ n.hecha = true; n.hechaEn = new Date().toISOString(); }
     await guardarNotaLocal(n); refrescar();
   }
-  toast(`${n.asignada.a?.n || n.asignada.a?.e || "Tu compañero"} terminó «${(tituloPlano(n) || "la nota").slice(0, 40)}»`, "check", 5000);
+  toast(`${n.asignada.a?.n || n.asignada.a?.e || "La otra persona"} terminó «${(tituloPlano(n) || "la nota").slice(0, 40)}»`, "check", 5000);
   ver(esMovil() ? "hoy" : "notas"); abrirEdicion(n); return true;
 }
 // Quien la recibió la marca hecha: se avisa a quien la mandó
@@ -4227,7 +4227,7 @@ function pintarEstad(){
         <h3 style="margin-top:22px">Cómo anotas</h3>${barrasLista(formas, {total: ns.length, color: "var(--spark)"})}
       </div>
     </div>
-    <div class="panel"><h3>Con quién más trabajas</h3>${barrasLista(top, {vacio: "Cuando asignes notas a clientes, proveedores o compañeros, aparecerán aquí."})}</div>
+    <div class="panel"><h3>Con quién más trabajas</h3>${barrasLista(top, {vacio: "Cuando pongas para quién es cada nota, aparecerán aquí."})}</div>
     <div class="panel"><h3>Cuándo se te ocurren las cosas</h3>${titular ? `<p class="titular">${titular}</p>` : ""}${calor}</div>
     <div class="dos">
       <div class="panel"><h3>Cumplimiento</h3>${cerradas.length ? `
@@ -4363,7 +4363,7 @@ function pintarAyuda(){
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
   <h3>Autoría</h3><div class="autoria izq"><img src="autor.jpg" alt="Morián, José Antonio" loading="lazy"><div>Cuaderna es una creación de <b>José Antonio Morián</b>: idea, diseño y desarrollo.<small>© ${new Date().getFullYear()} José Antonio Morián. Todos los derechos reservados.</small></div></div>
-  <h3>Novedades</h3><p><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Asignar a un compañero» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y archivadores propios. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y archivadores propios. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Cuaderna para móvil y PC, sincronizada con OneDrive.</p>`;
 }
 
