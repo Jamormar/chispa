@@ -645,7 +645,14 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .rico a[href^="nota:"],.md a[href^="nota:"]{color:var(--spark-text);font-weight:600;text-decoration:none;border-bottom:2px solid var(--spark-soft)}
 .en-lista{display:flex;flex-direction:column;gap:6px;margin-top:10px;max-height:52vh;overflow:auto}
 .en-it{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px 14px;border-radius:14px;background:var(--raise);text-align:left;width:100%}.en-it b{font-weight:600}.en-it small{color:var(--muted);font-size:13px}
-.hi-prev{margin-top:12px;padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--surface)}.hi-prev h4{margin:0 0 6px;font-family:var(--display);font-size:18px}.hi-prev .md{font-size:15px;max-height:30vh;overflow:auto}
+.hi-ayuda{color:var(--muted);font-size:14px;margin:2px 2px 14px}
+.hi-it{display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;text-align:left;padding:14px 16px;margin-bottom:10px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
+.hi-it .cuando{display:flex;align-items:center;gap:8px;width:100%;font-weight:700}.hi-it .cuando small{margin-left:auto;font-weight:500;color:var(--muted);font-size:13px}
+.hi-it .tit{font-family:var(--display);font-size:16px}.hi-it .res{color:var(--muted);font-size:14px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hi-act{font-size:12px;font-weight:700;border-radius:8px;padding:2px 8px;background:var(--home-soft);color:var(--home)}
+.hi-det .cuando{color:var(--muted);font-size:14px;margin:0 2px 12px}.hi-det h2{font-family:var(--display);font-size:24px;margin:0 2px 12px;line-height:1.2}
+.hi-det .md{font-size:16px;line-height:1.5;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;word-break:break-word}
+.hi-det .datos{display:flex;flex-wrap:wrap;gap:6px;margin:12px 2px}.hi-det .datos span{font-size:13px;border-radius:10px;padding:4px 10px;background:var(--raise)}
 .datos-acc{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .tj-marco.doc{width:150px;height:205px}
 .doc-mins{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;margin-bottom:16px}
@@ -914,12 +921,10 @@ html.lz-on,html.lz-on body{overflow:hidden}
   <div class="en-lista" id="enLista"></div>
 </div>
 
-<div class="hoja mini enviar" id="hHist" role="dialog" aria-label="Versiones anteriores">
-  <div class="asa" id="hiCerrar"></div>
-  <h3><span data-i="deshacer"></span>Versiones anteriores</h3>
-  <p class="as-ayuda">Tu OneDrive guarda cada versión de la nota. Toca una para verla y recuperarla.</p>
-  <div class="en-lista" id="hiLista"></div>
-  <div id="hiVer"></div>
+<div id="vers" class="lz oculto" role="dialog" aria-label="Versiones de la nota">
+  <div class="lz-top"><button class="lz-b" id="hiAtras" aria-label="Cerrar"><span data-i="x"></span></button><div class="lz-tit" id="hiTit">Versiones</div></div>
+  <div class="tj-scroll" id="hiCuerpo"></div>
+  <div class="lz-rec-b tj-pie oculto" id="hiPie"><button class="btn sec" id="hiVolver"><span data-i="atras"></span>Todas</button><div class="esp"></div><button class="btn" id="hiRecuperar"><span data-i="deshacer"></span>Recuperar</button></div>
 </div>
 
 <div class="hoja mini enviar" id="hLibreta" role="dialog" aria-label="Libreta">
@@ -1069,7 +1074,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.26";
+const VERSION = "0.26.1";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M12 3.5c.7 4.3 2.7 6.3 7 7-4.3.7-6.3 2.7-7 7-.7-4.3-2.7-6.3-7-7 4.3-.7 6.3-2.7 7-7z"/><path d="M19 3v3M17.5 4.5h3"/>',
@@ -2446,6 +2451,7 @@ function cerrarHojas(){ $("#velo").classList.remove("on"); document.querySelecto
 let quitandoEstado = false;
 addEventListener("popstate", () => {
   if (quitandoEstado){ quitandoEstado = false; if (document.querySelector(".hoja.on")) try { history.pushState({hoja: true}, ""); } catch(e){} return; }
+  if (!$("#vers").classList.contains("oculto")) return;      // la pantalla de versiones gestiona su propio «atrás»
   if (document.querySelector(".hoja.on")) cerrarSegun();      // «atrás» con una hoja abierta: se cierra la hoja (el editor guarda)
 });
 const cerrarSegun = () => $("#hEditar").classList.contains("on") ? cerrarEditorGuardando() : cerrarHojas();
@@ -4202,34 +4208,69 @@ $("#enLista").addEventListener("click", e => {
 });
 $("#eFormato").addEventListener("click", e => { if (e.target.closest('[data-fmt="nota"]')) abrirEnlazar(true); });
 
-// ---------- historial: las versiones que guarda OneDrive ----------
-let histNota = null, histVers = [];
+// ---------- historial: las versiones que guarda OneDrive (pantalla completa) ----------
+let histNota = null, histVers = [], histDet = -1;
+const fmtVer = d => capital(new Date(d).toLocaleString("es-ES", {weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit"}));
+const haceVer = d => { const m = Math.round((Date.now() - new Date(d)) / 60000); return m < 1 ? "ahora" : m < 60 ? `hace ${m} min` : m < 1440 ? `hace ${Math.round(m / 60)} h` : `hace ${Math.round(m / 1440)} d`; };
+function cerrarHistorial(){ $("#vers").classList.add("oculto"); document.documentElement.classList.remove("lz-on"); if (history.state?.vers){ quitandoEstado = true; history.back(); } }
 async function abrirHistorial(n){
-  histNota = n; $("#hiVer").innerHTML = ""; $("#hiLista").innerHTML = `<p class="ayuda-b">Buscando versiones…</p>`; $("#hHist").classList.add("on");
+  histNota = n; histVers = []; histDet = -1;
+  $("#vers").classList.remove("oculto"); document.documentElement.classList.add("lz-on");
+  try { history.pushState({vers: true, hoja: true}, ""); } catch(e){}
+  $("#hiTit").textContent = "Versiones · " + tituloPlano(n); $("#hiPie").classList.add("oculto");
+  $("#hiCuerpo").innerHTML = `<p class="hi-ayuda">Buscando las versiones en tu OneDrive…</p>`;
   try {
-    const it = await itemDe(`Notas/${n.id}.json`); if (!it) throw new Error("Esta nota aún no está en tu OneDrive");
+    const it = await itemDe(`Notas/${n.id}.json`); if (!it) throw new Error("Esta nota aún no se ha subido a tu OneDrive. Inténtalo dentro de un momento.");
     const r = await graph(`${DRIVE}/items/${it.id}/versions`); if (!r.ok) throw await errorDe(r, "al leer las versiones");
-    histVers = (await r.json()).value || []; histVers.itemId = it.id;
-    const fmt = d => new Date(d).toLocaleString("es-ES", {weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
-    $("#hiLista").innerHTML = histVers.length > 1 ? histVers.map((v, i) => `<button class="en-it" data-ver="${i}"><b>${i === 0 ? "Versión actual" : capital(fmt(v.lastModifiedDateTime))}</b><small>${i === 0 ? capital(fmt(v.lastModifiedDateTime)) : `${Math.max(1, Math.round((v.size || 0) / 1024))} KB`}</small></button>`).join("") : `<p class="ayuda-b">Todavía no hay versiones anteriores de esta nota.</p>`;
-  } catch(e){ $("#hiLista").innerHTML = `<p class="ayuda-b">${esc(e.message || "No se pudieron leer las versiones")}</p>`; }
+    histVers = ((await r.json()).value || []).map(v => ({...v, item: it.id}));
+    histVers.sort((a, b) => b.lastModifiedDateTime.localeCompare(a.lastModifiedDateTime));
+    pintarHistorial();
+    // carga el contenido de cada versión para enseñar de qué iba (3 a la vez, como mucho 25)
+    const cola = histVers.slice(0, 25).map((v, i) => i); const trabajar = async () => { while (cola.length){ const i = cola.shift(); await contenidoVersion(i).catch(() => {}); if (histDet < 0 && !$("#vers").classList.contains("oculto")) pintarHistorial(); } };
+    await Promise.all([trabajar(), trabajar(), trabajar()]);
+  } catch(e){ $("#hiCuerpo").innerHTML = `<p class="hi-ayuda">${esc(e.message || "No se pudieron leer las versiones")}</p>`; }
 }
-$("#hiCerrar").onclick = () => $("#hHist").classList.remove("on");
-$("#hiLista").addEventListener("click", async e => {
-  const b = e.target.closest("[data-ver]"); if (!b) return; const i = +b.dataset.ver; if (i === 0) return;
-  $("#hiVer").innerHTML = `<p class="ayuda-b">Abriendo…</p>`;
+async function contenidoVersion(i){
+  const v = histVers[i]; if (v.datos) return v.datos;
+  const r = await graph(`${DRIVE}/items/${v.item}/versions/${v.id}/content`);
+  if (!r.ok) throw new Error("No se pudo abrir esa versión");
+  return v.datos = JSON.parse(await r.text());
+}
+function pintarHistorial(){
+  histDet = -1; $("#hiPie").classList.add("oculto"); $("#hiAtras").innerHTML = ic("x"); $("#hiAtras").setAttribute("aria-label", "Cerrar");
+  $("#hiCuerpo").innerHTML = (histVers.length > 1 ? `<p class="hi-ayuda">Tu OneDrive guarda cada versión de esta nota. Toca una para verla y, si quieres, recuperarla.</p>` : `<p class="hi-ayuda">Todavía no hay versiones anteriores: cada vez que cambies la nota, se guardará una aquí.</p>`)
+    + histVers.map((v, i) => { const d = v.datos, p = d ? partesNota(d) : null;
+      return `<button class="hi-it" data-ver="${i}"><span class="cuando">${i === 0 ? `<span class="hi-act">Actual</span>` : ""}${esc(fmtVer(v.lastModifiedDateTime))}<small>${haceVer(v.lastModifiedDateTime)}</small></span>
+        ${d ? `<span class="tit">${esc(p.titulo || p.vacio || "Nota")}</span>${p.desc ? `<span class="res">${esc(p.desc)}</span>` : ""}` : `<span class="res">Cargando…</span>`}</button>`; }).join("");
+  $("#hiCuerpo").scrollTop = 0;
+}
+async function verVersion(i){
+  histDet = i; const v = histVers[i]; if (histVers.length > 1){ $("#hiAtras").innerHTML = ic("atras"); $("#hiAtras").setAttribute("aria-label", "Volver a todas las versiones"); }
+  $("#hiCuerpo").innerHTML = `<p class="hi-ayuda">Abriendo…</p>`;
   try {
-    const r = await graph(`${DRIVE}/items/${histVers.itemId}/versions/${histVers[i].id}/content`); if (!r.ok) throw new Error("No se pudo abrir esa versión");
-    const v = await r.json(), pl = partirLista(v.texto);
-    $("#hiVer").innerHTML = `<div class="hi-prev"><h4>${esc(v.titulo || tituloPlano(v))}</h4><div class="md">${mdAHtml(pl.intro)}${pl.items.length ? `<ul>${pl.items.map(x => `<li>${x.hecho ? "☑" : "☐"} ${esc(x.texto)}</li>`).join("")}</ul>` : ""}</div>
-      <div class="hpie" style="margin-top:12px"><div class="esp"></div><button class="btn" id="hiRecuperar">Recuperar esta versión</button></div></div>`;
-    $("#hiRecuperar").onclick = async () => {
-      if (!confirm("¿Recuperar esta versión? La actual seguirá en el historial.")) return;
-      const n = histNota; for (const k of ["titulo", "texto", "fecha", "hora", "tipo", "para", "etiquetas", "carpeta", "importante"]) if (v[k] === undefined) delete n[k]; else n[k] = v[k];
-      $("#hHist").classList.remove("on"); olvidarEdicion(); cerrarHojas(); await guardarNotaLocal(n); refrescar(); toast("Versión recuperada", "deshacer", 3000); setTimeout(() => abrirEdicion(n), 150);
-    };
-  } catch(err){ $("#hiVer").innerHTML = `<p class="ayuda-b">${esc(err.message)}</p>`; }
-});
+    const d = await contenidoVersion(i), pl = partirLista(d.texto), et = etiquetasDe(d);
+    $("#hiCuerpo").innerHTML = `<div class="hi-det"><div class="cuando">${i === 0 ? "Versión actual · " : ""}${esc(fmtVer(v.lastModifiedDateTime))} · ${haceVer(v.lastModifiedDateTime)}</div>
+      <h2>${esc(d.titulo || partesNota(d).titulo || "Nota")}</h2>
+      <div class="md">${mdAHtml(pl.intro) || `<span style="color:var(--muted)">Sin descripción</span>`}${pl.items.length ? `<ul style="list-style:none;padding-left:4px">${pl.items.map(x => `<li>${x.hecho ? "☑" : "☐"} ${esc(x.texto)}</li>`).join("")}</ul>` : ""}</div>
+      <div class="datos">${d.fecha ? `<span>📅 ${esc(fechaLarga(d.fecha))}${d.hora ? ", " + esc(d.hora) : ""}</span>` : ""}${d.para?.nombre ? `<span>👤 ${esc(d.para.nombre)}</span>` : ""}${et.map(e => `<span>#${esc(e)}</span>`).join("")}${d.hecha ? "<span>✓ Hecha</span>" : ""}</div></div>`;
+    $("#hiPie").classList.remove("oculto"); $("#hiRecuperar").classList.toggle("oculto", i === 0);
+  } catch(e){ $("#hiCuerpo").innerHTML = `<p class="hi-ayuda">${esc(e.message)}</p>`; $("#hiPie").classList.remove("oculto"); $("#hiRecuperar").classList.add("oculto"); }
+  $("#hiCuerpo").scrollTop = 0;
+}
+$("#hiCuerpo").addEventListener("click", e => { const b = e.target.closest("[data-ver]"); if (b) verVersion(+b.dataset.ver); });
+$("#hiVolver").onclick = pintarHistorial;
+$("#hiAtras").onclick = () => histDet >= 0 && histVers.length > 1 ? pintarHistorial() : cerrarHistorial();
+$("#hiRecuperar").onclick = async () => {
+  const d = histVers[histDet]?.datos; if (!d || !confirm("¿Recuperar esta versión? La actual seguirá guardada en el historial.")) return;
+  const n = histNota; for (const k of ["titulo", "texto", "fecha", "hora", "tipo", "para", "etiquetas", "carpeta", "importante"]) if (d[k] === undefined) delete n[k]; else n[k] = d[k];
+  cerrarHistorial(); olvidarEdicion(); cerrarHojas(); await guardarNotaLocal(n); refrescar(); toast("Versión recuperada", "deshacer", 3000); setTimeout(() => abrirEdicion(n), 200);
+};
+// botón «atrás» del móvil: primero vuelve a la lista, luego cierra
+addEventListener("popstate", () => {
+  if ($("#vers").classList.contains("oculto")) return;
+  if (histDet >= 0 && histVers.length > 1){ pintarHistorial(); try { history.pushState({vers: true, hoja: true}, ""); } catch(e){} }
+  else { $("#vers").classList.add("oculto"); document.documentElement.classList.remove("lz-on"); }
+}, true);
 
 // ---------- exportarlo todo: Markdown legible + adjuntos, en un ZIP ----------
 let jszipP = null;
@@ -5195,7 +5236,7 @@ function pintarAyuda(){
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
   <h3>Autoría</h3><div class="autoria izq"><img src="autor.jpg" alt="Morián, José Antonio" loading="lazy"><div>Cuaderna es una creación de <b>José Antonio Morián</b>: idea, diseño y desarrollo.<small>© ${new Date().getFullYear()} José Antonio Morián. Todos los derechos reservados.</small></div></div>
-  <h3>Novedades</h3><p><b>0.26</b>: enlaces entre notas (y «Mencionada en»); historial de versiones de cada nota, para ver y recuperar las anteriores; exportarlo todo en un ZIP (Markdown y adjuntos); importar desde Evernote (.enex) con fotos, archivos y etiquetas.<br><b>0.25</b>: escáner de documentos de varias páginas que crea un PDF (con su texto leído por la IA para buscarlo); guardar páginas web (también compartiendo un enlace desde el navegador); plantillas (reunión, viaje, compra, receta, coche, proyecto, diario) y las tuyas propias; las libretas y etiquetas se abren dentro de Biblioteca.<br><b>0.24</b>: nueva pestaña <b>Biblioteca</b>: libretas agrupadas en pilas, etiquetas (#algo), descripción con formato (negritas, títulos, listas, enlaces y tablas), archivos adjuntos de cualquier tipo y búsqueda dentro de PDF, fotos y etiquetas. Los «archivadores» pasan a llamarse libretas.<br><b>0.23.4</b>: al anotar, el botón para descartar es ahora «Borrar», en rojo, y solo aparece cuando hay algo escrito.<br><b>0.23.3</b>: la fecha de una nota se ve escrita y tiene un botón claro para quitarla o anular la cita del calendario (con deshacer).<br><b>0.23.2</b>: avisos rediseñados, ahora abajo; campo de «Pregúntale a tus notas» más limpio.<br><b>0.23.1</b>: «Pregúntale a tus notas» con botón Cerrar; el botón «atrás» del móvil cierra la ventana abierta en vez de salir.<br><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y libretas propias. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.26.1</b>: pantalla de versiones rediseñada: a pantalla completa, con fecha, título y resumen de cada versión, y fácil de cerrar (X o «atrás»).<br><b>0.26</b>: enlaces entre notas (y «Mencionada en»); historial de versiones de cada nota, para ver y recuperar las anteriores; exportarlo todo en un ZIP (Markdown y adjuntos); importar desde Evernote (.enex) con fotos, archivos y etiquetas.<br><b>0.25</b>: escáner de documentos de varias páginas que crea un PDF (con su texto leído por la IA para buscarlo); guardar páginas web (también compartiendo un enlace desde el navegador); plantillas (reunión, viaje, compra, receta, coche, proyecto, diario) y las tuyas propias; las libretas y etiquetas se abren dentro de Biblioteca.<br><b>0.24</b>: nueva pestaña <b>Biblioteca</b>: libretas agrupadas en pilas, etiquetas (#algo), descripción con formato (negritas, títulos, listas, enlaces y tablas), archivos adjuntos de cualquier tipo y búsqueda dentro de PDF, fotos y etiquetas. Los «archivadores» pasan a llamarse libretas.<br><b>0.23.4</b>: al anotar, el botón para descartar es ahora «Borrar», en rojo, y solo aparece cuando hay algo escrito.<br><b>0.23.3</b>: la fecha de una nota se ve escrita y tiene un botón claro para quitarla o anular la cita del calendario (con deshacer).<br><b>0.23.2</b>: avisos rediseñados, ahora abajo; campo de «Pregúntale a tus notas» más limpio.<br><b>0.23.1</b>: «Pregúntale a tus notas» con botón Cerrar; el botón «atrás» del móvil cierra la ventana abierta en vez de salir.<br><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y libretas propias. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Cuaderna para móvil y PC, sincronizada con OneDrive.</p>`;
   $("#ayudaSug").onclick = abrirSugerencia;
 }
