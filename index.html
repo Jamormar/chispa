@@ -666,6 +666,13 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .bib-acc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 4px}
 .bib-acc button{display:flex;align-items:center;gap:10px;padding:14px;border-radius:16px;background:var(--surface);border:1px solid var(--line);font-weight:600;text-align:left;line-height:1.2}
 .bib-acc svg{width:24px;height:24px;color:var(--spark);flex:none}
+.vistas{display:flex;flex-wrap:wrap;gap:8px}
+.vista{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 13px;border-radius:13px;background:var(--surface);border:1px solid var(--line);font-weight:600;font-size:14.5px;color:var(--text)}
+.vista svg{width:18px;height:18px}.vista b{font-weight:700;color:var(--spark-text);background:var(--spark-soft);border-radius:8px;padding:0 7px;font-size:13px}
+.vista.dest{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.crear{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.crear button{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:12px;border-radius:16px;background:var(--surface);border:1px solid var(--line);font-weight:600;font-size:14px;line-height:1.2;text-align:left}.crear svg{color:var(--spark);width:22px;height:22px}
+.plantillas-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;max-height:60vh;overflow:auto}.plantillas-g .plantilla{width:auto}
 .plantillas{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none}
 .plantilla{flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:128px;padding:12px;border-radius:16px;background:var(--surface);border:1px solid var(--line);text-align:left}
 .plantilla .pi{font-size:24px;line-height:1}.plantilla b{font-size:14.5px;line-height:1.2}.plantilla small{color:var(--muted);font-size:12px;line-height:1.25}
@@ -814,10 +821,9 @@ html.lz-on,html.lz-on body{overflow:hidden}
     </section>
 
     <section id="vHoy" class="oculto" data-v="hoy"></section>
-    <section id="vBiblio" class="oculto" data-v="biblio"></section>
     <section id="vNotas" class="oculto" data-v="notas">
-      <div class="cab"><div><h1>Notas</h1></div><div class="esp"></div><button class="sync cab-sync" data-sync></button></div>
-      <div class="busca"><span id="icBusca"></span><input id="q" type="search" placeholder="Buscar por texto, nombre o fecha"></div>
+      <div class="cab"><div><h1>Cuaderno</h1></div><div class="esp"></div><button class="sync cab-sync" data-sync></button></div>
+      <div class="busca"><span id="icBusca"></span><input id="q" type="search" placeholder="Buscar en todo: textos, fotos, PDF y #etiquetas"></div>
       <div id="buzonCab"></div>
       <div class="desps" id="filtros"></div>
       <div class="desp-panel oculto" id="despPanel" role="dialog"></div>
@@ -927,6 +933,13 @@ html.lz-on,html.lz-on body{overflow:hidden}
   <div class="lz-top"><button class="lz-b" id="hiAtras" aria-label="Cerrar"><span data-i="x"></span></button><div class="lz-tit" id="hiTit">Versiones</div></div>
   <div class="tj-scroll" id="hiCuerpo"></div>
   <div class="lz-rec-b tj-pie oculto" id="hiPie"><button class="btn sec" id="hiVolver"><span data-i="atras"></span>Todas</button><div class="esp"></div><button class="btn" id="hiRecuperar"><span data-i="deshacer"></span>Recuperar</button></div>
+</div>
+
+<div class="hoja mini enviar" id="hPlantillas" role="dialog" aria-label="Plantillas">
+  <div class="asa" id="plaCerrar"></div>
+  <h3><span data-i="plantilla"></span>Empieza desde una plantilla</h3>
+  <p class="as-ayuda">Para guardar una nota tuya como plantilla: ábrela y pulsa Compartir › Guardar como plantilla.</p>
+  <div class="plantillas-g" id="plaLista"></div>
 </div>
 
 <div class="hoja mini enviar" id="hLibreta" role="dialog" aria-label="Libreta">
@@ -1076,7 +1089,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.26.2";
+const VERSION = "0.27";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M12 3.5c.7 4.3 2.7 6.3 7 7-4.3.7-6.3 2.7-7 7-.7-4.3-2.7-6.3-7-7 4.3-.7 6.3-2.7 7-7z"/><path d="M19 3v3M17.5 4.5h3"/>',
@@ -4002,30 +4015,11 @@ $("#lbBorrar").onclick = () => {
   cerrarHojas(); toast(`Libreta «${c.nombre}» borrada`, "borrar"); refrescar();
 };
 
-// ---------- la pestaña Biblioteca (las libretas, etiquetas y búsquedas se abren dentro, sin salir de ella) ----------
-let bibSel = null;   // {tipo: "lib", id} | {tipo: "etq", e} | {tipo: "q", q}
+// ---------- búsqueda, plantillas y libretas del Cuaderno ----------
 const textoBuscable = n => norm([n.titulo, n.texto, n.transcripcion, etiquetasDe(n).map(e => "#" + e).join(" "), n.ia?.textoFotos, Object.values(n.textoArch || {}).join(" "), n.textoWeb,
   (n.archivos || []).map(a => a.nombre).join(" "), n.para?.nombre, carpetaDe(n)?.nombre].filter(Boolean).join(" "));
-function buscarEnTodo(t){ bibSel = {tipo: "q", q: t}; if (vista !== "biblio") ver("biblio"); else pintarBiblio(); scrollTo(0, 0); }
-function listaBiblio(){
-  const ns = deNotas();
-  let titulo, icono, lista;
-  if (bibSel.tipo === "lib"){ const c = archivadores().find(x => x.id === bibSel.id); if (!c){ bibSel = null; return pintarBiblio(); } titulo = c.nombre; icono = "libro"; lista = ns.filter(n => n.carpeta === c.id); }
-  else if (bibSel.tipo === "etq"){ titulo = "#" + bibSel.e; icono = "tag"; lista = ns.filter(n => etiquetasDe(n).some(e => norm(e) === norm(bibSel.e))); }
-  else { const q = norm(bibSel.q).split(/\s+/).filter(Boolean); titulo = `«${bibSel.q}»`; icono = "buscar"; lista = ns.filter(n => { const h = textoBuscable(n); return q.every(w => h.includes(w)); }); }
-  const orden = n => enArchivo(n) ? 2 : n.hecha ? 1 : 0;
-  lista.sort((a, b) => orden(a) - orden(b) || (b.actualizada || b.creada).localeCompare(a.actualizada || a.creada));
-  const grupos = ["Pendientes", "Hechas", "Archivadas"].map((g, k) => [g, lista.filter(n => orden(n) === k)]).filter(([, l]) => l.length);
-  const car = bibSel.tipo === "lib" ? archivadores().find(x => x.id === bibSel.id) : null;
-  $("#vBiblio").innerHTML = cab("Biblioteca") + `
-    <div class="bz-cab"><button class="ibtn" id="bibVolver" aria-label="Volver a la Biblioteca">${ic("atras")}</button><div class="bz-tit">${ic(icono)}<span>${esc(titulo)}</span></div>${car ? `<button class="ibtn" data-libm="${esc(car.id)}" aria-label="Editar la libreta">${ic("puntos")}</button>` : ""}</div>
-    ${car ? `<button class="btn sec" id="bibNuevaEn" style="margin:4px 0 10px">${ic("mas")}Nueva nota en esta libreta</button>` : ""}
-    ${lista.length ? grupos.map(([g, l]) => `<div class="dia">${g} <span class="c">${l.length}</span></div><div class="lista">${l.map(n => fila(n, {sinCarpeta: !!car})).join("")}</div>`).join("")
-      : `<div class="vacio-grande"><div class="halo">${ic(icono)}</div><b>${bibSel.tipo === "q" ? "No hay nada con eso" : "Aún no hay notas aquí"}</b><span>${car ? "Crea una nota aquí o, desde cualquier nota, elige esta libreta en Detalles." : bibSel.tipo === "q" ? "Prueba con otra palabra." : ""}</span></div>`}`;
-  $("#bibVolver").onclick = () => { bibSel = null; pintarBiblio(); scrollTo(0, 0); };
-  if ($("#bibNuevaEn")) $("#bibNuevaEn").onclick = () => { const n = notaBase(new Date()); n.carpeta = car.id; abrirEdicion(n); };
-  cargarMinis($("#vBiblio"));
-}
+function buscarEnTodo(t){ $("#q").value = t; buzon = null; if (vista !== "notas") ver("notas"); else pintarNotas(); scrollTo(0, 0); }
+const libretaAbierta = () => buzon?.startsWith("c:") && vista === "notas" ? buzon.slice(2) : null;
 const PLANTILLAS = [
   {k: "reunion", ic: "👥", nombre: "Reunión", d: "Asistentes, temas y acuerdos", titulo: "Reunión: ", etq: ["reunión"], texto: "## Asistentes\n- Quién asiste\n## Temas\n1. Primer tema\n## Acuerdos\n- Lo que se decide\n[ ] Enviar el resumen"},
   {k: "viaje", ic: "🧳", nombre: "Viaje", d: "Fechas, alojamiento y maleta", titulo: "Viaje a ", etq: ["viaje"], texto: "## Fechas\n- Ida: \n- Vuelta: \n## Alojamiento\n- Hotel o casa: \n## Transporte\n- Ida y vuelta: \n[ ] DNI o pasaporte\n[ ] Cargadores\n[ ] Reservas\n[ ] Seguro de viaje"},
@@ -4040,55 +4034,31 @@ function usarPlantilla(p){
   n.titulo = p.k === "diario" ? "Diario · " + capital(fechaLarga(hoyISO())) : p.titulo; n.texto = p.texto;
   if (p.etq?.length) n.etiquetas = [...p.etq]; if (!n.titulo) delete n.titulo;
   n.ambito = "personal";
-  if (bibSel?.tipo === "lib") n.carpeta = bibSel.id;
+  if (libretaAbierta()) n.carpeta = libretaAbierta();
   abrirEdicion(n); setTimeout(() => { const t = $("#eTitulo"); if (t.value.endsWith(" ")){ t.focus(); t.setSelectionRange(t.value.length, t.value.length); } }, 300);
 }
-function pintarBiblio(){
-  if (bibSel) return listaBiblio();
-  const ns = deNotas(), libs = archivadores(), etq = todasEtiquetas(), mias = config.plantillas || [];
-  const pilas = [...new Set(libs.map(c => c.pila || ""))].sort((a, b) => (a === "") - (b === "") || a.localeCompare(b));
-  const tarjeta = c => { const l = ns.filter(n => n.carpeta === c.id), p = l.filter(n => !n.hecha && !enArchivo(n)).length;
-    return `<div class="libreta"><button class="lib-abrir" data-lib="${esc(c.id)}">${ic("libro")}<b>${esc(c.nombre)}</b><small>${l.length} nota${l.length === 1 ? "" : "s"}${p ? ` · ${p} pendiente${p > 1 ? "s" : ""}` : ""}</small></button><button class="ibtn lib-menu" data-libm="${esc(c.id)}" aria-label="Editar la libreta">${ic("puntos")}</button></div>`; };
-  const conArch = ns.filter(n => n.archivos?.length || n.web).sort((a, b) => (b.actualizada || b.creada).localeCompare(a.actualizada || a.creada)).slice(0, 8);
-  $("#vBiblio").innerHTML = cab("Biblioteca", "Todo lo que quieres conservar, ordenado") + `
-    <div class="busca"><span>${ic("buscar")}</span><input id="qB" type="search" placeholder="Buscar en todo: textos, fotos, PDF y #etiquetas" enterkeyhint="search"></div>
-    <div class="bib-acc"><button id="bibEscanear">${ic("doc")}<span>Escanear documento</span></button><button id="bibWeb">${ic("web")}<span>Guardar página web</span></button></div>
-    <div class="dia">Empieza con una plantilla</div>
-    <div class="plantillas">${PLANTILLAS.map(p => `<button class="plantilla" data-pla="${p.k}"><span class="pi">${p.ic}</span><b>${esc(p.nombre)}</b><small>${esc(p.d)}</small></button>`).join("")}${mias.map((p, i) => `<button class="plantilla mia" data-plam="${i}"><span class="pi">${ic("plantilla")}</span><b>${esc(p.nombre)}</b><small>Tu plantilla</small></button>`).join("")}</div>
-    <div class="dia">Libretas <span class="c">${libs.length}</span></div>
-    ${pilas.map(p => { const l = libs.filter(c => (c.pila || "") === p); return `<div class="pila">${p || pilas.length > 1 ? `<div class="pila-t">${ic("carpeta")}${esc(p || "Sin pila")}<span class="c">${l.length}</span></div>` : ""}<div class="libretas">${l.map(tarjeta).join("")}</div></div>`; }).join("")}
-    ${libs.length ? "" : `<p class="ayuda-b">Crea libretas para lo que quieras guardar: recetas, facturas, un viaje… Y agrúpalas en pilas.</p>`}
-    <button class="btn sec" id="bNuevaLib">${ic("mas")}Nueva libreta</button>
-    <div class="dia">Etiquetas <span class="c">${etq.length}</span></div>
-    ${etq.length ? `<div class="etq-nube">${etq.map(([e, c]) => `<button class="etq" data-etq="${esc(e)}">#${esc(e)}<i>${c}</i></button>`).join("")}</div>` : `<p class="ayuda-b">Escribe #algo en cualquier nota, o añádelas en el editor (Detalles › Etiquetas), y aparecerán aquí.</p>`}
-    <div class="dia">Últimos documentos y páginas web</div>
-    ${conArch.length ? `<div class="lista">${conArch.map(n => fila(n)).join("")}</div>` : `<p class="ayuda-b">Escanea un documento, guarda una página web o adjunta un archivo a cualquier nota. También se busca dentro de ellos.</p>`}
-    <div class="dia">Tus datos son tuyos</div>
-    <p class="ayuda-b">Todo está en tu OneDrive. Además, puedes llevártelo entero cuando quieras, o traer lo que tenías en Evernote.</p>
-    <div class="datos-acc"><button class="btn sec" id="bExportar">${ic("subir")}Exportarlo todo</button><button class="btn sec" id="bEnex">${ic("archivo")}Importar de Evernote</button></div>
-    <input type="file" id="inEnex" accept=".enex,application/xml,text/xml" multiple class="oculto">`;
-  $("#qB").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.value.trim()) buscarEnTodo(e.target.value.trim()); });
-  $("#bNuevaLib").onclick = () => abrirLibreta(null);
-  $("#bibEscanear").onclick = () => abrirEscaner(null);
-  $("#bExportar").onclick = exportarTodo;
-  $("#bEnex").onclick = () => $("#inEnex").click();
-  $("#inEnex").onchange = async () => { const fs = [...$("#inEnex").files]; $("#inEnex").value = ""; for (const f of fs) await importarEnex(f); };
-  $("#bibWeb").onclick = () => { const u = prompt("Pega la dirección de la página web:", ""); if (u && u.trim()) guardarPaginaWeb(u.trim()); };
-  cargarMinis($("#vBiblio"));
-}
 $("#main").addEventListener("click", e => {
-  const a = e.target.closest("[data-lib]"), m = e.target.closest("[data-libm]"), t = e.target.closest("[data-etq]"), pl = e.target.closest("[data-pla]"), pm = e.target.closest("[data-plam]");
-  if (a){ bibSel = {tipo: "lib", id: a.dataset.lib}; pintarBiblio(); scrollTo(0, 0); }
-  else if (m){ const c = archivadores().find(x => x.id === m.dataset.libm); if (c) abrirLibreta(c); }
-  else if (t){ bibSel = {tipo: "etq", e: t.dataset.etq}; if (vista !== "biblio") ver("biblio"); else pintarBiblio(); scrollTo(0, 0); }
-  else if (pl) usarPlantilla(PLANTILLAS.find(p => p.k === pl.dataset.pla));
-  else if (pm){ const p = (config.plantillas || [])[+pm.dataset.plam]; if (p) usarPlantilla({...p, k: "mia"}); }
+  const m = e.target.closest("[data-libm]");
+  if (m){ e.stopPropagation(); const c = archivadores().find(x => x.id === m.dataset.libm); if (c) abrirLibreta(c); }
+});
+// hoja de plantillas
+function abrirPlantillas(){
+  const mias = config.plantillas || [];
+  $("#plaLista").innerHTML = PLANTILLAS.map(p => `<button class="plantilla" data-pla="${p.k}"><span class="pi">${p.ic}</span><b>${esc(p.nombre)}</b><small>${esc(p.d)}</small></button>`).join("")
+    + mias.map((p, i) => `<button class="plantilla mia" data-plam="${i}"><span class="pi">${ic("plantilla")}</span><b>${esc(p.nombre)}</b><small>Tu plantilla</small></button>`).join("");
+  abrirHoja("#hPlantillas");
+}
+$("#plaCerrar").onclick = () => cerrarHojas();
+$("#plaLista").addEventListener("click", e => {
+  const pl = e.target.closest("[data-pla]"), pm = e.target.closest("[data-plam]"); if (!pl && !pm) return;
+  const p = pl ? PLANTILLAS.find(x => x.k === pl.dataset.pla) : {...(config.plantillas || [])[+pm.dataset.plam], k: "mia"};
+  cerrarHojas(); setTimeout(() => usarPlantilla(p), 150);
 });
 // guardar la nota abierta como plantilla propia (desde Compartir)
 function guardarComoPlantilla(){
   const n = notaDelEditor(), nombre = (prompt("Nombre de la plantilla:", tituloPlano(n) || "") || "").trim(); if (!nombre) return;
   config.plantillas = [...(config.plantillas || []).filter(p => norm(p.nombre) !== norm(nombre)), {nombre, titulo: n.titulo || "", texto: n.texto || "", etq: n.etiquetas || []}];
-  guardarConfig(); cerrarHojaEnviar(); toast(`Plantilla «${nombre}» guardada. La tienes en Biblioteca`, "plantilla", 4000);
+  guardarConfig(); cerrarHojaEnviar(); toast(`Plantilla «${nombre}» guardada. La tienes en Cuaderno › Crear › Desde una plantilla`, "plantilla", 4000);
 }
 
 // ---------- escáner de documentos de varias páginas → PDF ----------
@@ -4137,7 +4107,7 @@ $("#tjPdf").onclick = async () => {
     cerrarTarjeta();
     if (DOC.destino === "editor" && editando && $("#hEditar").classList.contains("on")){ eAdj.nuevosArch.push(a); pintarAdjEdicion(); guardarEdicionPronto(); toast("Documento añadido. Pulsa Guardar para conservarlo", "doc", 4000); }
     else {
-      const n = notaBase(new Date()); n.titulo = base; n.etiquetas = ["documento"]; if (bibSel?.tipo === "lib") n.carpeta = bibSel.id;
+      const n = notaBase(new Date()); n.titulo = base; n.etiquetas = ["documento"]; if (libretaAbierta()) n.carpeta = libretaAbierta();
       const d = new Date(n.creada), r = `Archivos/${d.getFullYear()}/${pad(d.getMonth() + 1)}/${n.id}-${Date.now().toString(36)}-${nombreSeguro(nombre)}`;
       await idb.ponerBlob(r, blob); n.archivos = [{ruta: r, nombre, tipo: "application/pdf", tam: blob.size}];
       await guardarNotaLocal(n, [r]); refrescar(); leerArchivos(n, [{ruta: r, ...a}]);
@@ -4167,7 +4137,7 @@ async function guardarPaginaWeb(url, asunto = ""){
   const n = notaBase(new Date()); n.titulo = titulo; n.web = {url, dominio, imagen: info.imagen || ""};
   n.texto = [`[${titulo}](${url})`, info.descripcion || "", info.resumen ? "## Resumen\n" + info.resumen : ""].filter(Boolean).join("\n\n");
   if (info.texto) n.textoWeb = info.texto.slice(0, 40000);
-  n.etiquetas = ["web"]; n.ambito = ambitoSel(); if (bibSel?.tipo === "lib") n.carpeta = bibSel.id;
+  n.etiquetas = ["web"]; n.ambito = ambitoSel(); if (libretaAbierta()) n.carpeta = libretaAbierta();
   await guardarNotaLocal(n); refrescar();
   toast(info.titulo ? "Página guardada con su resumen" : apiBase() ? "Página guardada (no se pudo leer su contenido)" : "Página guardada con su enlace", "web", 4000);
   abrirEdicion(n);
@@ -4723,9 +4693,9 @@ async function revisarAvisos(){
 setInterval(revisarAvisos, 30000);
 
 /* ================= Navegación ================= */
-const VISTAS = [["anotar", "spark", "Anotar"], ["hoy", "sun", "Hoy"], ["notas", "lista", "Notas"], ["biblio", "libro", "Biblioteca"], ["estad", "grafico", "Estadísticas"], ["ajustes", "ajustes", "Ajustes"], ["ayuda", "ayuda", "Ayuda"]];
+const VISTAS = [["anotar", "spark", "Anotar"], ["hoy", "sun", "Hoy"], ["notas", "libro", "Cuaderno"], ["estad", "grafico", "Estadísticas"], ["ajustes", "ajustes", "Ajustes"], ["ayuda", "ayuda", "Ayuda"]];
 $("#sideNav").innerHTML = VISTAS.map(([v, i, t]) => `<button data-v="${v}">${ic(i)}<span>${t}</span>${v === "hoy" ? '<span class="badge oculto"></span>' : ""}</button>`).join("");
-$("#tabs").innerHTML = [["anotar", "spark", "Anotar"], ["hoy", "sun", "Hoy"], ["notas", "lista", "Notas"], ["biblio", "libro", "Biblioteca"], ["ajustes", "ajustes", "Más"]]
+$("#tabs").innerHTML = [["anotar", "spark", "Anotar"], ["hoy", "sun", "Hoy"], ["notas", "libro", "Cuaderno"], ["ajustes", "ajustes", "Más"]]
   .map(([v, i, t]) => `<button data-v="${v}">${ic(i)}<span>${t}</span>${v === "hoy" ? '<span class="badge oculto"></span>' : ""}</button>`).join("");
 let vista = "anotar";
 function ver(v){
@@ -4735,8 +4705,8 @@ function ver(v){
   if (v === "anotar"){ prepararTeclado(); requestAnimationFrame(() => { ajustarLienzo(); crecerTitulo($("#cTitulo")); }); if (!esMovil()) setTimeout(() => $("#cTexto").focus(), 50); }
   refrescar(); scrollTo(0, 0);
 }
-document.querySelectorAll("#sideNav button,#tabs button").forEach(b => b.onclick = () => { if (b.dataset.v === "biblio" && vista === "biblio") bibSel = null; ver(b.dataset.v); });
-function refrescar(){ ({anotar: () => {}, hoy: pintarHoy, notas: pintarNotas, biblio: pintarBiblio, estad: pintarEstad, ajustes: pintarAjustes, ayuda: pintarAyuda})[vista](); pintarEstado(); pintarBadges(); }
+document.querySelectorAll("#sideNav button,#tabs button").forEach(b => b.onclick = () => { if (b.dataset.v === "notas" && vista === "notas" && (buzon || $("#q").value)){ $("#q").value = ""; abrirBuzon(null); } ver(b.dataset.v); });
+function refrescar(){ ({anotar: () => {}, hoy: pintarHoy, notas: pintarNotas, estad: pintarEstad, ajustes: pintarAjustes, ayuda: pintarAyuda})[vista](); pintarEstado(); pintarBadges(); }
 function pintarBadges(){
   const hoy = hoyISO(), n = deNotas().filter(x => !x.hecha && (x.ancla || (x.fecha && x.fecha <= hoy))).length;
   document.querySelectorAll(".badge").forEach(b => { b.textContent = n; b.classList.toggle("oculto", !n); });
@@ -4861,48 +4831,58 @@ function pintarNotas(){
   const q = norm($("#q").value).split(/\s+/).filter(Boolean);
   const car = buzon?.startsWith("c:") ? archivadores().find(c => "c:" + c.id === buzon) : null;
   if (buzon?.startsWith("c:") && !car) buzon = null;
+  const etq = buzon?.startsWith("e:") ? buzon.slice(2) : null;
+  const col = car || (etq ? {etq, nombre: "#" + etq} : null);   // una libreta o una etiqueta
   if (!q.length && (buzon === "personas" || buzon?.startsWith("p:"))){ $("#filtros").classList.add("oculto"); buzon === "personas" ? pintarPersonas() : pintarFicha(buzon.slice(2)); return; }
   const bz = BUZONES.find(x => x.k === buzon);
-  // --- portada: los buzones y los archivadores
-  if (!q.length && !bz && !car){
+  // --- portada del Cuaderno: buscar, vistas rápidas, crear, libretas, etiquetas y personas
+  if (!q.length && !bz && !col){
     $("#filtros").classList.add("oculto"); $("#buzonCab").innerHTML = "";
-    const ns = deNotas(), hoy = hoyISO();
-    const tarjeta = (k, icono, t, n, sub, cls = "") => `<button class="buzon ${cls}" data-buzon="${k}">${ic(icono)}<span class="bz-t">${esc(t)}</span><b>${n}</b>${sub ? `<small>${sub}</small>` : ""}</button>`;
-    const html = BUZONES.map(b => { const l = ns.filter(b.f); let sub = "";
-        if (b.k === "porhacer"){ const at = l.filter(n => n.fecha && n.fecha < hoy).length, h = l.filter(n => n.fecha === hoy).length; sub = [at && `${at} atrasada${at > 1 ? "s" : ""}`, h && `${h} para hoy`].filter(Boolean).join(" · "); }
-        if (b.k === "entrada" && l.length) sub = "Clasifícalas o márcalas hechas";
-        return tarjeta(b.k, b.ic, b.t, b.k === "todas" ? ns.length : l.length, sub, "bz-" + b.k); }).join("");
-    const cs = archivadores().map(c => { const l = ns.filter(n => n.carpeta === c.id && !enArchivo(n)); const p = l.filter(n => !n.hecha).length;
-      return tarjeta("c:" + c.id, "carpeta", c.nombre, p, l.length - p ? `${l.length - p} hecha${l.length - p > 1 ? "s" : ""}` : "", "bz-carpeta"); }).join("");
+    const ns = deNotas(), libs = archivadores(), etqs = todasEtiquetas();
+    const vistas = BUZONES.map(b => { const n = b.k === "todas" ? ns.length : ns.filter(b.f).length; return `<button class="vista ${b.k === "entrada" && n ? "dest" : ""}" data-buzon="${b.k}">${ic(b.ic)}${esc(b.k === "completadas" ? "Hechas" : b.t)}${n && b.k !== "completadas" && b.k !== "archivo" ? `<b>${n}</b>` : ""}</button>`; }).join("");
+    const pilas = [...new Set(libs.map(c => c.pila || ""))].sort((a, b) => (a === "") - (b === "") || a.localeCompare(b));
+    const tarjeta = c => { const l = ns.filter(n => n.carpeta === c.id), p = l.filter(n => !n.hecha && !enArchivo(n)).length;
+      return `<div class="libreta"><button class="lib-abrir" data-buzon="c:${esc(c.id)}">${ic("libro")}<b>${esc(c.nombre)}</b><small>${l.length} nota${l.length === 1 ? "" : "s"}${p ? ` · ${p} pendiente${p > 1 ? "s" : ""}` : ""}</small></button><button class="ibtn lib-menu" data-libm="${esc(c.id)}" aria-label="Editar la libreta">${ic("puntos")}</button></div>`; };
+    const gente = personas().slice(0, 8);
     $("#listaNotas").innerHTML = `<button class="preguntar" id="bzPreguntar">${ic("spark")}<span><b>Pregúntale a tus notas</b><small>${ia() ? "«¿Qué tengo esta semana?», «¿Qué hablé con el fontanero?»" : "Actívalo en Ajustes con tu clave de IA"}</small></span></button>
-      <div class="buzones">${html}</div>
-      <div class="dia">Mis libretas</div>
-      <div class="buzones">${cs}<button class="buzon bz-nuevo" id="bzNuevo">${ic("mas")}<span class="bz-t">Nueva libreta</span><small>Por asunto, viaje o proyecto</small></button></div>`;
-    const gente = personas().slice(0, 6);
-    if (gente.length) $("#listaNotas").insertAdjacentHTML("beforeend", `<div class="dia">Personas y asuntos</div><div class="gente">${gente.map(tarjetaPersona).join("")}<button class="persona-c ver-todas" data-buzon="personas">${ic("user")}<span><b>Ver todos</b><small>${personas().length} contactos</small></span></button></div>`);
-    $("#bzNuevo").onclick = async () => { const c = await nuevaCarpeta(); if (c) abrirBuzon("c:" + c.id); };
+      <div class="dia">Vistas rápidas</div><div class="vistas">${vistas}</div>
+      <div class="dia">Crear</div>
+      <div class="crear"><button id="bzEscanear">${ic("doc")}<span>Escanear documento</span></button><button id="bzWeb">${ic("web")}<span>Guardar página web</span></button><button id="bzPlantilla">${ic("plantilla")}<span>Desde una plantilla</span></button></div>
+      <div class="dia">Libretas <span class="c">${libs.length}</span></div>
+      ${pilas.map(p => { const l = libs.filter(c => (c.pila || "") === p); return `<div class="pila">${p || pilas.length > 1 ? `<div class="pila-t">${ic("carpeta")}${esc(p || "Sin pila")}<span class="c">${l.length}</span></div>` : ""}<div class="libretas">${l.map(tarjeta).join("")}</div></div>`; }).join("")}
+      ${libs.length ? "" : `<p class="ayuda-b">Crea libretas para lo que quieras guardar: recetas, facturas, un viaje… Y agrúpalas en pilas.</p>`}
+      <button class="btn sec" id="bNuevaLib">${ic("mas")}Nueva libreta</button>
+      <div class="dia">Etiquetas <span class="c">${etqs.length}</span></div>
+      ${etqs.length ? `<div class="etq-nube">${etqs.map(([e, c]) => `<button class="etq" data-buzon="e:${esc(e)}">#${esc(e)}<i>${c}</i></button>`).join("")}</div>` : `<p class="ayuda-b">Escribe #algo en cualquier nota, o añádelas en el editor (Detalles › Etiquetas), y aparecerán aquí.</p>`}
+      ${gente.length ? `<div class="dia">Personas y asuntos</div><div class="gente">${gente.map(tarjetaPersona).join("")}<button class="persona-c ver-todas" data-buzon="personas">${ic("user")}<span><b>Ver todos</b><small>${personas().length}</small></span></button></div>` : ""}`;
     $("#bzPreguntar").onclick = () => abrirPregunta();
+    $("#bzEscanear").onclick = () => abrirEscaner(null);
+    $("#bzWeb").onclick = () => { const u = prompt("Pega la dirección de la página web:", ""); if (u && u.trim()) guardarPaginaWeb(u.trim()); };
+    $("#bzPlantilla").onclick = abrirPlantillas;
+    $("#bNuevaLib").onclick = () => abrirLibreta(null);
     return;
   }
 
   // --- dentro de un buzón (o buscando en todos)
   $("#filtros").classList.remove("oculto");
   if (!grupoAbierto) pintarFiltros(); else document.querySelectorAll(".desp").forEach(b => { const g = GRUPOS.find(x => x.k === b.dataset.g); b.querySelector(".d-val").textContent = resumenGrupo(g); b.classList.toggle("on", filtroActivo(g)); });
-  const titulo = q.length ? "Resultados en todas las notas" : car ? car.nombre : bz.t;
+  const titulo = q.length ? "Resultados en todas las notas" : col ? col.nombre : bz.t;
   $("#buzonCab").innerHTML = `<div class="bz-cab"><button class="ibtn" id="bzVolver" aria-label="Volver a los buzones">${ic("atras")}</button>
-    <div class="bz-tit">${ic(q.length ? "buscar" : car ? "carpeta" : bz.ic)}<span>${esc(titulo)}</span></div>
-    ${car ? `<button class="ibtn" id="bzMenu" aria-label="Opciones de la libreta">${ic("puntos")}</button>` : ""}</div>`;
+    <div class="bz-tit">${ic(q.length ? "buscar" : car ? "libro" : etq ? "tag" : bz.ic)}<span>${esc(titulo)}</span></div>
+    ${car ? `<button class="ibtn" id="bzMenu" aria-label="Opciones de la libreta">${ic("puntos")}</button>` : ""}</div>
+    ${car && !q.length ? `<button class="btn sec" id="bzNuevaEn" style="margin:2px 0 10px">${ic("mas")}Nueva nota en esta libreta</button>` : ""}`;
   $("#bzVolver").onclick = () => { $("#q").value = ""; abrirBuzon(null); };
   if ($("#bzMenu")) $("#bzMenu").onclick = () => abrirLibreta(car);
+  if ($("#bzNuevaEn")) $("#bzNuevaEn").onclick = () => { const n = notaBase(new Date()); n.carpeta = car.id; abrirEdicion(n); };
   const usarEstado = q.length || bz?.k === "todas";
   let lista = deNotas().filter(n => {
-    if (!q.length){ if (car ? n.carpeta !== car.id : !bz.f(n)) return false; }
+    if (!q.length){ if (car ? n.carpeta !== car.id : etq ? !etiquetasDe(n).some(e => norm(e) === norm(etq)) : !bz.f(n)) return false; }
     for (const g of GRUPOS){ if (g.k === "estado" && !usarEstado) continue; if (filtro[g.k].length && !filtro[g.k].includes(valorFiltro(n, g.k))) return false; }
     if (q.length){ const h = norm([n.titulo, n.texto, n.transcripcion, etiquetasDe(n).map(e => "#" + e).join(" "), n.ia?.textoFotos, Object.values(n.textoArch || {}).join(" "), n.textoWeb, (n.archivos || []).map(a => a.nombre).join(" "), n.para?.nombre, CAT[n.para?.categoria], TIPOS[n.tipo]?.[0], n.terminal, fechaLarga(n.creada), n.fecha ? fechaLarga(n.fecha) : "", n.nocturna ? "noche nocturna" : "", n.ancla ? "ancla" : "", carpetaDe(n)?.nombre, n.importante ? "importante estrella" : "", n.ia?.textoFotos, n.ia?.resumen].join(" ")); if (!q.every(p => h.includes(p))) return false; }
     return true;
   });
   if (!lista.length){
-    $("#listaNotas").innerHTML = `<div class="vacio-grande"><div class="halo">${ic(q.length ? "buscar" : car ? "carpeta" : bz.ic)}</div><b>${q.length ? "No hay notas con eso" : car ? "Libreta vacía" : "Nada por aquí"}</b><span>${q.length ? "Prueba con otra palabra o quita algún filtro." : car ? "Desde una nota, en Detalles › Libreta, elige esta libreta." : bz.d + "."}</span></div>`;
+    $("#listaNotas").innerHTML = `<div class="vacio-grande"><div class="halo">${ic(q.length ? "buscar" : car ? "libro" : etq ? "tag" : bz.ic)}</div><b>${q.length ? "No hay notas con eso" : col ? (car ? "Libreta vacía" : "Sin notas con esa etiqueta") : "Nada por aquí"}</b><span>${q.length ? "Prueba con otra palabra o quita algún filtro." : car ? "Desde una nota, en Detalles › Libreta, elige esta libreta." : bz.d + "."}</span></div>`;
     return;
   }
   // agrupación según el buzón
@@ -4913,7 +4893,7 @@ function pintarNotas(){
     grupoDe = n => !n.fecha ? "Sin fecha" : n.fecha < hoy ? "Atrasadas" : n.fecha === hoy ? "Hoy" : n.fecha === manana ? "Mañana" : n.fecha <= semana ? "Esta semana" : "Más adelante"; opciones = {};
   } else if (bz?.k === "archivo"){ lista.sort((a, b) => (b.hechaEn || b.creada).localeCompare(a.hechaEn || a.creada)); grupoDe = n => mes(n.hechaEn || n.creada); }
   else if (bz?.k === "completadas"){ lista.sort((a, b) => (b.hechaEn || b.creada).localeCompare(a.hechaEn || a.creada)); grupoDe = n => "Hechas " + etiquetaDia(n.hechaEn || n.creada).toLowerCase(); }
-  else if (car){ const orden = n => enArchivo(n) ? 2 : n.hecha ? 1 : 0; lista.sort((a, b) => orden(a) - orden(b) || b.creada.localeCompare(a.creada)); grupoDe = n => ["Pendientes", "Hechas", "Archivadas"][orden(n)]; }
+  else if (col){ const orden = n => enArchivo(n) ? 2 : n.hecha ? 1 : 0; lista.sort((a, b) => orden(a) - orden(b) || b.creada.localeCompare(a.creada)); grupoDe = n => ["Pendientes", "Hechas", "Archivadas"][orden(n)]; }
   else if (q.length){ grupoDe = n => buzonDeNota(n) || "Otras"; const pos = t => { const i = BUZONES.findIndex(b => b.t === t); return i < 0 ? 50 : i; }; lista.sort((a, b) => pos(buzonDeNota(a)) - pos(buzonDeNota(b)) || b.creada.localeCompare(a.creada)); }
   lista = lista.slice(0, 400);
   let html = `<div class="cuenta">${lista.length} ${lista.length === 1 ? "nota" : "notas"}${bz && !q.length ? ` · ${bz.d.toLowerCase()}` : ""}</div>`, grupo = null, abierto = false;
@@ -5181,6 +5161,10 @@ function pintarAjustes(){
       <div class="ajuste">${ic("movil")}<input type="text" id="kMovNom" value="Móvil profesional"><select id="kMovAmb"><option value="trabajo">Trabajo</option><option value="personal">Personal</option></select><button class="btn sec" id="kQR">Ver código QR</button></div>
       <div id="qr" style="text-align:center"></div>
     </div></div>`}
+    <div class="grupo"><h3>Tus datos</h3><div class="caja">
+      <div class="ajuste">${ic("subir")}<div class="lbl">Exportarlo todo<small>Un ZIP con tus notas en Markdown (se abre con cualquier editor) y, si quieres, fotos y archivos</small></div><button class="btn sec" id="bExportar">Exportar</button></div>
+      <div class="ajuste">${ic("archivo")}<div class="lbl">Importar de Evernote<small>Archivo .enex exportado desde Evernote: con fotos, archivos y etiquetas</small></div><button class="btn sec" id="bEnex">Importar</button><input type="file" id="inEnex" accept=".enex,application/xml,text/xml" multiple class="oculto"></div>
+    </div></div>
     <div class="grupo"><h3>Sugerencias y mejoras</h3><div class="caja"><div class="ajuste">${ic("idea")}<div class="lbl">¿Qué mejorarías?<small>Cuéntalo y le llega directamente a quien hace Cuaderna</small></div><button class="btn sec" id="kSug">Escribir</button></div></div></div>
     ${acceso?.admin ? `<div class="grupo"><h3>Administración</h3><div class="caja" id="kAdmin"></div></div>` : ""}
     <div class="grupo"><h3>Cuenta</h3><div class="caja">
@@ -5218,7 +5202,9 @@ function pintarAjustes(){
     try { await probarVoz(); el.className = "estado-t ok"; el.textContent = "Funciona"; setTimeout(procesarTranscripciones, 300); }
     catch(e){ el.textContent = e.message; }
   };
-  $("#kSug").onclick = abrirSugerencia; if ($("#kAdmin")) pintarAdmin();
+  $("#kSug").onclick = abrirSugerencia;
+  $("#bExportar").onclick = exportarTodo; $("#bEnex").onclick = () => $("#inEnex").click();
+  $("#inEnex").onchange = async () => { const fs = [...$("#inEnex").files]; $("#inEnex").value = ""; for (const f of fs) await importarEnex(f); }; if ($("#kAdmin")) pintarAdmin();
   $("#kSalir").onclick = () => {
     const pend = notas.filter(n => n._pend || n._borrar).length;
     if (pend && !confirm(`Hay ${pend} cambios sin subir que se perderán. ¿Salir igualmente?`)) return;
@@ -5254,7 +5240,7 @@ function pintarAyuda(){
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
   <h3>Autoría</h3><div class="autoria izq"><img src="autor.jpg" alt="Morián, José Antonio" loading="lazy"><div>Cuaderna es una creación de <b>José Antonio Morián</b>: idea, diseño y desarrollo.<small>© ${new Date().getFullYear()} José Antonio Morián. Todos los derechos reservados.</small></div></div>
-  <h3>Novedades</h3><p><b>0.26.2</b>: en la barra de formato, deshacer y rehacer, quitar el formato y volver al texto original.<br><b>0.26.1</b>: pantalla de versiones rediseñada: a pantalla completa, con fecha, título y resumen de cada versión, y fácil de cerrar (X o «atrás»).<br><b>0.26</b>: enlaces entre notas (y «Mencionada en»); historial de versiones de cada nota, para ver y recuperar las anteriores; exportarlo todo en un ZIP (Markdown y adjuntos); importar desde Evernote (.enex) con fotos, archivos y etiquetas.<br><b>0.25</b>: escáner de documentos de varias páginas que crea un PDF (con su texto leído por la IA para buscarlo); guardar páginas web (también compartiendo un enlace desde el navegador); plantillas (reunión, viaje, compra, receta, coche, proyecto, diario) y las tuyas propias; las libretas y etiquetas se abren dentro de Biblioteca.<br><b>0.24</b>: nueva pestaña <b>Biblioteca</b>: libretas agrupadas en pilas, etiquetas (#algo), descripción con formato (negritas, títulos, listas, enlaces y tablas), archivos adjuntos de cualquier tipo y búsqueda dentro de PDF, fotos y etiquetas. Los «archivadores» pasan a llamarse libretas.<br><b>0.23.4</b>: al anotar, el botón para descartar es ahora «Borrar», en rojo, y solo aparece cuando hay algo escrito.<br><b>0.23.3</b>: la fecha de una nota se ve escrita y tiene un botón claro para quitarla o anular la cita del calendario (con deshacer).<br><b>0.23.2</b>: avisos rediseñados, ahora abajo; campo de «Pregúntale a tus notas» más limpio.<br><b>0.23.1</b>: «Pregúntale a tus notas» con botón Cerrar; el botón «atrás» del móvil cierra la ventana abierta en vez de salir.<br><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y libretas propias. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.27</b>: Notas y Biblioteca se unen en la pestaña <b>Cuaderno</b>: buscador único, vistas rápidas, crear (escáner, web, plantillas), libretas por pilas, etiquetas y personas. Exportar e importar pasan a Más › Ajustes › Tus datos.<br><b>0.26.2</b>: en la barra de formato, deshacer y rehacer, quitar el formato y volver al texto original.<br><b>0.26.1</b>: pantalla de versiones rediseñada: a pantalla completa, con fecha, título y resumen de cada versión, y fácil de cerrar (X o «atrás»).<br><b>0.26</b>: enlaces entre notas (y «Mencionada en»); historial de versiones de cada nota, para ver y recuperar las anteriores; exportarlo todo en un ZIP (Markdown y adjuntos); importar desde Evernote (.enex) con fotos, archivos y etiquetas.<br><b>0.25</b>: escáner de documentos de varias páginas que crea un PDF (con su texto leído por la IA para buscarlo); guardar páginas web (también compartiendo un enlace desde el navegador); plantillas (reunión, viaje, compra, receta, coche, proyecto, diario) y las tuyas propias; las libretas y etiquetas se abren dentro de Biblioteca.<br><b>0.24</b>: nueva pestaña <b>Biblioteca</b>: libretas agrupadas en pilas, etiquetas (#algo), descripción con formato (negritas, títulos, listas, enlaces y tablas), archivos adjuntos de cualquier tipo y búsqueda dentro de PDF, fotos y etiquetas. Los «archivadores» pasan a llamarse libretas.<br><b>0.23.4</b>: al anotar, el botón para descartar es ahora «Borrar», en rojo, y solo aparece cuando hay algo escrito.<br><b>0.23.3</b>: la fecha de una nota se ve escrita y tiene un botón claro para quitarla o anular la cita del calendario (con deshacer).<br><b>0.23.2</b>: avisos rediseñados, ahora abajo; campo de «Pregúntale a tus notas» más limpio.<br><b>0.23.1</b>: «Pregúntale a tus notas» con botón Cerrar; el botón «atrás» del móvil cierra la ventana abierta en vez de salir.<br><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y libretas propias. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Cuaderna para móvil y PC, sincronizada con OneDrive.</p>`;
   $("#ayudaSug").onclick = abrirSugerencia;
 }
