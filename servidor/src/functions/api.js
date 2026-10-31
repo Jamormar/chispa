@@ -12,7 +12,10 @@ const crypto = require("crypto");
 
 const CLIENT_ID = process.env.CLIENT_ID || "3dc57230-4cdb-4e60-bb83-2def7cd5441f";
 const EMISOR = "https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304b66dad/v2.0";   // cuentas personales de Microsoft
-const ADMIN = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+// uno o varios correos de administrador, separados por comas (p. ej. tu cuenta de Microsoft y tu Gmail)
+const ADMINS = (process.env.ADMIN_EMAIL || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+const ADMIN = ADMINS[0] || "";
+const esAdmin = email => !!email && ADMINS.includes(String(email).toLowerCase());
 const ORIGENES = (process.env.ORIGENES || "https://jamormar.github.io").split(",").map(s => s.trim());
 const MAX_IA = +process.env.MAX_IA_DIA || 300;
 const G_CLIENT = (process.env.GOOGLE_CLIENT_ID || "520507807981-ulvru7sh3ippbc510m1eo1ji532ptb8c.apps.googleusercontent.com").trim(), G_SECRETO = (process.env.GOOGLE_CLIENT_SECRET || "").trim();
@@ -93,11 +96,11 @@ async function usuarioDe(yo){
   let u = await leer(t, "u", yo.id);
   const ahora = new Date().toISOString();
   if (!u){
-    u = {partitionKey: "u", rowKey: yo.id, email: yo.email, nombre: yo.nombre, estado: yo.email === ADMIN ? "autorizado" : "pendiente", creado: ahora, ultimo: ahora, iaTotal: 0, vozSegTotal: 0};
+    u = {partitionKey: "u", rowKey: yo.id, email: yo.email, nombre: yo.nombre, estado: esAdmin(yo.email) ? "autorizado" : "pendiente", creado: ahora, ultimo: ahora, iaTotal: 0, vozSegTotal: 0};
     await t.createEntity(u);
   } else if (Date.now() - new Date(u.ultimo).getTime() > 10 * 60e3 || u.email !== yo.email || (yo.nombre && u.nombre !== yo.nombre)){
     u.ultimo = ahora; u.email = yo.email; if (yo.nombre) u.nombre = yo.nombre;
-    if (yo.email === ADMIN) u.estado = "autorizado";
+    if (esAdmin(yo.email)) u.estado = "autorizado";
     await t.updateEntity(u, "Merge");
   }
   return u;
@@ -115,7 +118,7 @@ async function contar(u, campo, cantidad){
 const rutas = {
   async "POST registro"(request, yo){
     const u = await usuarioDe(yo);
-    return {estado: u.estado, admin: yo.email === ADMIN && !!ADMIN, ia: hayIA(), voz: hayVoz()};
+    return {estado: u.estado, admin: esAdmin(yo.email), ia: hayIA(), voz: hayVoz()};
   },
 
   async "POST ia"(request, yo){
@@ -201,7 +204,7 @@ const rutas = {
     if (!["autorizado", "bloqueado", "pendiente"].includes(e.estado)) return [{error: "Estado no válido"}, 400];
     const t = await tabla("usuarios"); const u = await leer(t, "u", String(e.id));
     if (!u) return [{error: "No existe"}, 404];
-    if (u.email === ADMIN) return [{error: "No puedes cambiar tu propio acceso"}, 400];
+    if (esAdmin(u.email)) return [{error: "No puedes cambiar el acceso de un administrador"}, 400];
     await t.updateEntity({partitionKey: "u", rowKey: u.rowKey, estado: e.estado, cambiado: new Date().toISOString()}, "Merge");
     return {ok: true};
   },
@@ -251,14 +254,14 @@ rutas["GET admin/estadisticas"] = async (request, yo) => {
   for await (const x of u.listEntities()){ usuarios.total++; usuarios[x.estado] = (usuarios[x.estado] || 0) + 1; }
   return {dias, total, usuarios};
 };
-function soloAdmin(yo){ if (!ADMIN || yo.email !== ADMIN) throw new NoAutorizado("Solo el administrador"); }
+function soloAdmin(yo){ if (!esAdmin(yo.email)) throw new NoAutorizado("Solo el administrador"); }
 
 app.http("api", {
   methods: ["GET", "POST", "OPTIONS"], authLevel: "anonymous", route: "{*ruta}",
   handler: async (request, context) => {
     if (request.method === "OPTIONS") return {status: 204, headers: cors(request)};
     const ruta = String(request.params.ruta || "").replace(/^\/+|\/+$/g, "");
-    if (request.method === "GET" && ruta === "salud") return json(request, {ok: true, ia: hayIA(), voz: hayVoz(), admin: !!ADMIN});
+    if (request.method === "GET" && ruta === "salud") return json(request, {ok: true, ia: hayIA(), voz: hayVoz(), admin: ADMINS.length > 0});
     // Entrar con Google: el canje del código y la renovación necesitan el secreto, que solo está aquí
     if (request.method === "POST" && ruta === "google/token"){
       if (!G_CLIENT || !G_SECRETO) return json(request, {error: "Google no está configurado en el servidor"}, 503);
