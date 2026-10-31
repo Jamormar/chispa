@@ -1202,7 +1202,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 <script src="servidor.js"></script>
 <script>
 "use strict";
-const VERSION = "0.36.1";
+const VERSION = "0.36.2";
 let avisoVersion = false;
 /* ================= Iconos ================= */
 const ICONOS = {
@@ -3526,7 +3526,7 @@ $("#asRec").addEventListener("click", e => { const b = e.target.closest("[data-a
 $("#asAg").onclick = async () => { try { const r = await nativo("ChispaNativo").elegirTelefono(); if (r && !r.cancelado && r.tel){ $("#asTel").value = r.tel; if (!$("#asNombre").value.trim()) $("#asNombre").value = r.nombre || ""; $("#asMotivo").focus(); } } catch(e){ toast("Actualiza la app para elegir de la agenda", "subir", 5000); } };
 $("#asPermiso").onclick = async () => { if (hayCambiosEdicion()) await guardarEdicion(); lsSet("chispa.permCorreo", true); irALogin(false); };
 // Mensaje de WhatsApp: la nota se lee entera en el propio mensaje; el enlace, al final, sirve para marcarla como hecha
-function mensajeWaNota(n, nombre, motivo, limite, enlace){
+function mensajeWaNota(n, nombre, motivo, limite, enlace, invitar = true){
   // *negrita* y _cursiva_ de WhatsApp solo funcionan sin espacios junto a los símbolos: todo va recortado
   const limpio = t => String(t || "").replace(/[*_~]/g, "").replace(/\s+/g, " ").trim();
   const pl = partirLista(n.texto), tit = limpio(tituloPlano(n)) || "Nota", desc = planoMd(pl.intro || "").trim();
@@ -3537,7 +3537,9 @@ function mensajeWaNota(n, nombre, motivo, limite, enlace){
   if (motivo) l.push(`💬 _${limpio(motivo)}_`);
   if (limite) l.push(`📅 Para el ${fechaLarga(limite)}`);
   l.push("", "👉 *Ábrela y márcala como hecha:*", enlace);
-  l.push("", "_¿Aún no usas Cuaderna? Desde el enlace puedes probarla gratis, sin crear ninguna cuenta._");
+  // la primera vez que le pasas algo a alguien, una recomendación personal para que la pruebe
+  if (invitar) l.push("", "──────────", "✨ Yo apunto todo en *Cuaderna*: dicto una idea en segundos, se ordena sola y me avisa a tiempo. Ya no se me olvida nada.", "", "Es *gratis* y la pruebas sin crear cuenta 👉 jamormar.github.io/chispa/bienvenida");
+  else l.push("", "_Enviado con Cuaderna · gratis en jamormar.github.io/chispa/bienvenida_");
   return l.join("\n");
 }
 // El paquete viaja dentro del enlace; si hay servidor, se guarda allí y el enlace es corto
@@ -3566,7 +3568,8 @@ $("#asEnviar").onclick = async () => {
   try {
     const n = notaDelEditor(), {id, paquete} = await paqueteAsignacion(n, motivo, limite, wa ? "wa" : "correo"), verla = await enlaceNota(paquete);
     if (wa){
-      const msg = mensajeWaNota(n, nombre, motivo, limite, verla);
+      const yaInvitado = (config.personasPasar || []).some(x => (waNum(x.tel) && waNum(x.tel) === waNum(tel)) || (nombre && norm(x.n) === norm(nombre)));
+      const msg = mensajeWaNota(n, nombre, motivo, limite, verla, !yaInvitado);
       await enviarWa(waNum(tel), msg, false);
       if (nombre) config.telefonos = {...(config.telefonos || {}), [norm(nombre)]: {nombre, tel}};
       editando.asignada = {id, via: "wa", a: {n: nombre, tel}, motivo, limite, en: new Date().toISOString(), estado: "enviada"};
