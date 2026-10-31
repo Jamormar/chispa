@@ -4,7 +4,8 @@
 // - Recoge las sugerencias que se envían desde la app.
 // - Cuenta, de forma anónima (solo totales por día), cómo se difunde Cuaderna: notas pasadas, abiertas, instalaciones…
 // Ajustes de la Function App: ADMIN_EMAIL, AOAI_ENDPOINT, AOAI_CLAVE, AOAI_DESPLIEGUE,
-// SPEECH_CLAVE, SPEECH_REGION, ORIGENES (opcional), MAX_IA_DIA (opcional), MAX_VOZ_MIN_DIA (opcional).
+// SPEECH_CLAVE, SPEECH_REGION, ORIGENES (opcional), MAX_IA_DIA (opcional), MAX_VOZ_MIN_DIA (opcional),
+// GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET (para entrar con Google: el secreto solo vive aquí).
 const { app } = require("@azure/functions");
 const { TableClient } = require("@azure/data-tables");
 const crypto = require("crypto");
@@ -14,6 +15,8 @@ const EMISOR = "https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304
 const ADMIN = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
 const ORIGENES = (process.env.ORIGENES || "https://jamormar.github.io").split(",").map(s => s.trim());
 const MAX_IA = +process.env.MAX_IA_DIA || 300;
+const G_CLIENT = (process.env.GOOGLE_CLIENT_ID || "").trim(), G_SECRETO = (process.env.GOOGLE_CLIENT_SECRET || "").trim();
+const G_REDIRECCIONES = (process.env.GOOGLE_REDIRECTS || "https://jamormar.github.io/chispa/,https://jamormar.github.io/chispa/google.html").split(",").map(s => s.trim());
 const MAX_VOZ = +process.env.MAX_VOZ_MIN_DIA || 60;
 const hayIA = () => !!(process.env.AOAI_ENDPOINT && process.env.AOAI_CLAVE);
 const hayVoz = () => !!(process.env.SPEECH_CLAVE && process.env.SPEECH_REGION);
@@ -39,6 +42,14 @@ async function clavesMS(forzar){
   }
   return jwks;
 }
+let jwksG = null, jwksGT = 0;
+async function clavesGoogle(forzar){
+  if (forzar || !jwksG || Date.now() - jwksGT > 6 * 3600e3){
+    const r = await fetch("https://www.googleapis.com/oauth2/v3/certs");
+    jwksG = (await r.json()).keys || []; jwksGT = Date.now();
+  }
+  return jwksG;
+}
 const b64 = s => Buffer.from(s.replace(/-/g, "+").replace(/_/g, "/"), "base64");
 class NoAutorizado extends Error {}
 async function quienEs(request){
@@ -49,11 +60,19 @@ async function quienEs(request){
   const [h64, p64, f64] = partes;
   const cab = JSON.parse(b64(h64).toString()), dat = JSON.parse(b64(p64).toString());
   if (cab.alg !== "RS256") throw new NoAutorizado("Firma no válida");
-  let k = (await clavesMS()).find(x => x.kid === cab.kid);
-  if (!k) k = (await clavesMS(true)).find(x => x.kid === cab.kid);
+  const google = dat.iss === "https://accounts.google.com" || dat.iss === "accounts.google.com";
+  const claves = google ? clavesGoogle : clavesMS;
+  let k = (await claves()).find(x => x.kid === cab.kid);
+  if (!k) k = (await claves(true)).find(x => x.kid === cab.kid);
   if (!k) throw new NoAutorizado("Firma desconocida");
   const ok = crypto.verify("RSA-SHA256", Buffer.from(h64 + "." + p64), crypto.createPublicKey({key: k, format: "jwk"}), b64(f64));
   if (!ok) throw new NoAutorizado("Firma no válida");
+  if (google){
+    if (!G_CLIENT || dat.aud !== G_CLIENT) throw new NoAutorizado("Identificación de otra aplicación");
+    if (dat.exp * 1000 < Date.now() - 60e3) throw new NoAutorizado("Identificación caducada");
+    if (dat.email && dat.email_verified === false) throw new NoAutorizado("Correo de Google sin verificar");
+    return { id: "g-" + dat.sub, email: String(dat.email || "").toLowerCase(), nombre: dat.name || "", proveedor: "google" };
+  }
   if (dat.aud !== CLIENT_ID || dat.iss !== EMISOR) throw new NoAutorizado("Identificación de otra aplicación");
   if (dat.exp * 1000 < Date.now() - 60e3) throw new NoAutorizado("Identificación caducada");
   return { id: dat.oid || dat.sub, email: String(dat.email || dat.preferred_username || "").toLowerCase(), nombre: dat.name || "" };
@@ -240,6 +259,22 @@ app.http("api", {
     if (request.method === "OPTIONS") return {status: 204, headers: cors(request)};
     const ruta = String(request.params.ruta || "").replace(/^\/+|\/+$/g, "");
     if (request.method === "GET" && ruta === "salud") return json(request, {ok: true, ia: hayIA(), voz: hayVoz(), admin: !!ADMIN});
+    // Entrar con Google: el canje del código y la renovación necesitan el secreto, que solo está aquí
+    if (request.method === "POST" && ruta === "google/token"){
+      if (!G_CLIENT || !G_SECRETO) return json(request, {error: "Google no está configurado en el servidor"}, 503);
+      if (frenar(request)) return json(request, {error: "Demasiados intentos"}, 429);
+      let e = {}; try { e = JSON.parse((await request.text()).slice(0, 4000)); } catch(err){}
+      const p = new URLSearchParams({client_id: G_CLIENT, client_secret: G_SECRETO});
+      if (e.grant_type === "authorization_code"){
+        if (!e.code || !e.code_verifier || !G_REDIRECCIONES.includes(e.redirect_uri)) return json(request, {error: "Datos no válidos"}, 400);
+        p.set("grant_type", "authorization_code"); p.set("code", e.code); p.set("code_verifier", e.code_verifier); p.set("redirect_uri", e.redirect_uri);
+      } else if (e.grant_type === "refresh_token" && e.refresh_token){
+        p.set("grant_type", "refresh_token"); p.set("refresh_token", e.refresh_token);
+      } else return json(request, {error: "Datos no válidos"}, 400);
+      const r = await fetch("https://oauth2.googleapis.com/token", {method: "POST", headers: {"Content-Type": "application/x-www-form-urlencoded"}, body: p});
+      const t = await r.text();
+      return {status: r.status, headers: {...cors(request), "Content-Type": "application/json", "Cache-Control": "no-store"}, body: t};
+    }
     // enlaces cortos de notas pasadas: se guarda el paquete (ya comprimido) y se da una clave de 8 letras; caducan a los 180 días
     if (request.method === "POST" && ruta === "corto"){
       const d = (await request.text()).trim();

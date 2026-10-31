@@ -45,6 +45,11 @@ public class MainActivity extends BridgeActivity {
         Uri d = intent != null ? intent.getData() : null;
         if (d == null || !"es.jamormar.chispa".equals(d.getScheme())) return false;
         intent.setData(null);
+        if ("google".equals(d.getHost())) {   // vuelta de Google: la web termina la entrada con el código
+            String q = d.getEncodedQuery();
+            try { getBridge().getWebView().loadUrl(Correo.WEB + (q != null ? "?" + q : "")); } catch (Exception ignorado) { }
+            return true;
+        }
         new Thread(() -> {
             String r = Correo.terminarLogin(getApplicationContext(), d);
             runOnUiThread(() -> {
