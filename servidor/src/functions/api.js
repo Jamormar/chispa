@@ -240,6 +240,23 @@ app.http("api", {
     if (request.method === "OPTIONS") return {status: 204, headers: cors(request)};
     const ruta = String(request.params.ruta || "").replace(/^\/+|\/+$/g, "");
     if (request.method === "GET" && ruta === "salud") return json(request, {ok: true, ia: hayIA(), voz: hayVoz(), admin: !!ADMIN});
+    // enlaces cortos de notas pasadas: se guarda el paquete (ya comprimido) y se da una clave de 8 letras; caducan a los 180 días
+    if (request.method === "POST" && ruta === "corto"){
+      const d = (await request.text()).trim();
+      if (!/^[zj][A-Za-z0-9_-]{4,6000}$/.test(d) || frenar(request)) return json(request, {error: "No válido"}, 400);
+      const t = await tabla("cortos"), abc = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      for (let i = 0; i < 4; i++){
+        const id = [...crypto.randomBytes(8)].map(x => abc[x % abc.length]).join("");
+        try { await t.createEntity({partitionKey: "c", rowKey: id, d, creado: new Date().toISOString()}); return json(request, {id}); }
+        catch(e){ if (e.statusCode !== 409) throw e; }
+      }
+      return json(request, {error: "Inténtalo otra vez"}, 503);
+    }
+    if (request.method === "GET" && /^corto\/[A-Za-z0-9]{8}$/.test(ruta)){
+      const e = await leer(await tabla("cortos"), "c", ruta.slice(6));
+      if (!e || Date.now() - new Date(e.creado) > 180 * 864e5) return json(request, {error: "Enlace caducado"}, 404);
+      return json(request, {d: e.d}, 200, {"Cache-Control": "public, max-age=3600"});
+    }
     if (request.method === "POST" && ruta === "evento"){   // anónimo: sin cuenta y sin guardar quién
       try { const e = JSON.parse((await request.text()).slice(0, 200) || "{}");
         if (EVENTOS.has(e.e) && !frenar(request)) await sumarEvento(e.e); } catch(err){ context.warn(err); }
