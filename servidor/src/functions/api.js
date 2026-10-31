@@ -21,6 +21,7 @@ const MAX_IA = +process.env.MAX_IA_DIA || 300;
 const G_CLIENT = (process.env.GOOGLE_CLIENT_ID || "520507807981-ulvru7sh3ippbc510m1eo1ji532ptb8c.apps.googleusercontent.com").trim();
 // el secreto puede venir solo o dentro del JSON que descarga Google ({"web":{"client_secret":…}}): se acepta de las dos formas
 const G_SECRETO = (() => { let v = (process.env.GOOGLE_CLIENT_SECRET || "").trim().replace(/^["']|["']$/g, "");
+  if (v.includes("client_secret")){ const m = v.match(/"client_secret"\s*:\s*"([^"]+)"/); if (m) return m[1].trim(); }
   if (v.startsWith("{")){ try { const j = JSON.parse(v); v = (j.web || j.installed || j).client_secret || ""; } catch(e){ const m = v.match(/"client_secret"\s*:\s*"([^"]+)"/); v = m ? m[1] : ""; } }
   return v.trim(); })();
 const G_REDIRECCIONES = (process.env.GOOGLE_REDIRECTS || "https://jamormar.github.io/chispa/,https://jamormar.github.io/chispa/google.html").split(",").map(s => s.trim());
@@ -268,7 +269,7 @@ app.http("api", {
     if (request.method === "GET" && ruta === "salud"){
       // comprobación de Google sin revelar el secreto: solo longitud, formato y los 4 últimos (como los muestra Google)
       const sec = G_SECRETO, bruto = process.env.GOOGLE_CLIENT_SECRET || "";
-      const google = !sec ? "sin secreto" : `${bruto.trim().startsWith("{") ? "(sacado del JSON) " : ""}secreto de ${sec.length} caracteres${sec !== sec.trim() ? " (¡con espacios!)" : ""}${/^["']|["']$/.test(sec.trim()) ? " (¡con comillas!)" : ""}${sec.trim().startsWith("GOCSPX-") ? "" : " (no empieza por GOCSPX-)"} · acaba en ${sec.trim().slice(-4)} · cliente ${G_CLIENT.slice(0, 12)}…`;
+      const google = !sec ? "sin secreto" : `${bruto.includes("client_secret") ? "(sacado del JSON) " : ""}secreto de ${sec.length} caracteres${sec !== sec.trim() ? " (¡con espacios!)" : ""}${/^["']|["']$/.test(sec.trim()) ? " (¡con comillas!)" : ""}${sec.trim().startsWith("GOCSPX-") ? "" : " (no empieza por GOCSPX-)"} · acaba en ${sec.trim().slice(-4)} · cliente ${G_CLIENT.slice(0, 12)}…`;
       return json(request, {ok: true, ia: hayIA(), voz: hayVoz(), admin: ADMINS.length > 0, google});
     }
     // Entrar con Google: el canje del código y la renovación necesitan el secreto, que solo está aquí
