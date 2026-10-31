@@ -261,7 +261,12 @@ app.http("api", {
   handler: async (request, context) => {
     if (request.method === "OPTIONS") return {status: 204, headers: cors(request)};
     const ruta = String(request.params.ruta || "").replace(/^\/+|\/+$/g, "");
-    if (request.method === "GET" && ruta === "salud") return json(request, {ok: true, ia: hayIA(), voz: hayVoz(), admin: ADMINS.length > 0});
+    if (request.method === "GET" && ruta === "salud"){
+      // comprobación de Google sin revelar el secreto: solo longitud, formato y los 4 últimos (como los muestra Google)
+      const sec = process.env.GOOGLE_CLIENT_SECRET || "";
+      const google = !sec ? "sin secreto" : `secreto de ${sec.length} caracteres${sec !== sec.trim() ? " (¡con espacios!)" : ""}${/^["']|["']$/.test(sec.trim()) ? " (¡con comillas!)" : ""}${sec.trim().startsWith("GOCSPX-") ? "" : " (no empieza por GOCSPX-)"} · acaba en ${sec.trim().slice(-4)} · cliente ${G_CLIENT.slice(0, 12)}…`;
+      return json(request, {ok: true, ia: hayIA(), voz: hayVoz(), admin: ADMINS.length > 0, google});
+    }
     // Entrar con Google: el canje del código y la renovación necesitan el secreto, que solo está aquí
     if (request.method === "POST" && ruta === "google/token"){
       if (!G_CLIENT || !G_SECRETO) return json(request, {error: "Google no está configurado en el servidor"}, 503);
