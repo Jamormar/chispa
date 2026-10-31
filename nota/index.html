@@ -6,8 +6,10 @@
 <title>Te han pasado una nota · Cuaderna</title>
 <meta name="description" content="Te han pasado una nota con Cuaderna. Ábrela, márcala como hecha o guárdala en tu Cuaderna.">
 <meta property="og:title" content="Te han pasado una nota">
-<meta property="og:description" content="Ábrela aquí: no hace falta instalar nada.">
-<meta property="og:image" content="https://jamormar.github.io/chispa/icon-512.png">
+<meta property="og:description" content="Ábrela aquí, sin instalar nada. Puedes ir marcando lo que hagas y avisar cuando esté.">
+<meta property="og:image" content="https://jamormar.github.io/chispa/nota/vista.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:site_name" content="Cuaderna"><meta name="twitter:card" content="summary_large_image">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#F4ECDD">
 <link rel="icon" href="../icon-192.png">
@@ -48,19 +50,21 @@ h1,h2{font-family:"Fraunces",Georgia,serif;letter-spacing:-.01em;margin:0}
 .otra{font-size:14px;color:var(--suave);text-align:center}
 .otra a{color:var(--tinta)}
 /* invitación */
-.invita{margin-top:34px;background:var(--tinta);color:var(--crema);border-radius:24px;padding:22px 20px;position:relative;overflow:hidden}
+.invita{margin-top:34px;background:#2B1D14;color:#FBF3E4;border:1px solid rgba(251,243,228,.12);border-radius:24px;padding:22px 20px;position:relative;overflow:hidden}
 .invita::before{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(208,97,79,.45),transparent 70%)}
 .invita .cab{display:flex;align-items:center;gap:14px;position:relative}
-.invita img{width:58px;height:58px;border-radius:16px;border:3px solid var(--crema)}
-.invita h2{font-size:24px;color:var(--crema)}
+.invita img{width:58px;height:58px;border-radius:16px;border:3px solid #FBF3E4}
+.invita h2{font-size:24px;color:#FBF3E4}
 .invita .lema{font:italic 600 15px "Fraunces",Georgia,serif;color:#E9D9BF;margin-top:2px}
 .invita ul{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:9px;position:relative}
 .invita li{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:#F3E8D6}
 .invita li svg{width:20px;height:20px;color:var(--mostaza);margin-top:1px}
 .invita .gratis{margin-top:14px;font-size:14px;color:#E9D9BF;position:relative}
 .invita .botones{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;position:relative}
-.invita .boton{flex:1;min-width:150px;background:var(--lacre);border-color:var(--crema);box-shadow:4px 4px 0 rgba(251,243,228,.35);font-size:16px;padding:14px}
-.invita .boton.sec{background:transparent;color:var(--crema)}
+.invita .boton{flex:1;min-width:140px;white-space:nowrap;padding:14px 10px!important;background:#A8322D;color:#FBF3E4;border-color:#FBF3E4;box-shadow:4px 4px 0 rgba(251,243,228,.35);font-size:16px;padding:14px}
+.invita .boton.sec{background:transparent;color:#FBF3E4}
+@media (prefers-color-scheme: dark){.invita{background:#3A281C}}
+.abrir-app{display:none}.android .abrir-app{display:flex}
 .error{text-align:center;padding:60px 10px}
 footer{text-align:center;color:var(--suave);font-size:13px;margin-top:26px}
 </style>
@@ -116,12 +120,18 @@ const fechaBonita = (f, h) => { try { const d = new Date(f + "T12:00"); let s = 
 const guardado = k => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch(e){ return null; } };
 const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
 
+// ¿Android? Entonces se intenta abrir la app de Cuaderna (si no está, se queda en esta página)
+const android = /android/i.test(navigator.userAgent);
+const intentApp = (query, respaldo) => `intent://abrir?${query}#Intent;scheme=es.jamormar.chispa;package=es.jamormar.chispa;S.browser_fallback_url=${encodeURIComponent(respaldo)};end`;
 async function pintar(){
   const t = location.hash.slice(1);
   let d = null;
   try { if (t) d = await desempaquetar(decodeURIComponent(t)); } catch(e){}
   if (!d){ $("#raiz").innerHTML = `<div class="error"><h1>No se puede abrir esta nota</h1><p>El enlace parece incompleto. Pide a quien te la mandó que te la vuelva a enviar.</p><p><a href="${BIENVENIDA}">¿Qué es Cuaderna?</a></p></div>`; return; }
   const de = d.de?.n || "Alguien", primero = de.split(/\s+/)[0];
+  // con la app instalada, la nota se abre directamente allí (una vez; si no está instalada, se sigue aquí)
+  if (android && !/[?&]web=1/.test(location.search)){ try { if (!sessionStorage.getItem("cuaderna.app." + t)){ sessionStorage.setItem("cuaderna.app." + t, "1");
+    location.href = intentApp("asignacion=" + encodeURIComponent(t), location.origin + location.pathname + "?web=1" + location.hash); } } catch(e){} }
   const {intro, items} = partir(d.x);
   const titulo = d.t || intro.split("\n")[0] || "Una nota";
   const texto = d.t ? intro : intro.split("\n").slice(1).join("\n").trim();
@@ -141,7 +151,7 @@ async function pintar(){
     <div class="acciones">
       <button class="boton" id="bHecho">${ic(I.check)}¡Hecho! Avisar a ${esc(primero)}</button>
       <div class="hecho-ok" id="hechoOk">Avisado. ¡Gracias!</div>
-      <a class="boton sec" href="${APP}?asignacion=${encodeURIComponent(t)}">${ic(I.libro)}Guardarla en mi Cuaderna</a>
+      <a class="boton sec" id="bGuardar" href="${android ? intentApp("asignacion=" + encodeURIComponent(t), APP + "?asignacion=" + encodeURIComponent(t)) : APP + "?asignacion=" + encodeURIComponent(t)}">${ic(I.libro)}${android ? "Abrir en mi app Cuaderna" : "Guardarla en mi Cuaderna"}</a>
       ${d.de?.e ? `<div class="otra">¿Prefieres avisar por correo? <a href="#" id="bCorreo">Escribir a ${esc(primero)}</a></div>` : ""}
     </div>
     <section class="invita">

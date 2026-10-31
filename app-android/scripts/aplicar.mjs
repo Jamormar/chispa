@@ -68,6 +68,7 @@ cambiar(manifiesto, m => {
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="es.jamormar.chispa" android:host="auth" />
                 <data android:scheme="es.jamormar.chispa" android:host="google" />
+                <data android:scheme="es.jamormar.chispa" android:host="abrir" />
             </intent-filter>
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/chispa_atajos" />
         </activity>`;
