@@ -52,6 +52,9 @@ final class Correo {
     private static final String P_VERIFIER = "correo_verifier";
     private static final String P_STATE = "correo_state";
     private static final String P_ULTIMO = "correo_ultimo";
+    // para no conectarse a OneDrive sin necesidad: día ya resuelto y hora del resumen (se recuerdan de la última comprobación)
+    private static final String P_DIA_OK = "correo_dia_ok";
+    private static final String P_HORA = "correo_hora";
     private static final Locale ES = new Locale("es", "ES");
 
     private Correo() {}
@@ -116,7 +119,7 @@ final class Correo {
         programar(ctx);
     }
 
-    /** Revisa cada media hora (con conexión) si toca enviar el resumen. */
+    /** Revisa cada media hora (con conexión) si toca enviar el resumen; sin red, salvo cuando de verdad toca. */
     static void programar(Context ctx) {
         JobScheduler js = (JobScheduler) ctx.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         if (js == null) return;
@@ -138,7 +141,16 @@ final class Correo {
      */
     /** Igual que comprobar(), pero deja anotado el resultado de cada intento (se ve en Ajustes). */
     static String enviarSiToca(Context ctx, boolean prueba) {
+        if (!prueba) {   // atajo sin red: hoy ya está resuelto, o aún no es la hora
+            android.content.SharedPreferences p = Ajustes.prefs(ctx);
+            Calendar ahora = Calendar.getInstance();
+            if (dia(ahora).equals(p.getString(P_DIA_OK, ""))) return "Hoy ya está hecho";
+            String h = p.getString(P_HORA, null);
+            if (h != null && hm(ahora).compareTo(h) < 0) return "Todavía no es la hora (" + h + ")";
+        }
         String r = comprobar(ctx, prueba);
+        if (!prueba && (r.startsWith("Enviado") || r.startsWith("El resumen de hoy ya") || r.startsWith("Sin novedades") || r.startsWith("Resumen desactivado")))
+            Ajustes.prefs(ctx).edit().putString(P_DIA_OK, dia(Calendar.getInstance())).apply();
         if (!r.startsWith("Enviado") && !r.startsWith("Error"))   // los envíos y errores ya se anotan dentro
             Ajustes.prefs(ctx).edit().putString(P_ULTIMO, new SimpleDateFormat("d MMM HH:mm", ES).format(new Date()) + " · " + r).apply();
         return r;
@@ -159,6 +171,7 @@ final class Correo {
 
             Calendar ahora = Calendar.getInstance();
             String hora = config.optString("resumenHora", "07:30");
+            Ajustes.prefs(ctx).edit().putString(P_HORA, hora).apply();
             if (!prueba && hm(ahora) .compareTo(hora) < 0) return "Todavía no es la hora (" + hora + ")";
 
             String hoy = dia(ahora);
