@@ -530,6 +530,9 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .asig-caja{display:flex;gap:10px;border:1px solid var(--line);border-left:3px solid var(--spark);background:var(--surface);border-radius:12px;padding:11px 13px;margin-top:10px;font-size:14px;line-height:1.45}
 .asig-caja svg{width:18px;height:18px;color:var(--spark);flex:none;margin-top:2px}.asig-caja q{font-style:italic}.asig-caja small{display:block;color:var(--muted);margin-top:3px}
 .login-asig{max-width:360px;margin:18px 0 0;text-align:left;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--spark);border-radius:14px;padding:13px 15px;font-size:14.5px}
+.login-sin{margin-top:14px;font-size:15px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.login-local{line-height:1.45}.login-local strong{color:var(--spark)}.login-local small{display:block;margin-top:8px}
+.ll-bot{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
 .login-asig b{display:block;font-family:var(--display);font-size:17px;margin:2px 0 4px}.login-asig small{color:var(--muted)}
 .hoja.enviar input[type=email]{width:100%;height:48px;border-radius:14px;border:1px solid var(--line);background:var(--bg);padding:0 14px;font-size:16px;color:var(--text);outline:0}
 .hoja.enviar textarea{margin-top:8px}
@@ -747,6 +750,13 @@ html.lz-on,html.lz-on body{overflow:hidden}
     <svg width="18" height="18" viewBox="0 0 21 21"><rect width="10" height="10" fill="#F25022"/><rect x="11" width="10" height="10" fill="#7FBA00"/><rect y="11" width="10" height="10" fill="#00A4EF"/><rect x="11" y="11" width="10" height="10" fill="#FFB900"/></svg>
     Entrar con Microsoft
   </button>
+  <button class="enl login-sin" id="bSinCuenta" type="button">Probar sin cuenta</button>
+  <div id="loginLocal" class="login-asig login-local oculto">
+    <b>Solo en este dispositivo</b>
+    Sin cuenta, tus notas, fotos y audios se guardan únicamente aquí: no hay copia en la nube ni se ven en otros dispositivos. <strong>Si borras la app, sus datos o pierdes el móvil, se pierden.</strong>
+    <small>Cuando quieras, conecta tu cuenta de Microsoft en Más › Ajustes y todo se sube a tu OneDrive sin perder nada.</small>
+    <div class="ll-bot"><button class="btn sec" id="bLocalNo" type="button">Mejor con Microsoft</button><button class="btn" id="bLocalSi" type="button">Empezar sin cuenta</button></div>
+  </div>
   <div class="firma-login"><img src="autor-cara.jpg" alt="">Una creación de José Antonio Morián</div>
 </section>
 
@@ -951,6 +961,13 @@ html.lz-on,html.lz-on body{overflow:hidden}
   <div class="hpie"><button class="btn sec oculto" id="lbBorrar">Borrar libreta</button><div class="esp"></div><button class="btn" id="lbGuardar">Guardar</button></div>
 </div>
 
+<div class="hoja mini enviar" id="hLocal" role="dialog" aria-label="Notas sin copia en la nube">
+  <div class="asa"></div>
+  <h3><span data-i="alerta"></span>Tus notas están solo aquí</h3>
+  <p class="as-ayuda">Estás usando Cuaderna sin cuenta: todo se guarda únicamente en este dispositivo. Si borras la app o sus datos, o pierdes el móvil, se pierde. Conecta tu cuenta de Microsoft para tener copia en tu OneDrive y verlo también en el PC: se sube todo lo que ya tienes.</p>
+  <p class="as-ayuda" id="lcExp"></p>
+  <div class="hpie"><button class="btn sec" id="lcExportar"><span data-i="subir"></span>Exportar copia</button><div class="esp"></div><button class="btn" id="lcConectar">Conectar con Microsoft</button></div>
+</div>
 <div class="hoja mini enviar" id="hSugerencia" role="dialog" aria-label="Enviar una sugerencia">
   <div class="asa" id="sgCerrar"></div>
   <h3><span data-i="idea"></span>Sugerencias y mejoras</h3>
@@ -1089,7 +1106,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.27.3";
+const VERSION = "0.28";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M12 3.5c.7 4.3 2.7 6.3 7 7-4.3.7-6.3 2.7-7 7-.7-4.3-2.7-6.3-7-7 4.3-.7 6.3-2.7 7-7z"/><path d="M19 3v3M17.5 4.5h3"/>',
@@ -1233,6 +1250,30 @@ const idb = {
 /* ================= Inicio de sesión (OAuth con PKCE) ================= */
 let token = lsGet("chispa.token");
 let necesitaLogin = false;
+// Modo sin cuenta: las notas viven solo en este dispositivo (IndexedDB) hasta que se conecta una cuenta de Microsoft
+const modoLocal = () => !token && !!lsGet("chispa.local");
+const errLocal = () => Object.assign(new Error("Para esto hace falta conectar tu cuenta de Microsoft (Más › Ajustes)"), {login: true, local: true});
+function abrirLocal(){
+  const u = lsGet("chispa.ultExport");
+  $("#lcExp").textContent = u ? `Última copia exportada: ${fechaLarga(new Date(u))}.` : "Aún no has exportado ninguna copia.";
+  abrirHoja("#hLocal");
+}
+$("#lcConectar").onclick = () => irALogin(false);
+$("#lcExportar").onclick = () => { cerrarHojas(); exportarTodo(); };
+// Al conectar una cuenta tras usarla sin ella: la configuración se une con la de OneDrive (si ya había) en vez de pisarla
+function fusionarConfig(rem, loc){
+  const vacio = v => v === undefined || v === null || v === "" || (Array.isArray(v) && !v.length);
+  const unir = (a, b) => { const out = [...a], ver = new Set(a.map(x => typeof x === "object" ? (x.id || JSON.stringify(x)) : norm(String(x))));
+    for (const x of b){ const k = typeof x === "object" ? (x.id || JSON.stringify(x)) : norm(String(x)); if (!ver.has(k)){ ver.add(k); out.push(x); } } return out; };
+  const r = {...loc};
+  for (const k in rem){
+    const a = rem[k], b = loc[k];
+    if (Array.isArray(a) && Array.isArray(b)) r[k] = unir(a, b);
+    else if (a && b && typeof a === "object" && typeof b === "object" && !Array.isArray(a)) r[k] = fusionarConfig(a, b);
+    else if (!vacio(a)) r[k] = a;
+  }
+  return r;
+}
 const scopes = () => SCOPES + (lsGet("chispa.permCorreo") ? " Mail.Send" : "") + (lsGet("chispa.permCal") ? " Calendars.ReadWrite" : "");
 async function irALogin(silencioso = false){
   const verifier = aleatorio(48), state = aleatorio(16);
@@ -1271,6 +1312,7 @@ async function accessToken(){
     try { return await pedirToken({grant_type: "refresh_token", refresh_token: token.refresh}); }
     catch(e){ if (e.codigo === "invalid_grant" || e.codigo === "interaction_required"){ token = null; lsSet("chispa.token", null); } else throw e; }
   }
+  if (lsGet("chispa.local")) throw errLocal();
   necesitaLogin = true;
   throw Object.assign(new Error("Hay que volver a entrar"), {login: true});
 }
@@ -1369,7 +1411,8 @@ let sincronizando = false, errorSync = "", ultimaSync = 0;
 function pintarEstado(){
   const pend = notas.filter(n => n._pend || n._borrar).length + (lsGet("chispa.cfgPend") ? 1 : 0);
   let cls = "ok", icono = "nubeok", txt = "Guardado", titulo = "Todo está en tu OneDrive";
-  if (necesitaLogin){ cls = "err"; icono = "alerta"; txt = "Volver a entrar"; titulo = "La sesión ha caducado"; }
+  if (modoLocal()){ cls = "pend"; icono = "alerta"; txt = "Sin copia"; titulo = "Tus notas están solo en este dispositivo. Toca para conectar tu cuenta"; }
+  else if (necesitaLogin){ cls = "err"; icono = "alerta"; txt = "Volver a entrar"; titulo = "La sesión ha caducado"; }
   else if (sincronizando){ cls = ""; icono = "sync"; txt = subida.total > 1 ? `Subiendo ${Math.min(subida.hechas + 1, subida.total)} de ${subida.total}` : "Sincronizando"; titulo = subida.total > 1 ? "Subiendo fotos y audios a tu OneDrive. Puedes seguir usando Cuaderna" : titulo; }
   else if (!navigator.onLine){ cls = "pend"; icono = "sinred"; txt = pend ? `${pend} sin subir` : "Sin conexión"; titulo = "Se subirá cuando vuelva la conexión"; }
   else if (errorSync){ cls = "err"; icono = "alerta"; txt = "Error"; titulo = errorSync; }
@@ -1382,12 +1425,23 @@ function pintarEstado(){
 }
 document.addEventListener("click", e => {
   if (!e.target.closest("[data-sync],#syncSide")) return;
-  if (necesitaLogin) irALogin(false); else { if (errorSync) toast(errorSync, "alerta", 6000); sincronizar(true); }
+  if (modoLocal()) abrirLocal(); else if (necesitaLogin) irALogin(false); else { if (errorSync) toast(errorSync, "alerta", 6000); sincronizar(true); }
 });
 
 const subida = {hechas: 0, total: 0};
+async function purgarLocal(){
+  let hubo = false;
+  for (const n of notas.filter(x => x._borrar && Date.now() - (x._borrarEn || 0) > 7000)){
+    for (const r of [n.audio, ...(n.fotos || []), ...Object.values(n.lienzos || {}), ...(n.archivos || []).map(a => a.ruta), ...(n._subir || [])].filter(Boolean)){ try { await idb.quitarBlob(r); } catch(e){} cacheUrl.delete(r); }
+    await idb.quitar(n.id); notas = notas.filter(x => x !== n); hubo = true;
+  }
+  for (const n of notas.filter(x => (x._quitar || []).length && !x._borrar)){ for (const r of n._quitar){ try { await idb.quitarBlob(r); } catch(e){} cacheUrl.delete(r); } n._quitar = []; await idb.poner(n); }
+  if (hubo){ pintarBadges(); }
+  pintarEstado();
+}
 async function sincronizar(forzar = false){
-  if (sincronizando || !navigator.onLine || !token) return;
+  if (!token){ if (modoLocal()) purgarLocal(); return; }
+  if (sincronizando || !navigator.onLine) return;
   if (!forzar && Date.now() - ultimaSync < 15000) return;
   sincronizando = true; subida.hechas = 0; subida.total = notas.filter(x => x._pend && !x._borrar).reduce((t, x) => t + (x._subir || []).length, 0); pintarEstado();
   const fallos = [];
@@ -1424,6 +1478,11 @@ async function sincronizar(forzar = false){
         n._etag = it.eTag; n._pend = (n._subir || []).length > 0 || (n._quitar || []).length > 0;
         await idb.poner(n);
       } catch(e){ if (e.login) throw e; fallos.push(e.message); }
+    }
+    if (lsGet("chispa.migrar")){
+      const c0 = (await listar("Configuracion")).find(x => x.name === "config.json");
+      if (c0){ try { config = fusionarConfig(await (await fetch(c0["@microsoft.graph.downloadUrl"])).json(), config); lsSet("chispa.config", config); } catch(e){ throw new Error("No se pudo leer tu configuración de OneDrive"); } }
+      lsSet("chispa.cfgPend", true); localStorage.removeItem("chispa.migrar");
     }
     if (lsGet("chispa.cfgPend")){ const it = await subir("Configuracion/config.json", JSON.stringify(config, null, 2), "application/json"); lsSet("chispa.cfgEtag", it.eTag); lsSet("chispa.cfgPend", false); }
     const remotos = await listar("Notas"), vistos = new Set(), porBajar = [];
@@ -2188,7 +2247,7 @@ async function docDesdeFoto(blob){
 
 $("#bLimpiar").onclick = () => { if (vacio() || confirm("¿Borrar esta nota sin guardarla y empezar otra?")){ if (rec){ descartarVoz = true; pararVoz(); } nuevoBorrador(); pintarBorrar(); } };
 // el botón «Borrar» solo aparece cuando hay algo escrito, dictado, dibujado o fotografiado
-function pintarBorrar(){ const hay = !vacio(); $("#bLimpiar").classList.toggle("oculto", !hay); $("#campo").classList.toggle("con-borrar", hay); }
+function pintarBorrar(){ if (!borrador) return; const hay = !vacio(); $("#bLimpiar").classList.toggle("oculto", !hay); $("#campo").classList.toggle("con-borrar", hay); }
 setInterval(pintarBorrar, 800);
 $("#bFoto").onclick = e => {
   e.stopPropagation(); const m = $("#menuFoto"); if (!m.classList.contains("oculto")){ m.classList.add("oculto"); return; }
@@ -2879,7 +2938,7 @@ const expDe = t => { try { return JSON.parse(atob(t.split(".")[1].replace(/-/g, 
 async function idToken(){
   let t = lsGet("chispa.idt");
   if ((!t || expDe(t) < Date.now() + 120e3) && token?.refresh){ try { await pedirToken({grant_type: "refresh_token", refresh_token: token.refresh}); } catch(e){} t = lsGet("chispa.idt"); }
-  if (!t) throw new Error("Vuelve a entrar para identificarte");
+  if (!t) throw modoLocal() ? errLocal() : new Error("Vuelve a entrar para identificarte");
   return t;
 }
 async function api(ruta, {metodo = "POST", cuerpo, tipo = "application/json", crudo = false} = {}){
@@ -4320,6 +4379,7 @@ async function exportarTodo(){
     zip.file("cuaderna.json", JSON.stringify(lista.map(n => Object.fromEntries(Object.entries(n).filter(([k]) => !k.startsWith("_")))), null, 1));
     zip.file("LEEME.txt", `Exportación de Cuaderna del ${new Date().toLocaleString("es-ES")}.\n\nNotas/: una nota por fichero Markdown (.md), en carpetas por libreta. Se abren con cualquier editor de texto, Obsidian, Notion, Word…\nAdjuntos/: fotos, audios y archivos.\ncuaderna.json: todos los datos, para volver a importarlos.\n`);
     const blob = await zip.generateAsync({type: "blob", compression: "DEFLATE"}), nombreZip = `Cuaderna ${hoyISO()}.zip`;
+    lsSet("chispa.ultExport", Date.now());
     toast(`Exportadas ${lista.length} notas${conAdj ? ` y ${adj} adjuntos` : ""}`, "check", 4000);
     if (esApp()) return compartirArchivo(blob, nombreZip, "Exportación de Cuaderna");
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nombreZip; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
@@ -5199,10 +5259,11 @@ function pintarAjustes(){
       <div class="ajuste">${ic("subir")}<div class="lbl">Exportarlo todo<small>Un ZIP con tus notas en Markdown (se abre con cualquier editor) y, si quieres, fotos y archivos</small></div><button class="btn sec" id="bExportar">Exportar</button></div>
       <div class="ajuste">${ic("archivo")}<div class="lbl">Importar de Evernote<small>Archivo .enex exportado desde Evernote: con fotos, archivos y etiquetas</small></div><button class="btn sec" id="bEnex">Importar</button><input type="file" id="inEnex" accept=".enex,application/xml,text/xml" multiple class="oculto"></div>
     </div></div>
-    <div class="grupo"><h3>Sugerencias y mejoras</h3><div class="caja"><div class="ajuste">${ic("idea")}<div class="lbl">¿Qué mejorarías?<small>Cuéntalo y le llega directamente a quien hace Cuaderna</small></div><button class="btn sec" id="kSug">Escribir</button></div></div></div>
+    ${modoLocal() ? "" : `<div class="grupo"><h3>Sugerencias y mejoras</h3><div class="caja"><div class="ajuste">${ic("idea")}<div class="lbl">¿Qué mejorarías?<small>Cuéntalo y le llega directamente a quien hace Cuaderna</small></div><button class="btn sec" id="kSug">Escribir</button></div></div></div>`}
     ${acceso?.admin ? `<div class="grupo"><h3>Administración</h3><div class="caja" id="kAdmin"></div></div>` : ""}
     <div class="grupo"><h3>Cuenta</h3><div class="caja">
-      <div class="ajuste">${ic("user")}<div class="lbl">${esc(lsGet("chispa.usuario") || "Cuenta de Microsoft")}<small>Tus datos están en tu OneDrive, en la carpeta Aplicaciones</small></div><button class="btn sec" id="kSalir">${ic("salir")}Salir</button></div>
+      ${modoLocal() ? `<div class="ajuste">${ic("alerta")}<div class="lbl">Sin cuenta<small>Tus notas están solo en este dispositivo: si borras la app o pierdes el móvil, se pierden. Conecta tu cuenta de Microsoft para tener copia en tu OneDrive (se sube todo lo que ya tienes) y usar calendario, correo, versiones y compartir.</small></div><button class="btn" id="kConectar">Conectar</button></div>`
+      : `<div class="ajuste">${ic("user")}<div class="lbl">${esc(lsGet("chispa.usuario") || "Cuenta de Microsoft")}<small>Tus datos están en tu OneDrive, en la carpeta Aplicaciones</small></div><button class="btn sec" id="kSalir">${ic("salir")}Salir</button></div>`}
     </div></div>
     <div class="autoria"><img src="autor.jpg" alt="Morián, José Antonio" loading="lazy"><div>Cuaderna ${VERSION}${esApp() ? ` · app Android ${esc(infoApp?.version || "")}` : ""}<small>Idea, diseño y desarrollo de José Antonio Morián</small></div></div>`;
   pintarTelefono(); pintarCorreo(); pintarCorreoWeb(); pintarCalendario(); pintarSuenos();
@@ -5236,10 +5297,11 @@ function pintarAjustes(){
     try { await probarVoz(); el.className = "estado-t ok"; el.textContent = "Funciona"; setTimeout(procesarTranscripciones, 300); }
     catch(e){ el.textContent = e.message; }
   };
-  $("#kSug").onclick = abrirSugerencia;
+  if ($("#kSug")) $("#kSug").onclick = abrirSugerencia;
   $("#bExportar").onclick = exportarTodo; $("#bEnex").onclick = () => $("#inEnex").click();
   $("#inEnex").onchange = async () => { const fs = [...$("#inEnex").files]; $("#inEnex").value = ""; for (const f of fs) await importarEnex(f); }; if ($("#kAdmin")) pintarAdmin();
-  $("#kSalir").onclick = () => {
+  if ($("#kConectar")) $("#kConectar").onclick = () => irALogin(false);
+  if ($("#kSalir")) $("#kSalir").onclick = () => {
     const pend = notas.filter(n => n._pend || n._borrar).length;
     if (pend && !confirm(`Hay ${pend} cambios sin subir que se perderán. ¿Salir igualmente?`)) return;
     ["chispa.token", "chispa.idt", "chispa.acceso"].forEach(k => localStorage.removeItem(k)); indexedDB.deleteDatabase("chispa3"); location.href = `${AUTH}/logout?post_logout_redirect_uri=${encodeURIComponent(REDIRECT)}`;
@@ -5266,6 +5328,7 @@ function pintarAyuda(){
   <h3>Sincronización</h3><p>Cada nota se guarda primero en el dispositivo y se sube sola a tu OneDrive. Sin cobertura se sube al volver. El indicador de la nube te dice si está todo guardado; si pide <b>volver a entrar</b>, tócalo.</p>
   <h3>Modo noche</h3><p>En tu horario la pantalla del móvil se pone negra. Si abres Cuaderna y la cierras sin escribir, queda un ancla con la hora.</p>
   <h3>En el móvil</h3><p>En Android, instala la app Cuaderna (Ajustes › App Android). Si mantienes pulsado el icono tienes los atajos <b>Grabar voz</b> y <b>Ancla rápida</b>.</p>
+  <h3>Sin cuenta</h3><p>Puedes usar Cuaderna sin cuenta de Microsoft: todo se guarda solo en este dispositivo y, si borras la app o pierdes el móvil, se pierde. Exporta una copia de vez en cuando (Más › Ajustes › Tus datos) y, cuando quieras, pulsa «Conectar» en Ajustes: todo lo que tienes se sube a tu OneDrive. Calendario, correo, compartir con otros y versiones necesitan la cuenta.</p>
   <h3>Tus datos</h3><p>En tu OneDrive, dentro de la carpeta Aplicaciones (la carpeta de la app conserva su nombre original): Notas (un fichero legible por nota), Audios, Fotos, Configuracion y Papelera.</p>
   <h3>En iPhone</h3><p>Abre <b>jamormar.github.io/chispa</b> en Safari, entra con tu cuenta y pulsa <b>Compartir › Añadir a pantalla de inicio</b>. Funciona igual que en Android salvo el widget, el aviso al colgar y el modo coche, que son exclusivos de la app de Android.</p>
   <h3>Gestos</h3><p>En las listas, desliza una nota a la derecha para marcarla hecha y a la izquierda para archivarla (o sacarla del archivo). Para borrar, ábrela y pulsa la papelera. Siempre puedes <b>deshacer</b> desde el aviso que aparece arriba.</p>
@@ -5274,7 +5337,7 @@ function pintarAyuda(){
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
   <h3>Autoría</h3><div class="autoria izq"><img src="autor.jpg" alt="Morián, José Antonio" loading="lazy"><div>Cuaderna es una creación de <b>José Antonio Morián</b>: idea, diseño y desarrollo.<small>© ${new Date().getFullYear()} José Antonio Morián. Todos los derechos reservados.</small></div></div>
-  <h3>Novedades</h3><p><b>0.27.3</b>: «Convertir en lista» pasa cada línea que ya hayas escrito en la descripción a un punto de la lista.<br><b>0.27.2</b>: al escribir [] o [ ] al principio de una línea de la descripción, se convierte al momento en una casilla de lista.<br><b>0.27.1</b>: el menú de la cámara ya no se descoloca; con el móvil en horizontal la app mantiene el diseño de móvil.<br><b>0.27</b>: Notas y Biblioteca se unen en la pestaña <b>Cuaderno</b>: buscador único, vistas rápidas, crear (escáner, web, plantillas), libretas por pilas, etiquetas y personas. Exportar e importar pasan a Más › Ajustes › Tus datos.<br><b>0.26.2</b>: en la barra de formato, deshacer y rehacer, quitar el formato y volver al texto original.<br><b>0.26.1</b>: pantalla de versiones rediseñada: a pantalla completa, con fecha, título y resumen de cada versión, y fácil de cerrar (X o «atrás»).<br><b>0.26</b>: enlaces entre notas (y «Mencionada en»); historial de versiones de cada nota, para ver y recuperar las anteriores; exportarlo todo en un ZIP (Markdown y adjuntos); importar desde Evernote (.enex) con fotos, archivos y etiquetas.<br><b>0.25</b>: escáner de documentos de varias páginas que crea un PDF (con su texto leído por la IA para buscarlo); guardar páginas web (también compartiendo un enlace desde el navegador); plantillas (reunión, viaje, compra, receta, coche, proyecto, diario) y las tuyas propias; las libretas y etiquetas se abren dentro de Biblioteca.<br><b>0.24</b>: nueva pestaña <b>Biblioteca</b>: libretas agrupadas en pilas, etiquetas (#algo), descripción con formato (negritas, títulos, listas, enlaces y tablas), archivos adjuntos de cualquier tipo y búsqueda dentro de PDF, fotos y etiquetas. Los «archivadores» pasan a llamarse libretas.<br><b>0.23.4</b>: al anotar, el botón para descartar es ahora «Borrar», en rojo, y solo aparece cuando hay algo escrito.<br><b>0.23.3</b>: la fecha de una nota se ve escrita y tiene un botón claro para quitarla o anular la cita del calendario (con deshacer).<br><b>0.23.2</b>: avisos rediseñados, ahora abajo; campo de «Pregúntale a tus notas» más limpio.<br><b>0.23.1</b>: «Pregúntale a tus notas» con botón Cerrar; el botón «atrás» del móvil cierra la ventana abierta en vez de salir.<br><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y libretas propias. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.28</b>: se puede usar Cuaderna sin cuenta («Probar sin cuenta» en la entrada). Las notas quedan solo en el dispositivo, con aviso y recordatorio semanal de exportar una copia; al conectar después la cuenta de Microsoft, todo se sube a OneDrive sin perder nada.<br><b>0.27.3</b>: «Convertir en lista» pasa cada línea que ya hayas escrito en la descripción a un punto de la lista.<br><b>0.27.2</b>: al escribir [] o [ ] al principio de una línea de la descripción, se convierte al momento en una casilla de lista.<br><b>0.27.1</b>: el menú de la cámara ya no se descoloca; con el móvil en horizontal la app mantiene el diseño de móvil.<br><b>0.27</b>: Notas y Biblioteca se unen en la pestaña <b>Cuaderno</b>: buscador único, vistas rápidas, crear (escáner, web, plantillas), libretas por pilas, etiquetas y personas. Exportar e importar pasan a Más › Ajustes › Tus datos.<br><b>0.26.2</b>: en la barra de formato, deshacer y rehacer, quitar el formato y volver al texto original.<br><b>0.26.1</b>: pantalla de versiones rediseñada: a pantalla completa, con fecha, título y resumen de cada versión, y fácil de cerrar (X o «atrás»).<br><b>0.26</b>: enlaces entre notas (y «Mencionada en»); historial de versiones de cada nota, para ver y recuperar las anteriores; exportarlo todo en un ZIP (Markdown y adjuntos); importar desde Evernote (.enex) con fotos, archivos y etiquetas.<br><b>0.25</b>: escáner de documentos de varias páginas que crea un PDF (con su texto leído por la IA para buscarlo); guardar páginas web (también compartiendo un enlace desde el navegador); plantillas (reunión, viaje, compra, receta, coche, proyecto, diario) y las tuyas propias; las libretas y etiquetas se abren dentro de Biblioteca.<br><b>0.24</b>: nueva pestaña <b>Biblioteca</b>: libretas agrupadas en pilas, etiquetas (#algo), descripción con formato (negritas, títulos, listas, enlaces y tablas), archivos adjuntos de cualquier tipo y búsqueda dentro de PDF, fotos y etiquetas. Los «archivadores» pasan a llamarse libretas.<br><b>0.23.4</b>: al anotar, el botón para descartar es ahora «Borrar», en rojo, y solo aparece cuando hay algo escrito.<br><b>0.23.3</b>: la fecha de una nota se ve escrita y tiene un botón claro para quitarla o anular la cita del calendario (con deshacer).<br><b>0.23.2</b>: avisos rediseñados, ahora abajo; campo de «Pregúntale a tus notas» más limpio.<br><b>0.23.1</b>: «Pregúntale a tus notas» con botón Cerrar; el botón «atrás» del móvil cierra la ventana abierta en vez de salir.<br><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y libretas propias. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Cuaderna para móvil y PC, sincronizada con OneDrive.</p>`;
   $("#ayudaSug").onclick = abrirSugerencia;
 }
@@ -5298,17 +5361,27 @@ function pintarAyuda(){
   aplicarTema();
   matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", aplicarTema);
 
-  if (!token){
+  if (vuelta === "ok" && lsGet("chispa.local")){ localStorage.removeItem("chispa.local"); lsSet("chispa.migrar", true); lsSet("chispa.migrarNotas", true); }
+  if (!token && !lsGet("chispa.local")){
     if (vuelta && !["ok", "login_required", "interaction_required"].includes(vuelta)) $("#loginMsg").textContent = `No se pudo entrar: ${vuelta}. Inténtalo de nuevo.`;
     if (accion) lsSet("chispa.accion", accion);
     mostrarAsignacionEnLogin();
-    $("#login").classList.remove("oculto"); $("#bLogin").onclick = () => irALogin(false); return;
+    $("#login").classList.remove("oculto"); $("#bLogin").onclick = () => irALogin(false);
+    $("#bSinCuenta").onclick = () => { $("#loginLocal").classList.remove("oculto"); $("#bSinCuenta").classList.add("oculto"); };
+    $("#bLocalNo").onclick = () => irALogin(false);
+    $("#bLocalSi").onclick = () => { lsSet("chispa.local", true); lsSet("chispa.localDesde", Date.now()); location.reload(); };
+    return;
   }
-  if (Date.now() >= token.exp && navigator.onLine){
+  if (token && Date.now() >= token.exp && navigator.onLine){
     try { await accessToken(); } catch(e){ if (e.login && !["login_required", "interaction_required"].includes(vuelta)){ if (accion) lsSet("chispa.accion", accion); return irALogin(true); } }
   }
-  if (apiBase() && !(await comprobarAcceso())) return mostrarEspera();
+  if (token && apiBase() && !(await comprobarAcceso())) return mostrarEspera();
   notas = (await idb.todas()) || []; ordenar();
+  if (token && lsGet("chispa.migrarNotas")){   // venía de usarla sin cuenta: todo lo de este dispositivo se sube a OneDrive
+    for (const n of notas){ n._pend = true; n._subir = [...new Set([...(n._subir || []), n.audio, ...(n.fotos || []), ...Object.values(n.lienzos || {}), ...(n.archivos || []).map(a => a.ruta)].filter(Boolean))]; await idb.poner(n); }
+    localStorage.removeItem("chispa.migrarNotas");
+    setTimeout(() => toast(notas.length ? `Cuenta conectada. Subiendo tus ${notas.length} notas a OneDrive` : "Cuenta conectada", "nube", 6000), 1200);
+  }
   $("#app").classList.remove("oculto");
   ver(esMovil() ? "anotar" : "hoy");
   addEventListener("resize", () => { prepararTeclado(); ajustarLienzo(); aplicarTema(); pintarEstado(); });
@@ -5320,6 +5393,10 @@ function pintarAyuda(){
   if (accion === "ancla"){ anclaAbierta = null; await guardarAncla(new Date(), true); }
   if (accion === "voz"){ tocado = true; empezarVoz(); }
   sincronizar(true);
+  if (modoLocal()){   // recordatorio semanal de hacer una copia
+    const ult = lsGet("chispa.ultExport") || lsGet("chispa.localDesde") || Date.now();
+    if (notas.some(n => !n._borrar) && Date.now() - ult > 7 * 864e5) setTimeout(() => toast("Tus notas están solo en este dispositivo. Haz una copia", "alerta", 12000, abrirLocal, "Ver"), 2500);
+  }
   setTimeout(procesarAsignaciones, 1200);
   setTimeout(() => { avisarAdmin(); enviarSugerenciasPendientes(); }, 3000);
   setTimeout(() => { procesarTranscripciones(); revisarAvisos(); }, 2500);
