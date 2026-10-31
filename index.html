@@ -1202,7 +1202,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 <script src="servidor.js"></script>
 <script>
 "use strict";
-const VERSION = "0.36";
+const VERSION = "0.36.1";
 let avisoVersion = false;
 /* ================= Iconos ================= */
 const ICONOS = {
@@ -3527,14 +3527,17 @@ $("#asAg").onclick = async () => { try { const r = await nativo("ChispaNativo").
 $("#asPermiso").onclick = async () => { if (hayCambiosEdicion()) await guardarEdicion(); lsSet("chispa.permCorreo", true); irALogin(false); };
 // Mensaje de WhatsApp: la nota se lee entera en el propio mensaje; el enlace, al final, sirve para marcarla como hecha
 function mensajeWaNota(n, nombre, motivo, limite, enlace){
-  const pl = partirLista(n.texto), tit = tituloPlano(n), desc = planoMd(pl.intro || "").trim();
-  const l = [`Hola${nombre ? " " + nombre.split(" ")[0] : ""} 👋 Te paso una nota:`, ""];
-  l.push(`📒 *${(tit || "Nota").replace(/\*/g, "")}*`);
-  if (desc && desc !== tit) l.push(desc.length > 400 ? desc.slice(0, 400) + "…" : desc);
-  if (pl.items.length) l.push(...pl.items.slice(0, 12).map(i => (i.hecho ? "☑ " : "☐ ") + i.texto), ...(pl.items.length > 12 ? [`… y ${pl.items.length - 12} más`] : []));
-  const extra = [motivo ? `💬 _${motivo.replace(/_/g, "")}_` : "", limite ? `📅 Para el ${fechaLarga(limite)}` : ""].filter(Boolean);
-  if (extra.length) l.push("", ...extra);
-  l.push("", "Ábrela aquí y márcala como hecha cuando esté 👇", enlace);
+  // *negrita* y _cursiva_ de WhatsApp solo funcionan sin espacios junto a los símbolos: todo va recortado
+  const limpio = t => String(t || "").replace(/[*_~]/g, "").replace(/\s+/g, " ").trim();
+  const pl = partirLista(n.texto), tit = limpio(tituloPlano(n)) || "Nota", desc = planoMd(pl.intro || "").trim();
+  const l = [`Hola${nombre ? " " + nombre.split(" ")[0] : ""} 👋`, "Te paso una nota de mi Cuaderna:", "", `📒 *${tit}*`];
+  if (desc && limpio(desc) !== tit) l.push(desc.length > 400 ? desc.slice(0, 400).trim() + "…" : desc);
+  if (pl.items.length) l.push("", ...pl.items.slice(0, 12).map(i => (i.hecho ? "☑ " : "☐ ") + limpio(i.texto)), ...(pl.items.length > 12 ? [`… y ${pl.items.length - 12} más`] : []));
+  if (motivo || limite) l.push("");
+  if (motivo) l.push(`💬 _${limpio(motivo)}_`);
+  if (limite) l.push(`📅 Para el ${fechaLarga(limite)}`);
+  l.push("", "👉 *Ábrela y márcala como hecha:*", enlace);
+  l.push("", "_¿Aún no usas Cuaderna? Desde el enlace puedes probarla gratis, sin crear ninguna cuenta._");
   return l.join("\n");
 }
 // El paquete viaja dentro del enlace; si hay servidor, se guarda allí y el enlace es corto
