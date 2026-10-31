@@ -1,6 +1,7 @@
 package es.jamormar.chispa;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -16,6 +17,8 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(ChispaNativoPlugin.class);
         super.onCreate(savedInstanceState);
+        // en el móvil, siempre en vertical (en tablets se deja girar)
+        if (getResources().getConfiguration().smallestScreenWidthDp < 600) setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         // Al volver desde «Recientes» o al recrearse la pantalla, Android repite la última orden
         // (por ejemplo, el botón Ancla del widget). Solo se atiende cuando es nueva de verdad.
         boolean repetida = savedInstanceState != null

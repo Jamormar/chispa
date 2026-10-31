@@ -80,7 +80,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 #tabs button.activo{color:var(--text);background:var(--raise)}
 #tabs .badge,.side-nav .badge{position:absolute;top:3px;left:calc(50% + 6px);min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:var(--spark);color:#FBF3E4;font-size:10.5px;font-weight:700;display:grid;place-items:center}
 
-@media (min-width:900px){
+@media (min-width:900px) and (min-height:560px){
   #side{display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;width:240px;padding:22px 14px;border-right:1px solid var(--line);background:var(--surface)}
   #side .logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:22px;padding:4px 10px 22px}
   #side .logo img{width:34px;height:34px;border-radius:10px}
@@ -97,7 +97,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 /* ===== Anotar ===== */
 #vAnotar{display:flex;flex-direction:column;height:calc(100dvh - env(safe-area-inset-top) - 132px)}
-@media (min-width:900px){ #vAnotar{height:calc(100dvh - 120px);max-height:760px} }
+@media (min-width:900px) and (min-height:560px){ #vAnotar{height:calc(100dvh - 120px);max-height:760px} }
 .seg{display:inline-flex;background:var(--raise);border-radius:14px;padding:3px;position:relative}
 .seg button{padding:7px 14px;border-radius:11px;color:var(--muted);font-weight:500;font-size:14px;display:flex;align-items:center;gap:6px}
 .seg button svg{width:16px;height:16px}
@@ -117,7 +117,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 #cTexto{flex:0 0 auto;width:100%;min-width:0;border:0;outline:0;resize:none;background:transparent;padding:0;font-size:19px;line-height:1.4;min-height:54px;max-height:200px;font-family:var(--body)}
 #cTexto::placeholder{color:var(--muted)}
 .lienzo{margin-top:10px!important}
-@media (min-width:900px){
+@media (min-width:900px) and (min-height:560px){
   .papel.sin-mano .lienzo{display:none}
   .papel.sin-mano .campo{flex:1;margin-bottom:10px}
   .papel.sin-mano #cTexto{max-height:none;height:auto!important;flex:1}
@@ -250,7 +250,7 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .dp-ok{margin-top:8px}
 .fchip{height:34px;padding:0 13px;border-radius:11px;background:var(--surface);border:1px solid var(--line);font-size:13.5px;font-weight:500;color:var(--muted);white-space:nowrap;flex:none}
 .fchip.on{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
-@media (min-width:900px){ .filtros{margin:0;padding-left:2px;padding-right:2px;flex-wrap:wrap} }
+@media (min-width:900px) and (min-height:560px){ .filtros{margin:0;padding-left:2px;padding-right:2px;flex-wrap:wrap} }
 .dia{font-family:var(--display);font-weight:600;font-size:15px;color:var(--muted);margin:22px 0 8px 4px}
 .cuenta{font-size:13px;color:var(--faint);margin:4px 4px 0}
 
@@ -261,7 +261,7 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
   padding:8px 18px calc(22px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.85,.25,1),visibility 0s .32s;box-shadow:0 -10px 40px -10px rgba(0,0,0,.25)}
 .hoja.on{transform:none;visibility:visible;transition:transform .32s cubic-bezier(.2,.85,.25,1)}
 .hoja .asa{width:40px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 10px}
-@media (min-width:900px){
+@media (min-width:900px) and (min-height:560px){
   .hoja{left:50%;top:50%;bottom:auto;right:auto;width:640px;max-height:88vh;border-radius:26px;padding:18px 24px 24px;transform:translate(-50%,-46%);opacity:0;pointer-events:none;transition:transform .25s,opacity .2s,visibility 0s .25s}
   .hoja.on{transform:translate(-50%,-50%);opacity:1;pointer-events:auto;transition:transform .25s,opacity .2s}
   .hoja .asa{display:none}
@@ -309,7 +309,7 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .prop input[type=text]{flex:1}
 .opc{height:34px;padding:0 12px;border-radius:11px;background:var(--raise);font-size:13.5px;font-weight:500;color:var(--muted)}
 .opc.on{background:var(--ink);color:var(--on-ink)}
-@media (max-width:899px){ .prop .lbl{flex:1} .prop .val{flex-basis:100%;padding-left:32px;min-width:0} }
+@media (max-width:899px), (max-height:559px){ .prop .lbl{flex:1} .prop .val{flex-basis:100%;padding-left:32px;min-width:0} }
 /* Editor: barra fija arriba y secciones */
 .hoja.editor{padding:0}
 .ebar{position:sticky;top:0;z-index:3;background:var(--surface);border-bottom:1px solid var(--line);padding:6px 14px 10px;border-radius:28px 28px 0 0}
@@ -343,7 +343,7 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .f-res .cuando{flex:1;min-width:0;font-weight:600;color:var(--text)}.f-res .cuando small{display:block;font-weight:400;color:var(--muted);font-size:13px}
 .f-res .vacia{flex:1;color:var(--muted)}
 .quitar-f{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--danger) 45%,transparent);background:var(--danger-soft);color:var(--danger);font-weight:600;font-size:14px}.quitar-f svg{width:16px;height:16px;stroke-width:2.2}
-@media (min-width:900px){
+@media (min-width:900px) and (min-height:560px){
   .hoja.editor{width:700px}
   .ebar{padding:14px 22px;border-radius:26px 26px 0 0}
   .ecuerpo{padding:14px 24px 26px}
@@ -417,7 +417,7 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .enlaces{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
 .enlace{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;font-weight:600}
 .enlace svg{width:22px;height:22px;color:var(--work)}
-@media (min-width:900px){ .enlaces{display:none} }
+@media (min-width:900px) and (min-height:560px){ .enlaces{display:none} }
 .ayuda h3{font-family:var(--display);font-size:17px;margin:20px 0 4px}
 .ayuda p,.ayuda li{color:var(--muted)}
 .ayuda b{color:var(--text)}
@@ -458,13 +458,13 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .mini-kpi span{color:var(--muted);font-size:14px}
 .tip{position:fixed;z-index:70;background:var(--ink);color:var(--on-ink);font-size:13px;font-weight:500;padding:7px 11px;border-radius:10px;pointer-events:none;opacity:0;transition:opacity .12s;max-width:260px;box-shadow:var(--float)}
 .tip.on{opacity:1}
-@media (max-width:899px){ .bar .et{width:112px} }
+@media (max-width:899px), (max-height:559px){ .bar .et{width:112px} }
 #visor{position:fixed;inset:0;background:rgba(5,8,15,.92);display:none;align-items:center;justify-content:center;z-index:50}
 #visor img{max-width:96vw;max-height:92vh;border-radius:12px}
 .toast{position:fixed;left:50%;bottom:calc(98px + env(safe-area-inset-bottom));transform:translate(-50%,24px);z-index:80;background:var(--ink);color:var(--on-ink);
   padding:12px 14px 12px 12px;border-radius:18px;font-size:15px;line-height:1.3;font-weight:500;display:flex;align-items:center;gap:12px;opacity:0;transition:opacity .22s,transform .28s cubic-bezier(.2,1.2,.4,1);pointer-events:none;box-shadow:0 18px 40px -14px rgba(0,0,0,.55)}
 .toast.arriba{bottom:auto;top:calc(12px + env(safe-area-inset-top));transform:translate(-50%,-24px)}
-@media (min-width:900px){.toast{bottom:28px}}
+@media (min-width:900px) and (min-height:560px){.toast{bottom:28px}}
 .elegir-coche{position:fixed;inset:0;z-index:70;background:rgba(8,12,24,.55);display:flex;align-items:flex-end;justify-content:center;padding:16px}
 .ec-caja{background:var(--surface,var(--raise));color:var(--text);border-radius:22px;padding:20px;width:100%;max-width:440px;max-height:80vh;overflow:auto;display:flex;flex-direction:column;gap:12px}
 .ec-caja h3{margin:0;font-size:19px}.ec-caja p{margin:0;opacity:.75;font-size:14px}
@@ -634,12 +634,12 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .cam-guia div{width:min(84vw,62vh*1.585);aspect-ratio:1.585;border:3px solid rgba(244,182,62,.95);border-radius:14px;box-shadow:0 0 0 2000px rgba(0,0,0,.35)}
 .cam-guia span{color:#fff;font-size:14.5px;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 /* Tarjeta de visita */
-.menu-foto{position:fixed;z-index:70;width:220px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:0 12px 32px rgba(10,16,32,.18);display:flex;flex-direction:column}
-.menu-foto button{display:flex;align-items:center;gap:12px;height:46px;padding:0 12px;border-radius:11px;font-size:15px;color:var(--text);text-align:left}
+.menu-foto{position:fixed;z-index:70;width:max-content;min-width:230px;max-width:calc(100vw - 24px);background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:0 12px 32px rgba(10,16,32,.18);display:flex;flex-direction:column}
+.menu-foto button{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 14px;white-space:nowrap;line-height:1.2;border-radius:11px;font-size:15px;color:var(--text);text-align:left}
 .menu-foto button:active{background:var(--raise)}.menu-foto svg{width:20px;height:20px;color:var(--muted)}
 #tj{z-index:96}
 .tj-paso{flex:1;display:flex;flex-direction:column;min-height:0}
-.enlaces{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.e-enlaces{margin-top:12px;display:flex;flex-direction:column;gap:8px}
 .enl-g{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.enl-g>small{width:100%;color:var(--muted);font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
 .nota-l{display:inline-flex;align-items:center;gap:6px;max-width:100%;height:34px;padding:0 12px;border-radius:12px;background:var(--spark-soft);color:var(--spark-text);font-weight:600;font-size:14px}.nota-l span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.nota-l svg{width:16px;height:16px;flex:none}
 .nota-l.atras{background:var(--raise);color:var(--text)}
@@ -867,7 +867,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
       <div class="transc oculto" id="eTransc"></div>
       <div id="eIA"></div>
       <div id="eTransBtn"></div>
-      <div class="enlaces" id="eEnlaces"></div>
+      <div class="e-enlaces" id="eEnlaces"></div>
     </section>
     <section class="esec oculto" id="eSecLista">
       <h4><span>Lista <span class="prog-t" id="eProg"></span></span></h4>
@@ -1089,7 +1089,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.27";
+const VERSION = "0.27.1";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M12 3.5c.7 4.3 2.7 6.3 7 7-4.3.7-6.3 2.7-7 7-.7-4.3-2.7-6.3-7-7 4.3-.7 6.3-2.7 7-7z"/><path d="M19 3v3M17.5 4.5h3"/>',
@@ -1362,7 +1362,7 @@ async function aPapelera(ruta){
 let notas = [];
 let config = { nocheDesde: "23:00", nocheHasta: "06:00", correoTrabajo: "", correoPersonal: "", contactos: {persona: [], asunto: [], cliente: [], proveedor: [], companero: []} };
 let disp = { terminal: "", ambito: "trabajo", trans: true, ubi: false };
-const esMovil = () => matchMedia("(max-width:899px)").matches;
+const esMovil = () => matchMedia("(max-width:899px), (max-height:559px)").matches;   // un móvil en horizontal sigue siendo un móvil
 
 /* ================= Sincronización ================= */
 let sincronizando = false, errorSync = "", ultimaSync = 0;
@@ -2192,7 +2192,7 @@ function pintarBorrar(){ const hay = !vacio(); $("#bLimpiar").classList.toggle("
 setInterval(pintarBorrar, 800);
 $("#bFoto").onclick = e => {
   e.stopPropagation(); const m = $("#menuFoto"); if (!m.classList.contains("oculto")){ m.classList.add("oculto"); return; }
-  const r = $("#bFoto").getBoundingClientRect(); m.style.left = Math.max(8, r.left + r.width / 2 - 110) + "px"; m.style.bottom = (innerHeight - r.top + 10) + "px"; m.classList.remove("oculto");
+  const r = $("#bFoto").getBoundingClientRect(); m.classList.remove("oculto"); const w = m.offsetWidth; m.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + "px"; m.style.bottom = (innerHeight - r.top + 10) + "px";
 };
 document.addEventListener("click", e => { if (!e.target.closest("#menuFoto")) $("#menuFoto").classList.add("oculto"); });
 $("#menuFoto").onclick = e => { const b = e.target.closest("[data-mf]"); if (!b) return; $("#menuFoto").classList.add("oculto");
@@ -2554,7 +2554,7 @@ document.querySelectorAll("[data-i]").forEach(s => s.outerHTML = ic(s.dataset.i)
 $("#eCerrar").innerHTML = ic("x"); $("#eBorrar").innerHTML = ic("borrar") + "<span>Borrar</span>"; $("#eAddFoto").innerHTML = ic("camara") + "Foto";
 $("#eAddFoto").onclick = e => {
   e.stopPropagation(); const m = $("#menuFotoE"); if (!m.classList.contains("oculto")){ m.classList.add("oculto"); return; }
-  const r = $("#eAddFoto").getBoundingClientRect(); m.style.left = Math.max(8, Math.min(innerWidth - 228, r.right - 220)) + "px"; m.style.top = (r.bottom + 6) + "px"; m.style.bottom = "auto"; m.classList.remove("oculto");
+  const r = $("#eAddFoto").getBoundingClientRect(); m.classList.remove("oculto"); const w = m.offsetWidth, h = m.offsetHeight; m.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.right - w)) + "px"; m.style.top = (r.bottom + 6 + h > innerHeight - 8 ? Math.max(8, r.top - h - 6) : r.bottom + 6) + "px"; m.style.bottom = "auto";
 };
 document.addEventListener("click", e => { if (!e.target.closest("#menuFotoE")) $("#menuFotoE").classList.add("oculto"); });
 $("#menuFotoE").onclick = e => { const b = e.target.closest("[data-mfe]"); if (!b) return; $("#menuFotoE").classList.add("oculto");
@@ -5240,7 +5240,7 @@ function pintarAyuda(){
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
   <h3>Autoría</h3><div class="autoria izq"><img src="autor.jpg" alt="Morián, José Antonio" loading="lazy"><div>Cuaderna es una creación de <b>José Antonio Morián</b>: idea, diseño y desarrollo.<small>© ${new Date().getFullYear()} José Antonio Morián. Todos los derechos reservados.</small></div></div>
-  <h3>Novedades</h3><p><b>0.27</b>: Notas y Biblioteca se unen en la pestaña <b>Cuaderno</b>: buscador único, vistas rápidas, crear (escáner, web, plantillas), libretas por pilas, etiquetas y personas. Exportar e importar pasan a Más › Ajustes › Tus datos.<br><b>0.26.2</b>: en la barra de formato, deshacer y rehacer, quitar el formato y volver al texto original.<br><b>0.26.1</b>: pantalla de versiones rediseñada: a pantalla completa, con fecha, título y resumen de cada versión, y fácil de cerrar (X o «atrás»).<br><b>0.26</b>: enlaces entre notas (y «Mencionada en»); historial de versiones de cada nota, para ver y recuperar las anteriores; exportarlo todo en un ZIP (Markdown y adjuntos); importar desde Evernote (.enex) con fotos, archivos y etiquetas.<br><b>0.25</b>: escáner de documentos de varias páginas que crea un PDF (con su texto leído por la IA para buscarlo); guardar páginas web (también compartiendo un enlace desde el navegador); plantillas (reunión, viaje, compra, receta, coche, proyecto, diario) y las tuyas propias; las libretas y etiquetas se abren dentro de Biblioteca.<br><b>0.24</b>: nueva pestaña <b>Biblioteca</b>: libretas agrupadas en pilas, etiquetas (#algo), descripción con formato (negritas, títulos, listas, enlaces y tablas), archivos adjuntos de cualquier tipo y búsqueda dentro de PDF, fotos y etiquetas. Los «archivadores» pasan a llamarse libretas.<br><b>0.23.4</b>: al anotar, el botón para descartar es ahora «Borrar», en rojo, y solo aparece cuando hay algo escrito.<br><b>0.23.3</b>: la fecha de una nota se ve escrita y tiene un botón claro para quitarla o anular la cita del calendario (con deshacer).<br><b>0.23.2</b>: avisos rediseñados, ahora abajo; campo de «Pregúntale a tus notas» más limpio.<br><b>0.23.1</b>: «Pregúntale a tus notas» con botón Cerrar; el botón «atrás» del móvil cierra la ventana abierta en vez de salir.<br><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y libretas propias. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.27.1</b>: el menú de la cámara ya no se descoloca; con el móvil en horizontal la app mantiene el diseño de móvil.<br><b>0.27</b>: Notas y Biblioteca se unen en la pestaña <b>Cuaderno</b>: buscador único, vistas rápidas, crear (escáner, web, plantillas), libretas por pilas, etiquetas y personas. Exportar e importar pasan a Más › Ajustes › Tus datos.<br><b>0.26.2</b>: en la barra de formato, deshacer y rehacer, quitar el formato y volver al texto original.<br><b>0.26.1</b>: pantalla de versiones rediseñada: a pantalla completa, con fecha, título y resumen de cada versión, y fácil de cerrar (X o «atrás»).<br><b>0.26</b>: enlaces entre notas (y «Mencionada en»); historial de versiones de cada nota, para ver y recuperar las anteriores; exportarlo todo en un ZIP (Markdown y adjuntos); importar desde Evernote (.enex) con fotos, archivos y etiquetas.<br><b>0.25</b>: escáner de documentos de varias páginas que crea un PDF (con su texto leído por la IA para buscarlo); guardar páginas web (también compartiendo un enlace desde el navegador); plantillas (reunión, viaje, compra, receta, coche, proyecto, diario) y las tuyas propias; las libretas y etiquetas se abren dentro de Biblioteca.<br><b>0.24</b>: nueva pestaña <b>Biblioteca</b>: libretas agrupadas en pilas, etiquetas (#algo), descripción con formato (negritas, títulos, listas, enlaces y tablas), archivos adjuntos de cualquier tipo y búsqueda dentro de PDF, fotos y etiquetas. Los «archivadores» pasan a llamarse libretas.<br><b>0.23.4</b>: al anotar, el botón para descartar es ahora «Borrar», en rojo, y solo aparece cuando hay algo escrito.<br><b>0.23.3</b>: la fecha de una nota se ve escrita y tiene un botón claro para quitarla o anular la cita del calendario (con deshacer).<br><b>0.23.2</b>: avisos rediseñados, ahora abajo; campo de «Pregúntale a tus notas» más limpio.<br><b>0.23.1</b>: «Pregúntale a tus notas» con botón Cerrar; el botón «atrás» del móvil cierra la ventana abierta en vez de salir.<br><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y libretas propias. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Cuaderna para móvil y PC, sincronizada con OneDrive.</p>`;
   $("#ayudaSug").onclick = abrirSugerencia;
 }
