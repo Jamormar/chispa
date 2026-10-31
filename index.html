@@ -521,6 +521,21 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 #login .firma-login{position:absolute;bottom:max(18px,env(safe-area-inset-bottom));left:0;right:0;justify-content:center}
 #login{position:relative}
 .ev-asig{height:auto!important;padding:11px 14px;margin-bottom:8px;text-align:left;background:var(--spark-soft);border-color:transparent;color:var(--text)}.ev-asig svg{color:var(--spark)}
+.ev-wa{background:color-mix(in srgb,#1FA855 12%,transparent)}.ev-wa svg{color:#1C8F4B}
+.e-wa svg{width:15px;height:15px;margin-right:4px;vertical-align:-3px;color:#1C8F4B}
+.wa-lista{display:flex;flex-direction:column;gap:8px;margin:6px 0 4px}
+.wa-fila{display:grid;grid-template-columns:38px 1fr auto;grid-template-rows:auto auto;column-gap:10px;row-gap:6px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.wa-av{grid-row:1/3;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--spark-soft);color:var(--spark);font:700 16px var(--display)}
+.wa-nom{font-weight:600;line-height:1.2;min-width:0}.wa-nom small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.wa-tel{grid-column:2/3;display:flex;gap:6px;align-items:center;min-width:0}
+.wa-tel input{flex:1;min-width:0;height:36px;font-size:15px;padding:0 10px}
+.wa-tel .opc{flex:none;height:36px;padding:0 10px}
+.wa-env{grid-row:1/3;grid-column:3;background:#1C8F4B;color:#fff;border-radius:12px;height:44px;padding:0 14px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.wa-env svg{width:17px;height:17px}.wa-env.hecho{background:var(--surface-2,#e9e2d3);color:var(--text)}
+.wa-env:disabled{opacity:.45}
+.wa-pdf{display:flex;gap:10px;align-items:flex-start;margin:10px 0 2px;font-size:14.5px}.wa-pdf input{margin-top:3px;width:18px;height:18px}.wa-pdf small{display:block;color:var(--muted);font-size:12.5px}
+.wa-msg-t{margin:12px 0 4px;font-size:13px;color:var(--muted);font-weight:600}
+#waMsg{width:100%}
 .ev-asig span{display:flex;flex-direction:column}.ev-asig small{color:var(--muted);font-weight:400;font-size:12.5px}
 .as-ayuda{color:var(--muted);font-size:13.5px;margin:2px 2px 12px}
 .hoja.enviar .as-campo{width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:var(--bg);padding:0 14px;margin-top:8px;outline:0}
@@ -900,7 +915,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
         <div class="prop"><span data-i="tag"></span><span class="lbl">Tipo</span><div class="val"><div class="segm" id="eTipo"></div></div></div>
         <div class="prop"><span data-i="user"></span><span class="lbl">Para quién</span><div class="val">
           <select id="eCat"><option value="">Sin indicar</option></select>
-          <input type="text" id="eNombre" placeholder="Nombre" autocomplete="off" autocapitalize="words" enterkeyhint="done"><button class="opc" id="eVerFicha" type="button">Ver ficha</button><button class="opc oculto" id="eAgenda" type="button"><span data-i="user"></span>Agenda</button><div class="sugs" id="eSugs" role="listbox" aria-label="Contactos"></div></div></div>
+          <input type="text" id="eNombre" placeholder="Nombre" autocomplete="off" autocapitalize="words" enterkeyhint="done"><button class="opc" id="eVerFicha" type="button">Ver ficha</button><button class="opc e-wa" id="eWa" type="button" title="Enviar por WhatsApp"><span data-i="wa"></span>WhatsApp</button><button class="opc oculto" id="eAgenda" type="button"><span data-i="user"></span>Agenda</button><div class="sugs" id="eSugs" role="listbox" aria-label="Contactos"></div></div></div>
         <div class="prop"><span data-i="carpeta"></span><span class="lbl">Libreta</span><div class="val">
           <select id="eCarpeta" aria-label="Libreta"></select><button class="opc" id="eArchivar" type="button"></button></div></div>
         <div class="prop"><span data-i="tag"></span><span class="lbl">Etiquetas</span><div class="val">
@@ -981,13 +996,25 @@ html.lz-on,html.lz-on body{overflow:hidden}
   <div class="asa" id="evCerrar"></div>
   <h3><span data-i="compartir"></span>Compartir o asignar</h3>
   <button class="btn sec ev-pdf ev-asig" id="evAsignar"><span data-i="flecha"></span><span><b>Pasar a otra persona</b><small>Familia, amigos o colegas: le llega con el motivo y la añade a su Cuaderna</small></span></button>
-  <button class="btn sec ev-pdf" id="evPdf"><span data-i="compartir"></span>PDF para WhatsApp, guardar o imprimir</button>
+  <button class="btn sec ev-pdf ev-asig ev-wa" id="evWa"><span data-i="wa"></span><span><b>Enviar por WhatsApp</b><small id="evWaQuien">Directo al chat de los implicados en la nota</small></span></button>
+  <button class="btn sec ev-pdf" id="evPdf"><span data-i="compartir"></span>PDF para compartir, guardar o imprimir</button>
   <button class="btn sec ev-pdf" id="evPlantilla"><span data-i="plantilla"></span>Guardar como plantilla</button>
   <div class="ev-sep">o envíala por correo, con el PDF adjunto</div>
   <input type="email" id="evPara" placeholder="correo@empresa.com" autocomplete="email" inputmode="email">
   <div class="pq-ideas" id="evRec"></div>
   <textarea id="evMsg" class="crece" rows="1" placeholder="Mensaje (opcional): «Esteban, ¿puedes encargarte de esto?»"></textarea>
   <div class="hpie"><div class="esp"></div><button class="btn sec oculto" id="evPermiso">Dar permiso para enviar</button><button class="btn" id="evCorreoB"><span data-i="mail"></span>Enviar por correo</button></div>
+</div>
+
+<div class="hoja mini enviar" id="hWa" role="dialog" aria-label="Enviar por WhatsApp">
+  <div class="asa" id="waCerrar"></div>
+  <h3><span data-i="wa"></span>Enviar por WhatsApp</h3>
+  <p class="as-ayuda">Se abre WhatsApp en el chat de cada persona con el mensaje ya escrito; solo tienes que pulsar enviar.</p>
+  <div id="waLista" class="wa-lista"></div>
+  <button class="enl" id="waOtro" type="button"><span data-i="mas"></span>Otra persona</button>
+  <label class="wa-pdf oculto" id="waPdfL"><input type="checkbox" id="waPdf"><span>Enviar la nota en PDF<small>Con el texto como pie del documento</small></span></label>
+  <div class="wa-msg-t">Mensaje</div>
+  <textarea id="waMsg" class="crece" rows="4"></textarea>
 </div>
 
 <div class="hoja mini enviar" id="hAsignar" role="dialog" aria-label="Asignar la nota">
@@ -1106,7 +1133,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 
 <script>
 "use strict";
-const VERSION = "0.28";
+const VERSION = "0.29";
 /* ================= Iconos ================= */
 const ICONOS = {
   spark: '<path d="M12 3.5c.7 4.3 2.7 6.3 7 7-4.3.7-6.3 2.7-7 7-.7-4.3-2.7-6.3-7-7 4.3-.7 6.3-2.7 7-7z"/><path d="M19 3v3M17.5 4.5h3"/>',
@@ -1163,6 +1190,7 @@ const ICONOS = {
   teclado: '<rect x="2.5" y="6" width="19" height="12.5" rx="2.5"/><path d="M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M6.5 13.5h.01M17.5 13.5h.01M9 14.5h6"/>',
   agarre: '<circle cx="9" cy="6" r="1.4" fill="currentColor"/><circle cx="15" cy="6" r="1.4" fill="currentColor"/><circle cx="9" cy="12" r="1.4" fill="currentColor"/><circle cx="15" cy="12" r="1.4" fill="currentColor"/><circle cx="9" cy="18" r="1.4" fill="currentColor"/><circle cx="15" cy="18" r="1.4" fill="currentColor"/>',
   subir: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+  wa: '<path d="M4.2 19.8l1.1-3.9A8.2 8.2 0 1 1 8.4 18.9z"/><path d="M9.2 8.4c-.4 1.9 1.6 5 4.4 5.9.7.2 1.3-.2 1.7-.8l-1.4-1.1-.9.6c-.9-.4-1.9-1.4-2.3-2.3l.6-.9-1.1-1.4c-.4.1-.9.4-1 0z"/>',
   tel: '<path d="M5 4h3.5l1.7 4.3-2.2 1.4a11 11 0 0 0 5.3 5.3l1.4-2.2L19 14.5V18a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 3 6.2 2 2 0 0 1 5 4z"/>',
   coche: '<path d="M4 16.5V12l2-5.2A2 2 0 0 1 7.9 5.5h8.2a2 2 0 0 1 1.9 1.3L20 12v4.5M3.5 12h17M4 16.5h16"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/>',
   deshacer: '<path d="M4 9.5h10.5a5 5 0 0 1 0 10H11M4 9.5l4-4M4 9.5l4 4"/>',
@@ -2815,7 +2843,7 @@ function pintarSugs(){
 }
 $("#eNombre").addEventListener("focus", () => { cargarAgenda().then(() => { if (document.activeElement === $("#eNombre")) pintarSugs(); }); pintarSugs(); setTimeout(() => $("#eNombre").scrollIntoView({block: "center", behavior: "smooth"}), 350); });
 $("#eNombre").addEventListener("input", pintarSugs);
-const pintarVerFicha = () => { $("#eVerFicha").classList.toggle("oculto", !$("#eNombre").value.trim()); $("#eAgenda").classList.toggle("oculto", !esApp()); };
+const pintarVerFicha = () => { $("#eVerFicha").classList.toggle("oculto", !$("#eNombre").value.trim()); $("#eWa").classList.toggle("oculto", !$("#eNombre").value.trim()); $("#eAgenda").classList.toggle("oculto", !esApp()); };
 $("#eAgenda").onclick = async () => {
   let r; try { r = await nativo("ChispaNativo").elegirContacto(); } catch(e){ toast(/not implemented|not a function/i.test(e.message || "") ? "Actualiza la app para usar la agenda" : "No se pudo abrir la agenda", "alerta", 4000); return; }
   if (!r || r.cancelado || !r.nombre) return;
@@ -2892,6 +2920,8 @@ function prepararEnviar(){
   const recientes = config.destinatarios || [];
   $("#evRec").innerHTML = recientes.map(d => `<button class="opc" data-dest="${esc(d)}">${esc(d)}</button>`).join("");
   $("#evPermiso").classList.toggle("oculto", !!lsGet("chispa.permCorreo")); $("#evCorreoB").classList.toggle("oculto", !lsGet("chispa.permCorreo"));
+  const imp = implicados(notaDelEditor()).map(p => p.nombre);
+  $("#evWaQuien").textContent = imp.length ? "Directo al chat de " + (imp.length > 2 ? imp.slice(0, 2).join(", ") + ` y ${imp.length - 2} más` : imp.join(" y ")) : "Directo al chat de quien elijas";
   $("#evMsg").value = ""; abrirHoja("#hEnviar"); $("#hEditar").classList.add("on");
 }
 $("#evRec").addEventListener("click", e => { const b = e.target.closest("[data-dest]"); if (b) $("#evPara").value = b.dataset.dest; });
@@ -3043,6 +3073,109 @@ function cajaAsignacion(n){
     return `<div class="asig-caja">${ic(a.estado === "hecha" ? "check" : "flecha")}<div><b>${a.estado === "hecha" ? `${quien} la terminó` : `Asignada a ${quien}`}</b>${a.motivo ? `: <q>${esc(a.motivo)}</q>` : ""}<small>Enviada ${esc(cuando(a.en))}${a.limite ? " · Para " + esc(fechaRelativa(a.limite)) : ""}${a.estado === "hecha" ? " · Hecha " + esc(cuando(a.hechaEn)) : " · Pendiente"}</small>${a.comentario ? `<small>«${esc(a.comentario)}»</small>` : ""}</div></div>`; }
   return "";
 }
+
+/* ================= WhatsApp a los implicados en la nota ================= */
+// Número en formato internacional sin «+» (lo que entiende WhatsApp); los móviles españoles de 9 cifras llevan 34 delante
+const waNum = t => { let d = String(t || "").trim().replace(/[^\d+]/g, ""); if (d.startsWith("+")) d = d.slice(1); else if (d.startsWith("00")) d = d.slice(2); else if (/^[6789]\d{8}$/.test(d)) d = "34" + d; return d.replace(/\D/g, ""); };
+const waValido = d => d.length >= 10 && d.length <= 15;
+const escRx = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+// Teléfonos de las tarjetas de visita guardadas (el móvil primero)
+function telDeTarjetas(nombre){
+  const k = norm(nombre), out = [];
+  for (const n of deNotas()){
+    if (!n.tarjeta) continue;
+    const lineas = String(n.texto || "").split("\n");
+    if (norm(n.para?.nombre) !== k && !norm(n.titulo).split("@").includes(k) && !lineas.some(l => norm(l) === k || norm(l).startsWith(k + ","))) continue;
+    for (const l of lineas){ const m = l.match(/^(Móvil|Teléfono):\s*(.+)$/); if (m) out.push({tel: m[2].trim(), movil: m[1] === "Móvil"}); }
+  }
+  return out.sort((a, b) => b.movil - a.movil);
+}
+// Quién está implicado: «Para quién» y los contactos conocidos que aparecen en el título o el texto
+function implicados(n){
+  const lista = [], ya = new Set(), add = (nombre, origen) => { const k = norm(nombre).trim(); if (!k || ya.has(k)) return; ya.add(k); lista.push({nombre: nombre.trim(), origen}); };
+  if (n.para?.nombre) add(n.para.nombre, "Para quién");
+  const txt = " " + norm(planoMd(n.texto || "") + " " + (n.titulo || "")).replace(/\s+/g, " ") + " ";
+  const conocidos = [...Object.values(config.contactos || {}).flat(), ...Object.values(config.telefonos || {}).map(t => t.nombre)].filter(x => typeof x === "string");
+  for (const c of conocidos){ const k = norm(c).trim(); if (k.length >= 3 && new RegExp(`[^a-z0-9ñ]${escRx(k)}[^a-z0-9ñ]`).test(txt)) add(c, "En la nota"); }
+  return lista;
+}
+function textoWa(n){
+  const pl = partirLista(n.texto), tit = tituloPlano(n), l = [];
+  if (tit && !n.ancla) l.push(`*${tit}*`);
+  const desc = planoMd(pl.intro || "").trim(); if (desc && desc !== tit) l.push(desc);
+  if (n.fecha) l.push(`📅 ${capital(fechaLarga(n.fecha))}${n.hora ? ", a las " + n.hora : ""}`);
+  if (pl.items.length) l.push([...pl.items.filter(i => !i.hecho).map(i => "☐ " + i.texto), ...pl.items.filter(i => i.hecho).map(i => "☑ " + i.texto)].join("\n"));
+  return l.join("\n\n");
+}
+let waFilas = [];
+async function abrirWa(){
+  cerrarHojaEnviar();
+  const n = notaDelEditor();
+  waFilas = implicados(n).map(p => ({...p, tel: "", enviado: false}));
+  // teléfono: el guardado en Cuaderna, el de una tarjeta de visita o el de la agenda del móvil
+  for (const f of waFilas){ const g = (config.telefonos || {})[norm(f.nombre)]; f.tel = g?.tel || telDeTarjetas(f.nombre)[0]?.tel || ""; }
+  if (esApp() && waFilas.some(f => !f.tel)){
+    try { const r = await nativo("ChispaNativo").telefonos({nombres: waFilas.filter(f => !f.tel).map(f => f.nombre)});
+      for (const f of waFilas) if (!f.tel){ const l = r?.telefonos?.[f.nombre] || []; f.tel = (l.find(t => t.movil) || l[0])?.tel || ""; } } catch(e){}
+  }
+  $("#waMsg").value = textoWa(n);
+  $("#waPdfL").classList.toggle("oculto", !esApp()); $("#waPdf").checked = false;
+  pintarWa(); abrirHoja("#hWa"); $("#hEditar").classList.add("on");
+  requestAnimationFrame(() => crecer($("#waMsg")));
+  if (!waFilas.length) setTimeout(() => $("#waOtro").click(), 300);
+}
+function pintarWa(){
+  $("#waLista").innerHTML = waFilas.map((f, i) => `<div class="wa-fila">
+    <div class="wa-av">${esc((f.nombre || "?").trim()[0] || "?").toUpperCase()}</div>
+    <div class="wa-nom">${f.nombre ? esc(f.nombre) : "Otra persona"}<small>${esc(f.origen || "")}</small></div>
+    <div class="wa-tel"><input type="tel" inputmode="tel" data-wat="${i}" value="${esc(f.tel)}" placeholder="Su móvil" autocomplete="off">${esApp() ? `<button class="opc" data-waag="${i}" type="button" title="Elegir de la agenda">${ic("user")}</button>` : ""}</div>
+    <button class="wa-env ${f.enviado ? "hecho" : ""}" data-wae="${i}" type="button">${f.enviado ? ic("check") + "Enviado" : ic("wa") + "Enviar"}</button></div>`).join("")
+    || `<div class="as-ayuda">No hay nadie en «Para quién» ni contactos conocidos en la nota. Añade a quien quieras.</div>`;
+}
+$("#waLista").addEventListener("input", e => { const i = e.target.dataset.wat; if (i !== undefined) waFilas[+i].tel = e.target.value; });
+$("#waLista").addEventListener("click", async e => {
+  const ag = e.target.closest("[data-waag]");
+  if (ag){ const f = waFilas[+ag.dataset.waag];
+    try { const r = await nativo("ChispaNativo").elegirTelefono(); if (r && !r.cancelado && r.tel){ f.tel = r.tel; if (!f.nombre) f.nombre = r.nombre || ""; pintarWa(); } }
+    catch(err){ toast("Actualiza la app para elegir de la agenda", "subir", 5000); } return; }
+  const b = e.target.closest("[data-wae]"); if (!b) return;
+  const f = waFilas[+b.dataset.wae], d = waNum(f.tel);
+  if (!waValido(d)){ toast("Escribe un móvil válido (con prefijo si no es de España)", "alerta", 4000); $(`[data-wat="${b.dataset.wae}"]`)?.focus(); return; }
+  if (f.nombre){ config.telefonos = {...(config.telefonos || {}), [norm(f.nombre)]: {nombre: f.nombre, tel: f.tel.trim()}}; guardarConfig(); }
+  b.disabled = true;
+  try { await enviarWa(d, $("#waMsg").value.trim(), $("#waPdf").checked); f.enviado = true; }
+  catch(err){ toast(err.message || "No se pudo abrir WhatsApp", "alerta", 5000); }
+  finally { pintarWa(); }
+});
+$("#waOtro").onclick = async () => {
+  if (esApp()){
+    try { const r = await nativo("ChispaNativo").elegirTelefono(); if (!r || r.cancelado) return;
+      if (r.tel){ waFilas.push({nombre: r.nombre || "", origen: "De la agenda", tel: r.tel, enviado: false}); pintarWa(); return; } } catch(e){}
+  }
+  waFilas.push({nombre: "", origen: "Escribe su móvil", tel: "", enviado: false}); pintarWa();
+  setTimeout(() => $(`[data-wat="${waFilas.length - 1}"]`)?.focus(), 50);
+};
+async function enviarWa(tel, texto, conPdf){
+  if (esApp()){
+    const nat = nativo("ChispaNativo");
+    try {
+      if (conPdf){ const n = notaDelEditor(), blob = await notaEnPdf(n);
+        const datos = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(String(fr.result).split(",")[1]); fr.readAsDataURL(blob); });
+        await nat.whatsapp({tel, texto, datos, nombre: nombrePdf(n)}); }
+      else await nat.whatsapp({tel, texto});
+      return;
+    } catch(e){
+      if (!/not implemented|not a function/i.test(String(e?.message || e))) throw e;
+      if (conPdf) toast("Para enviar el PDF directo al chat, actualiza la app. Va solo el texto", "subir", 6000);
+    }
+  }
+  const url = `https://wa.me/${tel}?text=${encodeURIComponent(texto)}`;
+  if (esApp()){ const nat = nativo("ChispaNativo"); try { if (nat?.abrirUrl){ await nat.abrirUrl({url}); return; } } catch(e){} location.href = url; return; }
+  const w = window.open(url, "_blank", "noopener"); if (!w) location.href = url;
+}
+$("#waCerrar").onclick = () => $("#hWa").classList.remove("on");
+$("#evWa").onclick = abrirWa;
+$("#eWa").onclick = abrirWa;
 
 function abrirAsignar(){
   cerrarHojaEnviar();
@@ -5337,7 +5470,7 @@ function pintarAyuda(){
   <h3>Estadísticas</h3><p>Elige el periodo arriba. Verás cuánto anotas y completas frente al periodo anterior, para quién trabajas, con quién más, cuándo se te ocurren las cosas, cómo anotas y cuánto tardas en cerrar lo pendiente.</p>
   <h3>Listas</h3><p>Empieza una línea por <b>[ ]</b> y, a partir de ahí, cada línea es un punto de la lista (al pulsar Intro, la siguiente ya empieza por [ ]; pulsa Intro en una línea vacía para salir). También puedes pulsar «Convertir en lista» al editar una nota. Lo que marcas pasa a «Hechos», al final de la nota, y arriba solo queda lo pendiente. Para cambiar el orden, arrastra cada punto desde los seis puntitos de su izquierda (en el PC también con Alt + flecha arriba/abajo). Márcalas con un toque en «Hoy», en «Notas» o dentro de la nota; verás cuántos puntos llevas hechos.</p>
   <h3>Autoría</h3><div class="autoria izq"><img src="autor.jpg" alt="Morián, José Antonio" loading="lazy"><div>Cuaderna es una creación de <b>José Antonio Morián</b>: idea, diseño y desarrollo.<small>© ${new Date().getFullYear()} José Antonio Morián. Todos los derechos reservados.</small></div></div>
-  <h3>Novedades</h3><p><b>0.28</b>: se puede usar Cuaderna sin cuenta («Probar sin cuenta» en la entrada). Las notas quedan solo en el dispositivo, con aviso y recordatorio semanal de exportar una copia; al conectar después la cuenta de Microsoft, todo se sube a OneDrive sin perder nada.<br><b>0.27.3</b>: «Convertir en lista» pasa cada línea que ya hayas escrito en la descripción a un punto de la lista.<br><b>0.27.2</b>: al escribir [] o [ ] al principio de una línea de la descripción, se convierte al momento en una casilla de lista.<br><b>0.27.1</b>: el menú de la cámara ya no se descoloca; con el móvil en horizontal la app mantiene el diseño de móvil.<br><b>0.27</b>: Notas y Biblioteca se unen en la pestaña <b>Cuaderno</b>: buscador único, vistas rápidas, crear (escáner, web, plantillas), libretas por pilas, etiquetas y personas. Exportar e importar pasan a Más › Ajustes › Tus datos.<br><b>0.26.2</b>: en la barra de formato, deshacer y rehacer, quitar el formato y volver al texto original.<br><b>0.26.1</b>: pantalla de versiones rediseñada: a pantalla completa, con fecha, título y resumen de cada versión, y fácil de cerrar (X o «atrás»).<br><b>0.26</b>: enlaces entre notas (y «Mencionada en»); historial de versiones de cada nota, para ver y recuperar las anteriores; exportarlo todo en un ZIP (Markdown y adjuntos); importar desde Evernote (.enex) con fotos, archivos y etiquetas.<br><b>0.25</b>: escáner de documentos de varias páginas que crea un PDF (con su texto leído por la IA para buscarlo); guardar páginas web (también compartiendo un enlace desde el navegador); plantillas (reunión, viaje, compra, receta, coche, proyecto, diario) y las tuyas propias; las libretas y etiquetas se abren dentro de Biblioteca.<br><b>0.24</b>: nueva pestaña <b>Biblioteca</b>: libretas agrupadas en pilas, etiquetas (#algo), descripción con formato (negritas, títulos, listas, enlaces y tablas), archivos adjuntos de cualquier tipo y búsqueda dentro de PDF, fotos y etiquetas. Los «archivadores» pasan a llamarse libretas.<br><b>0.23.4</b>: al anotar, el botón para descartar es ahora «Borrar», en rojo, y solo aparece cuando hay algo escrito.<br><b>0.23.3</b>: la fecha de una nota se ve escrita y tiene un botón claro para quitarla o anular la cita del calendario (con deshacer).<br><b>0.23.2</b>: avisos rediseñados, ahora abajo; campo de «Pregúntale a tus notas» más limpio.<br><b>0.23.1</b>: «Pregúntale a tus notas» con botón Cerrar; el botón «atrás» del móvil cierra la ventana abierta en vez de salir.<br><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y libretas propias. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
+  <h3>Novedades</h3><p><b>0.29</b>: «Enviar por WhatsApp» (en Compartir y junto a «Para quién»): abre WhatsApp directamente en el chat de cada implicado en la nota, con el mensaje ya escrito o con el PDF (app de Android). Toma el móvil de las tarjetas de visita o de la agenda y lo recuerda.<br><b>0.28</b>: se puede usar Cuaderna sin cuenta («Probar sin cuenta» en la entrada). Las notas quedan solo en el dispositivo, con aviso y recordatorio semanal de exportar una copia; al conectar después la cuenta de Microsoft, todo se sube a OneDrive sin perder nada.<br><b>0.27.3</b>: «Convertir en lista» pasa cada línea que ya hayas escrito en la descripción a un punto de la lista.<br><b>0.27.2</b>: al escribir [] o [ ] al principio de una línea de la descripción, se convierte al momento en una casilla de lista.<br><b>0.27.1</b>: el menú de la cámara ya no se descoloca; con el móvil en horizontal la app mantiene el diseño de móvil.<br><b>0.27</b>: Notas y Biblioteca se unen en la pestaña <b>Cuaderno</b>: buscador único, vistas rápidas, crear (escáner, web, plantillas), libretas por pilas, etiquetas y personas. Exportar e importar pasan a Más › Ajustes › Tus datos.<br><b>0.26.2</b>: en la barra de formato, deshacer y rehacer, quitar el formato y volver al texto original.<br><b>0.26.1</b>: pantalla de versiones rediseñada: a pantalla completa, con fecha, título y resumen de cada versión, y fácil de cerrar (X o «atrás»).<br><b>0.26</b>: enlaces entre notas (y «Mencionada en»); historial de versiones de cada nota, para ver y recuperar las anteriores; exportarlo todo en un ZIP (Markdown y adjuntos); importar desde Evernote (.enex) con fotos, archivos y etiquetas.<br><b>0.25</b>: escáner de documentos de varias páginas que crea un PDF (con su texto leído por la IA para buscarlo); guardar páginas web (también compartiendo un enlace desde el navegador); plantillas (reunión, viaje, compra, receta, coche, proyecto, diario) y las tuyas propias; las libretas y etiquetas se abren dentro de Biblioteca.<br><b>0.24</b>: nueva pestaña <b>Biblioteca</b>: libretas agrupadas en pilas, etiquetas (#algo), descripción con formato (negritas, títulos, listas, enlaces y tablas), archivos adjuntos de cualquier tipo y búsqueda dentro de PDF, fotos y etiquetas. Los «archivadores» pasan a llamarse libretas.<br><b>0.23.4</b>: al anotar, el botón para descartar es ahora «Borrar», en rojo, y solo aparece cuando hay algo escrito.<br><b>0.23.3</b>: la fecha de una nota se ve escrita y tiene un botón claro para quitarla o anular la cita del calendario (con deshacer).<br><b>0.23.2</b>: avisos rediseñados, ahora abajo; campo de «Pregúntale a tus notas» más limpio.<br><b>0.23.1</b>: «Pregúntale a tus notas» con botón Cerrar; el botón «atrás» del móvil cierra la ventana abierta en vez de salir.<br><b>0.23</b>: «Sobre ti» en Ajustes para que la IA te entienda; «Para quién» con Personas y Asuntos; botón de sugerencias; preparada para el acceso autorizado con IA y voz incluidas.<br><b>0.22.2</b>: «Pasar a otra persona» para compartir notas con familia, amigos o colegas.<br><b>0.22.1</b>: firma del autor en la entrada, en Ajustes y en Ayuda.<br><b>0.22</b>: nuevo nombre e imagen: ahora es <b>Cuaderna</b>. Tus notas y ajustes siguen igual. Nuevo «Pasar a otra persona» (en Compartir): le llega por correo con el motivo, la añade a su Cuaderna con un toque y, cuando la termina, te avisa y tu nota se marca como hecha.<br><b>0.20</b>: agenda del móvil: botón «Agenda» en «Para quién» y sugerencias de tus contactos al escribir (app de Android). Los contactos no se copian a OneDrive.<br><b>0.19.1</b>: girar y recortar fotos: botón de recorte en cada foto de una nota, o toca la miniatura al anotar.<br><b>0.19</b>: cámara propia de Cuaderna (siempre la trasera, con linterna y marco para tarjetas); «Añadir foto» en el editor permite hacer foto o elegir de la galería. Tarjetas con fijo y móvil por separado y lupa al ajustar las esquinas.<br><b>0.18</b>: tarjetas de visita (botón de la cámara › Tarjeta de visita): se encuadran y enderezan solas, reverso opcional, datos leídos con IA y guardadas como «Empresa@Persona». Buzón Sueños y pregunta de la mañana tras el despertador (app de Android).<br><b>0.16</b>: las notas con fecha y hora pueden ir a tu calendario de Outlook; «Compartir» permite enviar la nota por correo a un compañero con el PDF adjunto; Cuaderna se puede instalar en iPhone desde Safari.<br><b>0.15</b>: inteligencia artificial con tu Azure OpenAI: ordena cada nota sola (título, resumen, tareas, para quién y fecha), lee el texto de las fotos y las tarjetas de visita, y «Pregúntale a tus notas».<br><b>0.14</b>: ficha de cada cliente o contacto con todo su historial, lo pendiente, las llamadas anotadas, nueva nota o dictado para esa persona e informe PDF de seguimiento. Toca un nombre en cualquier nota para abrir su ficha. Resumen por correo también desde el PC.<br><b>0.13</b>: Notas organizadas en buzones (Importantes, Entrada, Por hacer, Ideas, Completadas, Archivo y Todas) y libretas propias. Lo completado pasa solo al Archivo a los 7 días. Deslizar a la izquierda archiva.<br><b>0.12</b>: lienzo a pantalla completa: zoom y desplazamiento con dos dedos o la rueda del ratón, imágenes con recorte (cámara, galería o pegar), pincel, rotulador, goma, flechas, rectángulos, círculos y texto. «Anotar» sobre cualquier foto de una nota y «Dibujo» nuevo desde el editor; se puede seguir editando después.<br><b>0.11</b>: lo que escribes se guarda solo: si la app se cierra, al volver lo recuperas. Al cerrar el editor tocando fuera se guardan los cambios; la X pregunta antes de descartarlos. Los títulos largos bajan de línea.<br><b>0.10</b>: botón «Compartir» en cada nota: la envía como PDF, con su texto, lista, fotos y dibujo. Filtros de Notas en desplegables con varias opciones.<br><b>0.9</b>: escritura a mano con deshacer y rehacer, goma, grosores y colores; «Para quién» con sugerencias bajo el campo; resumen diario por correo, aviso al colgar y modo coche en la app Android.<br><b>0.6</b>: preparada para la app Android (widget, avisos aunque esté cerrada y «Compartir con Cuaderna»).<br><b>0.5</b>: título propio en cada nota, separado de la descripción; los listados muestran el título destacado y la descripción debajo.<br><b>0.4.9</b>: ordenar los puntos de una lista arrastrándolos.<br><b>0.4.8</b>: desde la primera línea con [ ] todo es lista; Intro continúa la lista; lo marcado pasa a «Hechos».<br><b>0.4.7</b>: listas con casillas.<br><b>0.4.6</b>: editor de notas reorganizado, con Guardar, Hecha y Borrar siempre visibles arriba.<br><b>0.4.5</b>: ya no aparece el aviso del nombre del dispositivo al abrir.<br><b>0.4.4</b>: campo de texto bien visible y botón de teclado; en el PC, la zona para escribir a mano se muestra con el botón del lápiz.<br><b>0.4.3</b>: estadísticas nuevas por periodo, con actividad en orden cronológico, mapa de horas y cumplimiento.<br><b>0.4.2</b>: deshacer, deslizar, ajustes que se guardan solos, hora en los recordatorios y transcripción con Azure Speech.<br><b>0.4</b>: diseño nuevo, botón de voz con nivel en vivo, etiquetas automáticas al escribir, hoja de edición con reproductor y galería, filtros y notas agrupadas por día.<br>
   <b>0.3</b>: una sola Cuaderna para móvil y PC, sincronizada con OneDrive.</p>`;
   $("#ayudaSug").onclick = abrirSugerencia;
 }

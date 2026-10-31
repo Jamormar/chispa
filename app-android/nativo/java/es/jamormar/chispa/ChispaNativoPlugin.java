@@ -309,6 +309,53 @@ public class ChispaNativoPlugin extends Plugin {
     // ---------------------------------------------------------------- compartir
 
     /** Guarda el archivo (en base64) en la caché y abre el menú «Compartir» de Android. */
+    private Uri archivoEnCache(String nombre, String datos) throws Exception {
+        java.io.File carpeta = new java.io.File(getContext().getCacheDir(), "compartir");
+        if (carpeta.exists()) { java.io.File[] viejos = carpeta.listFiles(); if (viejos != null) for (java.io.File f : viejos) f.delete(); }
+        else carpeta.mkdirs();
+        java.io.File archivo = new java.io.File(carpeta, nombre.replaceAll("[\\\\/:*?\"<>|]", " "));
+        try (java.io.FileOutputStream out = new java.io.FileOutputStream(archivo)) { out.write(Base64.decode(datos, Base64.DEFAULT)); }
+        return androidx.core.content.FileProvider.getUriForFile(getContext(), "es.jamormar.chispa.archivos", archivo);
+    }
+
+    /** Abre WhatsApp (o WhatsApp Business) directamente en el chat de un número, con el texto escrito o con un PDF adjunto. */
+    @PluginMethod
+    public void whatsapp(PluginCall call) {
+        String tel = call.getString("tel", "").replaceAll("\\D", "");
+        String texto = call.getString("texto", "");
+        String datos = call.getString("datos", null);
+        String nombre = call.getString("nombre", "Nota.pdf");
+        String[] paquetes = {"com.whatsapp", "com.whatsapp.w4b"};
+        try {
+            if (datos != null && !datos.isEmpty()) {
+                Uri uri = archivoEnCache(nombre, datos);
+                for (String pkg : paquetes) {
+                    Intent i = new Intent(Intent.ACTION_SEND);
+                    i.setType("application/pdf");
+                    i.setPackage(pkg);
+                    i.putExtra(Intent.EXTRA_STREAM, uri);
+                    if (!texto.isEmpty()) i.putExtra(Intent.EXTRA_TEXT, texto);
+                    if (!tel.isEmpty()) i.putExtra("jid", tel + "@s.whatsapp.net");
+                    i.setClipData(android.content.ClipData.newRawUri(nombre, uri));
+                    i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    try { getActivity().startActivity(i); call.resolve(); return; } catch (android.content.ActivityNotFoundException ignorado) { }
+                }
+            } else {
+                Uri u = Uri.parse("https://api.whatsapp.com/send?phone=" + tel + "&text=" + Uri.encode(texto));
+                for (String pkg : paquetes) {
+                    Intent i = new Intent(Intent.ACTION_VIEW, u);
+                    i.setPackage(pkg);
+                    try { getActivity().startActivity(i); call.resolve(); return; } catch (android.content.ActivityNotFoundException ignorado) { }
+                }
+                getActivity().startActivity(new Intent(Intent.ACTION_VIEW, u));   // sin WhatsApp instalado: lo abre el navegador
+                call.resolve(); return;
+            }
+            call.reject("WhatsApp no está instalado");
+        } catch (Exception e) {
+            call.reject("No se pudo abrir WhatsApp: " + e.getMessage());
+        }
+    }
+
     @PluginMethod
     public void compartirArchivo(PluginCall call) {
         String nombre = call.getString("nombre", "Cuaderna.pdf").replaceAll("[\\\\/:*?\"<>|]", " ");
@@ -400,6 +447,49 @@ public class ChispaNativoPlugin extends Plugin {
             while (c != null && c.moveToNext()) { String e = c.getString(1); if (e != null && !e.trim().isEmpty()) m.put(c.getString(0), e.trim()); }
         } catch (Exception ignorado) { }
         return m;
+    }
+
+    /** Abre la agenda para elegir un número de teléfono (no necesita permiso: Android solo da ese número). */
+    @PluginMethod
+    public void elegirTelefono(PluginCall call) {
+        Intent i = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+        startActivityForResult(call, i, "trasElegirTelefono");
+    }
+
+    @ActivityCallback
+    private void trasElegirTelefono(PluginCall call, ActivityResult res) {
+        if (call == null) return;
+        JSObject r = new JSObject();
+        if (res.getResultCode() != Activity.RESULT_OK || res.getData() == null || res.getData().getData() == null) { r.put("cancelado", true); call.resolve(r); return; }
+        try (Cursor c = getContext().getContentResolver().query(res.getData().getData(),
+                new String[]{ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER}, null, null, null)) {
+            if (c != null && c.moveToFirst()) { r.put("nombre", c.getString(0)); r.put("tel", c.getString(1)); }
+        } catch (Exception e) { call.reject("No se pudo leer el contacto"); return; }
+        call.resolve(r);
+    }
+
+    private static String sinTildes(String s) {
+        return java.text.Normalizer.normalize(s == null ? "" : s, java.text.Normalizer.Form.NFD).replaceAll("\\p{M}", "").toLowerCase().trim();
+    }
+
+    /** Teléfonos de la agenda de los nombres pedidos (coincidencia exacta del nombre, sin tildes). Solo con permiso de contactos. */
+    @PluginMethod
+    public void telefonos(PluginCall call) {
+        JSObject r = new JSObject();
+        if (!permiso("contactos")) { r.put("permiso", false); call.resolve(r); return; }
+        HashMap<String, String> buscados = new HashMap<>();
+        try { JSArray l = call.getArray("nombres", new JSArray()); for (int k = 0; k < l.length(); k++) { String n = l.getString(k); buscados.put(sinTildes(n), n); } } catch (Exception ignorado) { }
+        JSObject res = new JSObject();
+        try (Cursor c = getContext().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                new String[]{ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.TYPE}, null, null, null)) {
+            while (c != null && c.moveToNext()) {
+                String orig = buscados.get(sinTildes(c.getString(0))); if (orig == null || c.getString(1) == null) continue;
+                JSArray lista = res.has(orig) ? (JSArray) res.get(orig) : new JSArray();
+                JSObject t = new JSObject(); t.put("tel", c.getString(1)); t.put("movil", c.getInt(2) == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE);
+                lista.put(t); res.put(orig, lista);
+            }
+        } catch (Exception ignorado) { }
+        r.put("permiso", true); r.put("telefonos", res); call.resolve(r);
     }
 
     /** Nombres (y empresa) de la agenda, para sugerirlos al escribir «Para quién». Solo se usan en el móvil. */
