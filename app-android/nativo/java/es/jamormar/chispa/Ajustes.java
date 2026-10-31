@@ -94,10 +94,14 @@ final class Ajustes {
                     .setShowWhen(false)
                     .setPriority(NotificationCompat.PRIORITY_LOW)
                     .setContentIntent(abrir(ctx, 201, "voz", null, null))
-                    .addAction(R.drawable.ic_w_mic, "Grabar", abrir(ctx, 201, "voz", null, null));
+                    .addAction(R.drawable.ic_w_mic, "Grabar", abrir(ctx, 201, "voz", null, null))
+                    .addAction(R.drawable.ic_stat_chispa, "Salir del modo coche", PendingIntent.getBroadcast(ctx, 202,
+                            new Intent(ctx, CocheReceiver.class).setAction(CocheReceiver.SALIR), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
             publicar(ctx, ID_COCHE, b.build());
+            Coche.programar(ctx);
         } else {
             nm.cancel(ID_COCHE);
+            Coche.cancelar(ctx);
         }
         ChispaWidget.actualizar(ctx);
     }

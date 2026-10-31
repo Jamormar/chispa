@@ -25,6 +25,12 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (Ajustes.enCoche(this)) Coche.comprobar(this, null);   // por si el coche se desconectó sin avisar
+    }
+
+    @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);

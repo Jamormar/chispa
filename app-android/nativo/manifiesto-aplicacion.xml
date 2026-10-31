@@ -31,6 +31,12 @@
             </intent-filter>
         </receiver>
 
+        <!-- Modo coche: comprueba cada pocos minutos que el coche sigue conectado -->
+        <service
+            android:name=".CocheJob"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="false" />
+
         <!-- Resumen diario por correo -->
         <service
             android:name=".ResumenJob"
