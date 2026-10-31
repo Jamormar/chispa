@@ -155,7 +155,7 @@ async function pintar(){
       <div class="gratis">Es gratis y puedes probarla sin crear ninguna cuenta.</div>
       <div class="botones"><a class="boton" href="${BIENVENIDA}#instalar">Probar Cuaderna</a><a class="boton sec" href="${BIENVENIDA}">${ic(I.play)}Ver el vídeo</a></div>
     </section>
-    <footer>Enviado con Cuaderna · <a href="${BIENVENIDA}" style="color:inherit">jamormar.github.io/chispa</a></footer>`;
+    <footer>Enviado por ${esc(de)} con Cuaderna · <a href="${BIENVENIDA}" style="color:inherit">jamormar.github.io/chispa</a></footer>`;
   // casillas: se pueden ir marcando (se recuerdan en este móvil)
   const ev = e => { try { window.cuadernaEvento?.(e); } catch(err){} };
   if (!est.abierta){ ev("nota_abierta"); guardar(clave, Object.assign(est, {abierta: true})); }

@@ -497,6 +497,16 @@ public class ChispaNativoPlugin extends Plugin {
     public void contactos(PluginCall call) {
         if (!permiso("contactos")) { JSObject r = new JSObject(); r.put("permiso", false); r.put("contactos", new JSArray()); call.resolve(r); return; }
         HashMap<String, String> emp = empresas(null);
+        // teléfonos de cada contacto (para sugerir a quién pasar una nota o enviar un WhatsApp)
+        HashMap<String, JSArray> tels = new HashMap<>();
+        try (Cursor c = getContext().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                new String[]{ContactsContract.CommonDataKinds.Phone.CONTACT_ID, ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.TYPE}, null, null, null)) {
+            while (c != null && c.moveToNext()) {
+                String num = c.getString(1); if (num == null || num.trim().isEmpty()) continue;
+                JSArray l = tels.get(c.getString(0)); if (l == null) { l = new JSArray(); tels.put(c.getString(0), l); }
+                JSObject t = new JSObject(); t.put("tel", num.trim()); t.put("movil", c.getInt(2) == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE); l.put(t);
+            }
+        } catch (Exception ignorado) { }
         JSArray lista = new JSArray();
         try (Cursor c = getContext().getContentResolver().query(ContactsContract.Contacts.CONTENT_URI,
                 new String[]{ContactsContract.Contacts._ID, ContactsContract.Contacts.DISPLAY_NAME}, null, null, ContactsContract.Contacts.DISPLAY_NAME + " ASC")) {
@@ -504,6 +514,7 @@ public class ChispaNativoPlugin extends Plugin {
                 String nombre = c.getString(1); if (nombre == null || nombre.trim().isEmpty()) continue;
                 JSObject o = new JSObject(); o.put("nombre", nombre.trim());
                 String e = emp.get(c.getString(0)); if (e != null) o.put("empresa", e);
+                JSArray t = tels.get(c.getString(0)); if (t != null) o.put("tels", t);
                 lista.put(o);
             }
         } catch (Exception ignorado) { }
