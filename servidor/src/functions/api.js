@@ -15,7 +15,7 @@ const EMISOR = "https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304
 const ADMIN = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
 const ORIGENES = (process.env.ORIGENES || "https://jamormar.github.io").split(",").map(s => s.trim());
 const MAX_IA = +process.env.MAX_IA_DIA || 300;
-const G_CLIENT = (process.env.GOOGLE_CLIENT_ID || "").trim(), G_SECRETO = (process.env.GOOGLE_CLIENT_SECRET || "").trim();
+const G_CLIENT = (process.env.GOOGLE_CLIENT_ID || "520507807981-ulvru7sh3ippbc510m1eo1ji532ptb8c.apps.googleusercontent.com").trim(), G_SECRETO = (process.env.GOOGLE_CLIENT_SECRET || "").trim();
 const G_REDIRECCIONES = (process.env.GOOGLE_REDIRECTS || "https://jamormar.github.io/chispa/,https://jamormar.github.io/chispa/google.html").split(",").map(s => s.trim());
 const MAX_VOZ = +process.env.MAX_VOZ_MIN_DIA || 60;
 const hayIA = () => !!(process.env.AOAI_ENDPOINT && process.env.AOAI_CLAVE);
