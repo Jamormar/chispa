@@ -16,7 +16,9 @@ const EMISOR = "https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304
 const ADMINS = (process.env.ADMIN_EMAIL || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
 const ADMIN = ADMINS[0] || "";
 const esAdmin = email => !!email && ADMINS.includes(String(email).toLowerCase());
-const ORIGENES = (process.env.ORIGENES || "https://jamormar.github.io").split(",").map(s => s.trim());
+// la dirección nueva y la antigua (que redirige) siempre valen, aunque en Azure haya otra lista
+const lista = (env, base) => [...new Set([...(env || "").split(","), ...base].map(s => s.trim()).filter(Boolean))];
+const ORIGENES = lista(process.env.ORIGENES, ["https://cuaderna.astillerosoftware.es", "https://jamormar.github.io"]);
 const MAX_IA = +process.env.MAX_IA_DIA || 300;
 const G_CLIENT = (process.env.GOOGLE_CLIENT_ID || "520507807981-ulvru7sh3ippbc510m1eo1ji532ptb8c.apps.googleusercontent.com").trim();
 // el secreto puede venir solo o dentro del JSON que descarga Google ({"web":{"client_secret":…}}): se acepta de las dos formas
@@ -24,7 +26,7 @@ const G_SECRETO = (() => { let v = (process.env.GOOGLE_CLIENT_SECRET || "").trim
   if (v.includes("client_secret")){ const m = v.match(/"client_secret"\s*:\s*"([^"]+)"/); if (m) return m[1].trim(); }
   if (v.startsWith("{")){ try { const j = JSON.parse(v); v = (j.web || j.installed || j).client_secret || ""; } catch(e){ const m = v.match(/"client_secret"\s*:\s*"([^"]+)"/); v = m ? m[1] : ""; } }
   return v.trim(); })();
-const G_REDIRECCIONES = (process.env.GOOGLE_REDIRECTS || "https://jamormar.github.io/chispa/,https://jamormar.github.io/chispa/google.html").split(",").map(s => s.trim());
+const G_REDIRECCIONES = lista(process.env.GOOGLE_REDIRECTS, ["https://cuaderna.astillerosoftware.es/", "https://cuaderna.astillerosoftware.es/google.html", "https://jamormar.github.io/chispa/", "https://jamormar.github.io/chispa/google.html"]);
 const MAX_VOZ = +process.env.MAX_VOZ_MIN_DIA || 60;
 const hayIA = () => !!(process.env.AOAI_ENDPOINT && process.env.AOAI_CLAVE);
 const hayVoz = () => !!(process.env.SPEECH_CLAVE && process.env.SPEECH_REGION);
