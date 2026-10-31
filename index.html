@@ -580,7 +580,8 @@ textarea.crece{resize:none;overflow:hidden;display:block;white-space:pre-wrap;wo
 .as-sug .wa-av{width:32px;height:32px;font-size:14px}.as-sug b{display:block;font-weight:600;font-size:15px;line-height:1.2}.as-sug small{display:block;color:var(--muted);font-size:12.5px}
 .wa-fila .as-sugs{margin-top:6px}
 #hEnviar.sin-correo .ev-sep,#hEnviar.sin-correo #evPara,#hEnviar.sin-correo #evRec,#hEnviar.sin-correo #evMsg,#hEnviar.sin-correo .hpie{display:none}
-.adm-pest{margin:4px 0 12px;display:flex}.adm-pest .opc{flex:1;justify-content:center;display:inline-flex;gap:6px;align-items:center}
+.adm-pest{margin:4px 0 12px;display:flex;position:sticky;top:calc(6px + env(safe-area-inset-top));z-index:5;box-shadow:0 6px 18px -10px rgba(0,0,0,.35)}
+.adm-aviso{display:flex;align-items:center;gap:12px;background:var(--spark-soft);border-radius:14px;padding:12px 14px;margin:10px 0 4px;font-weight:600}.adm-aviso .esp{flex:1}.adm-aviso svg{width:20px;height:20px;color:var(--spark);flex:none}.adm-pest .opc{flex:1;justify-content:center;display:inline-flex;gap:6px;align-items:center}
 .adm-n{min-width:20px;height:20px;border-radius:10px;background:var(--spark);color:#fff;font-size:11.5px;font-weight:700;display:inline-grid;place-items:center;padding:0 6px}
 .adm-resumen [data-sec]:not([data-sec=resumen]),.adm-personas [data-sec]:not([data-sec=personas]),.adm-sugerencias [data-sec]:not([data-sec=sugerencias]){display:none}
 #tabs button .badge-adm{right:calc(50% - 22px)}
@@ -1202,7 +1203,7 @@ html.lz-on,html.lz-on body{overflow:hidden}
 <script src="servidor.js"></script>
 <script>
 "use strict";
-const VERSION = "0.36.2";
+const VERSION = "0.36.3";
 let avisoVersion = false;
 /* ================= Iconos ================= */
 const ICONOS = {
@@ -3252,6 +3253,7 @@ function pintarVistaAdmin(){
   $("#vAdmin").innerHTML = cab("Administración", "Cuaderna · " + esc(lsGet("chispa.usuario") || ""))
     + `<div class="segm adm-pest" id="admPest">${[["resumen", "Difusión"], ["personas", "Personas"], ["sugerencias", "Sugerencias"]].map(([k, t]) => `<button class="opc ${admPest === k ? "on" : ""}" data-ap="${k}">${t}<span class="adm-n" data-apn="${k}"></span></button>`).join("")}</div>
     <div class="grupo"><div class="caja" id="kAdmin"></div></div>`;
+  $("#vAdmin").onclick = e => { const b = e.target.closest("[data-irap]"); if (b){ admPest = b.dataset.irap; lsSet("chispa.admPest", admPest); pintarVistaAdmin(); scrollTo(0, 0); } };
   $("#admPest").onclick = e => { const b = e.target.closest("[data-ap]"); if (!b) return; admPest = b.dataset.ap; lsSet("chispa.admPest", admPest); pintarVistaAdmin(); };
   pintarAdmin();
 }
@@ -3265,7 +3267,7 @@ async function pintarAdmin(){
     const pend = usuarios.filter(u => u.estado === "pendiente").length, sinLeer = sugerencias.filter(x => !x.leida).length;
     document.querySelectorAll("[data-apn]").forEach(el => { const n = el.dataset.apn === "personas" ? pend : el.dataset.apn === "sugerencias" ? sinLeer : 0; el.textContent = n || ""; el.classList.toggle("oculto", !n); });
     document.querySelectorAll(".badge-adm").forEach(b => { b.textContent = pend + sinLeer; b.classList.toggle("oculto", !(pend + sinLeer)); });
-    caja.innerHTML = `<div style="padding:4px 14px 10px" class="adm-${admPest}"><div data-sec="resumen">${est ? htmlEstadisticas(est) : `<p class="hi-ayuda">Las estadísticas aún no están disponibles.</p>`}</div><div data-sec="personas"><h4 style="margin:10px 0 2px">Personas (${usuarios.length})</h4>${usuarios.length ? usuarios.map(u => `<div class="adm-u"><div class="q"><b>${esc(u.nombre || u.email)}</b><small>${esc(u.email)} · alta ${fecha(u.creado)} · último uso ${fecha(u.ultimo)} · IA hoy ${u.iaHoy} (total ${u.iaTotal}) · voz ${u.vozMinTotal} min</small></div><span class="adm-est ${u.estado}">${u.estado}</span>${btn(u, "autorizado", "Autorizar")}${btn(u, "bloqueado", "Bloquear")}</div>`).join("") : `<p style="color:var(--muted)">Aún no ha entrado nadie más.</p>`}</div>
+    caja.innerHTML = `<div style="padding:4px 14px 10px" class="adm-${admPest}"><div data-sec="resumen">${pend ? `<div class="adm-aviso">${ic("user")}<span>${pend} ${pend === 1 ? "persona espera" : "personas esperan"} tu autorización</span><span class="esp"></span><button class="btn" data-irap="personas">Ver</button></div>` : ""}${sinLeer ? `<div class="adm-aviso">${ic("idea")}<span>${sinLeer} ${sinLeer === 1 ? "sugerencia sin leer" : "sugerencias sin leer"}</span><span class="esp"></span><button class="btn" data-irap="sugerencias">Leer</button></div>` : ""}${est ? htmlEstadisticas(est) : `<p class="hi-ayuda">Las estadísticas aún no están disponibles.</p>`}</div><div data-sec="personas"><h4 style="margin:10px 0 2px">Personas (${usuarios.length})</h4>${usuarios.length ? usuarios.map(u => `<div class="adm-u"><div class="q"><b>${esc(u.nombre || u.email)}</b><small>${esc(u.email)} · alta ${fecha(u.creado)} · último uso ${fecha(u.ultimo)} · IA hoy ${u.iaHoy} (total ${u.iaTotal}) · voz ${u.vozMinTotal} min</small></div><span class="adm-est ${u.estado}">${u.estado}</span>${btn(u, "autorizado", "Autorizar")}${btn(u, "bloqueado", "Bloquear")}</div>`).join("") : `<p style="color:var(--muted)">Aún no ha entrado nadie más.</p>`}</div>
       <div data-sec="sugerencias"><h4 style="margin:18px 0 2px">Sugerencias (${sugerencias.filter(x => !x.leida).length} sin leer)</h4>${sugerencias.length ? sugerencias.map(x => `<div class="adm-s ${x.leida ? "leida" : ""}"><small><b>${esc(x.tipo)}</b> · ${esc(x.nombre || x.email)} · ${fecha(x.fecha)} · ${esc(x.version)}</small><p>${esc(x.texto)}</p><button class="enl" data-sug="${esc(x.id)}" data-leida="${x.leida ? 0 : 1}">${x.leida ? "Marcar sin leer" : "Marcar leída"}</button> <button class="enl" data-sugb="${esc(x.id)}">Borrar</button></div>`).join("") : `<p style="color:var(--muted)">Todavía no hay sugerencias.</p>`}</div></div>`;
   } catch(e){ caja.innerHTML = `<div class="ajuste"><div class="lbl">No se pudo cargar<small>${esc(e.message)}</small></div><button class="btn sec" id="kAdmOtra">Reintentar</button></div>`; $("#kAdmOtra").onclick = pintarAdmin; }
 }
