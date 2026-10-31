@@ -2,6 +2,7 @@
 // - Registra a cada persona que entra y deja que el administrador la autorice o la bloquee.
 // - Hace de puente con Azure OpenAI y Azure Speech: las claves viven aquí, nunca en el móvil.
 // - Recoge las sugerencias que se envían desde la app.
+// - Cuenta, de forma anónima (solo totales por día), cómo se difunde Cuaderna: notas pasadas, abiertas, instalaciones…
 // Ajustes de la Function App: ADMIN_EMAIL, AOAI_ENDPOINT, AOAI_CLAVE, AOAI_DESPLIEGUE,
 // SPEECH_CLAVE, SPEECH_REGION, ORIGENES (opcional), MAX_IA_DIA (opcional), MAX_VOZ_MIN_DIA (opcional).
 const { app } = require("@azure/functions");
@@ -199,6 +200,38 @@ const rutas = {
     return {ok: true};
   }
 };
+// ---------- estadísticas anónimas: solo contadores por día y evento, sin datos de nadie ----------
+const EVENTOS = new Set(["app_nueva", "app_dia", "sin_cuenta", "cuenta_conectada", "pasada_wa", "pasada_correo", "nota_abierta", "nota_hecha", "nota_guardar",
+  "invita_probar", "invita_video", "bienvenida", "bienvenida_instalar"]);
+async function sumarEvento(ev){
+  const t = await tabla("estadisticas"), dia = hoy();
+  for (let i = 0; i < 5; i++){
+    const e = await leer(t, dia, ev);
+    try {
+      if (!e) await t.createEntity({partitionKey: dia, rowKey: ev, n: 1});
+      else await t.updateEntity({partitionKey: dia, rowKey: ev, n: (e.n || 0) + 1}, "Merge", {etag: e.etag});
+      return;
+    } catch(err){ if (![409, 412].includes(err.statusCode)) throw err; }   // otro lo sumó a la vez: se reintenta
+  }
+}
+const recientesIP = new Map();   // freno sencillo: como mucho 60 eventos por minuto desde la misma dirección
+function frenar(request){
+  const ip = (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "?", ahora = Date.now();
+  const l = (recientesIP.get(ip) || []).filter(x => ahora - x < 60000); l.push(ahora); recientesIP.set(ip, l);
+  if (recientesIP.size > 5000) recientesIP.clear();
+  return l.length > 60;
+}
+rutas["GET admin/estadisticas"] = async (request, yo) => {
+  soloAdmin(yo);
+  const t = await tabla("estadisticas"), desde = new Date(Date.now() - 90 * 864e5).toISOString().slice(0, 10), dias = {}, total = {};
+  for await (const e of t.listEntities()){
+    total[e.rowKey] = (total[e.rowKey] || 0) + (e.n || 0);
+    if (e.partitionKey >= desde) (dias[e.partitionKey] ||= {})[e.rowKey] = e.n || 0;
+  }
+  const u = await tabla("usuarios"), usuarios = {total: 0, autorizado: 0, pendiente: 0, bloqueado: 0};
+  for await (const x of u.listEntities()){ usuarios.total++; usuarios[x.estado] = (usuarios[x.estado] || 0) + 1; }
+  return {dias, total, usuarios};
+};
 function soloAdmin(yo){ if (!ADMIN || yo.email !== ADMIN) throw new NoAutorizado("Solo el administrador"); }
 
 app.http("api", {
@@ -207,6 +240,11 @@ app.http("api", {
     if (request.method === "OPTIONS") return {status: 204, headers: cors(request)};
     const ruta = String(request.params.ruta || "").replace(/^\/+|\/+$/g, "");
     if (request.method === "GET" && ruta === "salud") return json(request, {ok: true, ia: hayIA(), voz: hayVoz(), admin: !!ADMIN});
+    if (request.method === "POST" && ruta === "evento"){   // anónimo: sin cuenta y sin guardar quién
+      try { const e = JSON.parse((await request.text()).slice(0, 200) || "{}");
+        if (EVENTOS.has(e.e) && !frenar(request)) await sumarEvento(e.e); } catch(err){ context.warn(err); }
+      return {status: 204, headers: cors(request)};
+    }
     const f = rutas[`${request.method} ${ruta}`];
     if (!f) return json(request, {error: "No existe"}, 404);
     try {

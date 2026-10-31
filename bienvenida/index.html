@@ -155,10 +155,13 @@ footer b{font-family:"Fraunces",Georgia,serif;color:var(--tinta)}
 
   <footer><b>Cuaderna</b> · Lo que se te ocurre, bien guardado.</footer>
 </div>
+<script src="../servidor.js"></script>
 <script>
 const tabs = [...document.querySelectorAll("[data-p]")];
 function elegir(p){ tabs.forEach(t => t.setAttribute("aria-selected", t.dataset.p === p)); ["android", "iphone", "pc"].forEach(x => document.getElementById("p-" + x).hidden = x !== p); }
 tabs.forEach(t => t.onclick = () => elegir(t.dataset.p));
+try { if (!sessionStorage.getItem("cuaderna.visto")){ sessionStorage.setItem("cuaderna.visto", "1"); window.cuadernaEvento?.("bienvenida"); } } catch(e){}
+document.querySelectorAll('a[href$=".apk"]').forEach(a => a.addEventListener("click", () => window.cuadernaEvento?.("bienvenida_instalar")));
 const ua = navigator.userAgent;
 elegir(/android/i.test(ua) ? "android" : /iphone|ipad|ipod/i.test(ua) || (/macintosh/i.test(ua) && navigator.maxTouchPoints > 1) ? "iphone" : /mobi/i.test(ua) ? "android" : "pc");
 </script>
